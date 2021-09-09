@@ -258,9 +258,6 @@ class AbstractEntity {
 			fieldNames.push(newField.name);
 		}
 
-		//TODO: convert to Entity, Int, and any underlying types, but only
-		//if "to Entity" etc. isn't already there.
-
 		return fields;
 	}
 
