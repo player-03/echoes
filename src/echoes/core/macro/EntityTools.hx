@@ -96,9 +96,9 @@ class EntityTools {
 
         return macro #if (haxe_ver >= 4) inline #end 
             ( function (__entity__:echoes.Entity) {
-                $b{ removeComponentsFromContainersExprs }
-
                 if (__entity__.isActive()) $b{ removeEntityFromRelatedViewsExprs }
+
+                $b{ removeComponentsFromContainersExprs }
 
                 return __entity__;
             } )($self);
