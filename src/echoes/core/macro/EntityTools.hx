@@ -10,8 +10,13 @@ using haxe.macro.Context;
 using Lambda;
 
 /**
- * Because Haxe 4 no longer allows calling macros from macros, entity manipulation
- * functions are also available in static form.
+ * Entity manipulation functions. Equivalent to the macros found in
+ * `Entity`, except:
+ * 
+ * 1. Macros can call these.
+ * 2. Non-macros cannot call these.
+ * 3. These take `ComplexType`s instead of `ExprOf<Class<Any>>`s, which
+ *    is convenient for macros.
  */
 class EntityTools {
 
