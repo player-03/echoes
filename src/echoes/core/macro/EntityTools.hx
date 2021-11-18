@@ -37,6 +37,8 @@ class EntityTools {
                 var t = switch(c.expr) {
                     case ENew(tp, _):
                         TPath(tp).toType();
+                    case EParenthesis({ expr: ECheckType(_, t) }):
+                        t.toType();
                     default:
                         c.typeof();
                 }
