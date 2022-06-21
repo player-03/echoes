@@ -45,7 +45,7 @@ class ViewsOfComponentBuilder {
 					public inline function addIfMatched(id:Int) {
 						for(v in views) {
 							if(v.isActive()) {
-								 @:privateAccess v.addIfMatched(id);
+								@:privateAccess v.addIfMatched(id);
 							}
 						}
 					}
@@ -53,7 +53,7 @@ class ViewsOfComponentBuilder {
 					public inline function removeIfExists(id:Int) {
 						for(v in views) {
 							if(v.isActive()) {
-								 @:privateAccess v.removeIfExists(id);
+								@:privateAccess v.removeIfExists(id);
 							}
 						}
 					}
