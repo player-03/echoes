@@ -1,21 +1,20 @@
 # Echo
 [![TravisCI Build Status](https://travis-ci.org/deepcake/echo.svg?branch=master)](https://travis-ci.org/deepcake/echo)
 
-Super lightweight Entity Component System framework for Haxe. 
-Initially created to learn the power of macros. 
-Focused to be simple and fast. 
+Super lightweight Entity Component System framework for Haxe.
+Initially created to learn the power of macros.
+Focused to be simple and fast.
 Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fponticelli/edge), [ECX](https://github.com/eliasku/ecx), [ESKIMO](https://github.com/PDeveloper/eskimo) and [Ash-Haxe](https://github.com/nadako/Ash-Haxe)
 
-#### Wip
+## Overview
 
-### Overview
- * Component is an instance of `T:Any` class. For each class `T` will be generated a global component container, where instance of `T` is a value and `Entity` is a key. 
- * `Entity` in that case is just an abstract over the `Int`, but with the ability to work with it as with a set of components like in other regular ECS frameworks. 
- * `View<T1, T2, TN>` is a collection of entities containing all components of the required types `T1, T2, TN`. Views are placed in Systems. 
- * `System` is a place for processing a certain set of data represented by views. 
- * To organize systems in phases can be used the `SystemList`. 
+* Component is an instance of `T:Any` class. For each class `T` will be generated a global component container, where instance of `T` is a value and `Entity` is a key.
+* `Entity` in that case is just an abstract over the `Int`, but with the ability to work with it as with a set of components like in other regular ECS frameworks.
+* `View<T1, T2, TN>` is a collection of entities containing all components of the required types `T1, T2, TN`. Views are placed in Systems.
+* `System` is a place for processing a certain set of data represented by views.
+* To organize systems in phases can be used the `SystemList`.
 
-#### Example
+### Example
 
 ```haxe
 import echoes.SystemList;
@@ -116,16 +115,17 @@ class Render extends echoes.System {
 }
 ```
 
-#### Live
-[Tiger on the Meadow!](https://deepcake.github.io/tiger_on_the_meadow/bin/) ([source](https://github.com/deepcake/tiger_on_the_meadow)) - small example of using Echo framework 
+### Live
+[Tiger on the Meadow!](https://deepcake.github.io/tiger_on_the_meadow/bin/) ([source](https://github.com/deepcake/tiger_on_the_meadow)) - small example of using Echo framework
 
-#### Also
+### Also
 There is also exists a few additional compiler flags:
- * `-D echoes_profiling` - collecting some more info in `Workflow.info()` method for debug purposes
- * `-D echoes_report` - traces a short report of built components and views
- * `-D echoes_array_container` - using Array<T> instead IntMap<T> for global component containers
 
-### Install
+* `-D echoes_profiling` - collecting some more info in `Workflow.info()` method for debug purposes
+* `-D echoes_report` - traces a short report of built components and views
+* `-D echoes_array_container` - using `Array<T>` instead `IntMap<T>` for global component containers
+
+## Install
 
 ```bash
 haxelib git echoes https://github.com/deepcake/echo.git
