@@ -10,9 +10,9 @@ package echoes;
  * - Creates a loop in the system update method
  * 
  *    ```haxe
- *      for(entity in viewOfAB.entities) {
+ *    for(entity in viewOfAB.entities) {
  *        f(entity.get(A), entity.get(B), entity);
- *      }
+ *    }
  *    ```
  * 
  * Functions with `@added`, `@ad`, `@a` meta become callbacks that will be called on each entity to be assembled by the view.

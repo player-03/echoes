@@ -16,6 +16,7 @@ Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fpon
  * To organize systems in phases can be used the `SystemList`. 
 
 #### Example
+
 ```haxe
 import echoes.SystemList;
 import echoes.Workflow;
@@ -125,4 +126,7 @@ There is also exists a few additional compiler flags:
  * `-D echoes_array_container` - using Array<T> instead IntMap<T> for global component containers
 
 ### Install
-```haxelib git echoes https://github.com/deepcake/echo.git```
+
+```bash
+haxelib git echoes https://github.com/deepcake/echo.git
+```

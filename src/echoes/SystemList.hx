@@ -6,11 +6,12 @@ import echoes.utils.Timestep;
 
 /**
  * List of Systems. Can be used for better update control:
- * ```
- *   var physics = new SystemList();
- *   physics.add(new MovementSystem());
- *   physics.add(new CollisionResolveSystem());
- *   Workflow.add(physics);
+ * 
+ * ```haxe
+ * var physics = new SystemList();
+ * physics.add(new MovementSystem());
+ * physics.add(new CollisionResolveSystem());
+ * Workflow.add(physics);
  * ```
  */
 class SystemList implements ISystem {
