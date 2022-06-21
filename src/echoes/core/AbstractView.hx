@@ -10,9 +10,9 @@ class AbstractView {
 	
 	public function activate() {
 		activations++;
-		if (activations == 1) {
+		if(activations == 1) {
 			Workflow.views.add(this);
-			for (e in Workflow.entities) {
+			for(e in Workflow.entities) {
 				addIfMatched(e);
 			}
 		}
@@ -20,9 +20,9 @@ class AbstractView {
 	
 	public function deactivate() {
 		activations--;
-		if (activations == 0) {
+		if(activations == 0) {
 			Workflow.views.remove(this);
-			while (entities.length > 0) {
+			while(entities.length > 0) {
 				removeIfExists(entities.pop());
 			}
 		}
@@ -51,8 +51,8 @@ class AbstractView {
 	}
 	
 	@:allow(echoes.Workflow) function addIfMatched(id:Int) {
-		if (isMatched(id)) {
-			if (collected[id] != true) {
+		if(isMatched(id)) {
+			if(collected[id] != true) {
 				collected[id] = true;
 				entities.add(id);
 				dispatchAddedCallback(id);
@@ -61,7 +61,7 @@ class AbstractView {
 	}
 	
 	@:allow(echoes.Workflow) function removeIfExists(id:Int) {
-		if (collected[id] == true) {
+		if(collected[id] == true) {
 			collected[id] = false;
 			entities.remove(id);
 			dispatchRemovedCallback(id);
@@ -71,7 +71,7 @@ class AbstractView {
 	@:allow(echoes.Workflow) function reset() {
 		activations = 0;
 		Workflow.views.remove(this);
-		while (entities.length > 0) {
+		while(entities.length > 0) {
 			removeIfExists(entities.pop());
 		}
 		collected.splice(0, collected.length);

@@ -10,7 +10,7 @@ package echoes;
  * - Creates a loop in the system update method
  * 
  *    ```haxe
- *      for (entity in viewOfAB.entities) {
+ *      for(entity in viewOfAB.entities) {
  *        f(entity.get(A), entity.get(B), entity);
  *      }
  *    ```

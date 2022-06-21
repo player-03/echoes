@@ -51,10 +51,10 @@ class Workflow {
 		
 		#if echoes_profiling
 		ret += ' : $updateTime ms'; // total
-		for (s in systems) {
+		for(s in systems) {
 			ret += '\n${ s.info('    ', 1) }';
 		}
-		for (v in views) {
+		for(v in views) {
 			ret += '\n    {$v} [${ v.entities.length }]';
 		}
 		#end
@@ -71,7 +71,7 @@ class Workflow {
 		var timestamp = Date.now().getTime();
 		#end
 		
-		for (s in systems) {
+		for(s in systems) {
 			s.__update__(dt);
 		}
 		
@@ -84,16 +84,16 @@ class Workflow {
 	 * Removes all views, systems and entities from the workflow, and resets the id sequence 
 	 */
 	public static function reset() {
-		for (e in entities) {
+		for(e in entities) {
 			e.destroy();
 		}
-		for (s in systems) {
+		for(s in systems) {
 			removeSystem(s);
 		}
-		for (v in definedViews) {
+		for(v in definedViews) {
 			v.reset();
 		}
-		for (c in definedContainers) {
+		for(c in definedContainers) {
 			c.reset();
 		}
 		
@@ -110,7 +110,7 @@ class Workflow {
 	 * @param s `System` instance
 	 */
 	public static function addSystem(s:ISystem) {
-		if (!hasSystem(s)) {
+		if(!hasSystem(s)) {
 			systems.add(s);
 			s.__activate__();
 		}
@@ -121,7 +121,7 @@ class Workflow {
 	 * @param s `System` instance
 	 */
 	public static function removeSystem(s:ISystem) {
-		if (hasSystem(s)) {
+		if(hasSystem(s)) {
 			s.__deactivate__();
 			systems.remove(s);
 		}
@@ -141,11 +141,11 @@ class Workflow {
 	@:allow(echoes.Entity) static function id(immediate:Bool):Int {
 		var id = idPool.pop();
 		
-		if (id == null) {
+		if(id == null) {
 			id = nextId++;
 		}
 		
-		if (immediate) {
+		if(immediate) {
 			statuses[id] = Active;
 			entities.add(id);
 		} else {
@@ -156,7 +156,7 @@ class Workflow {
 	
 	@:allow(echoes.Entity) static function cache(id:Int) {
 		// Active or Inactive
-		if (status(id) < Cached) {
+		if(status(id) < Cached) {
 			removeAllComponentsOf(id);
 			entities.remove(id);
 			idPool.push(id);
@@ -165,16 +165,16 @@ class Workflow {
 	}
 	
 	@:allow(echoes.Entity) static function add(id:Int) {
-		if (status(id) == Inactive) {
+		if(status(id) == Inactive) {
 			statuses[id] = Active;
 			entities.add(id);
-			for (v in views) v.addIfMatched(id);
+			for(v in views) v.addIfMatched(id);
 		}
 	}
 	
 	@:allow(echoes.Entity) static function remove(id:Int) {
-		if (status(id) == Active) {
-			for (v in views) v.removeIfExists(id);
+		if(status(id) == Active) {
+			for(v in views) v.removeIfExists(id);
 			entities.remove(id);
 			statuses[id] = Inactive;
 		}
@@ -185,20 +185,20 @@ class Workflow {
 	}
 	
 	@:allow(echoes.Entity) static inline function removeAllComponentsOf(id:Int) {
-		if (status(id) == Active) {
-			for (v in views) {
+		if(status(id) == Active) {
+			for(v in views) {
 				v.removeIfExists(id);
 			}
 		}
-		for (c in definedContainers) {
+		for(c in definedContainers) {
 			c.remove(id);
 		}
 	}
 	
 	@:allow(echoes.Entity) static inline function printAllComponentsOf(id:Int):String {
 		var ret = '#$id:';
-		for (c in definedContainers) {
-			if (c.exists(id)) {
+		for(c in definedContainers) {
+			if(c.exists(id)) {
 				ret += '${ c.print(id) },';
 			}
 		}

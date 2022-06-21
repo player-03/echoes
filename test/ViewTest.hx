@@ -28,13 +28,13 @@ class ViewTest extends buddy.BuddySuite {
 				
 				describe("When add Entities with different Components", {
 					beforeEach({
-						for (i in 0...300) {
+						for(i in 0...300) {
 							var e = new Entity();
 							e.add(new A());
-							if (i % 2 == 0) e.add(new B());
-							if (i % 3 == 0) e.add(new C());
-							if (i % 4 == 0) e.add(new D());
-							if (i % 5 == 0) e.add(new E());
+							if(i % 2 == 0) e.add(new B());
+							if(i % 3 == 0) e.add(new C());
+							if(i % 4 == 0) e.add(new D());
+							if(i % 5 == 0) e.add(new E());
 							entities.push(e);
 						}
 					});
@@ -48,7 +48,7 @@ class ViewTest extends buddy.BuddySuite {
 					
 					describe("Then add a Component to all Entities", {
 						beforeEach({
-							for (e in entities) {
+							for(e in entities) {
 								e.add(new C());
 							}
 							Workflow.update(0);
@@ -64,7 +64,7 @@ class ViewTest extends buddy.BuddySuite {
 					
 					describe("Then remove a Component from all Entities", {
 						beforeEach({
-							for (e in entities) {
+							for(e in entities) {
 								e.remove(C);
 							}
 							Workflow.update(0);
@@ -79,7 +79,7 @@ class ViewTest extends buddy.BuddySuite {
 						
 						describe("Then add a Component to all Entities back", {
 							beforeEach({
-								for (e in entities) {
+								for(e in entities) {
 									e.add(new C());
 								}
 								Workflow.update(0);
@@ -96,7 +96,7 @@ class ViewTest extends buddy.BuddySuite {
 					
 					describe("Then remove all of Components", {
 						beforeEach({
-							for (e in entities) {
+							for(e in entities) {
 								e.removeAll();
 							}
 							Workflow.update(0);
@@ -246,7 +246,7 @@ class ViewTest extends buddy.BuddySuite {
 					Workflow.addSystem(ivs);
 					ivs.av.onAdded.add(onad);
 					ivs.av.onRemoved.add(onrm);
-					for (i in 0...5) new Entity().add(new A(), new V(i));
+					for(i in 0...5) new Entity().add(new A(), new V(i));
 				});
 				
 				describe("When iterating", {
@@ -306,7 +306,7 @@ class ViewTest extends buddy.BuddySuite {
 				describe("Then create Entity while iterating", {
 					beforeEach({
 						ivs.f = function(id, a, v) {
-							if ('$v' != '9') {
+							if('$v' != '9') {
 								new Entity().add(new A(), new V(9));
 							}
 						}
@@ -319,7 +319,7 @@ class ViewTest extends buddy.BuddySuite {
 				describe("Then destroy and create Entity while iterating", {
 					beforeEach({
 						ivs.f = function(id, a, v) {
-							if ('$v' != '9') {
+							if('$v' != '9') {
 								id.destroy();
 								new Entity().add(new A(), new V(9));
 							}
@@ -382,7 +382,7 @@ class ViewTest extends buddy.BuddySuite {
 				beforeEach({
 					mvs.av.onAdded.add(onad);
 					mvs.av.onRemoved.add(onrm);
-					for (i in 1...4) new Entity().add(new A(), new V(i));
+					for(i in 1...4) new Entity().add(new A(), new V(i));
 				});
 				
 				describe("Initially", {
@@ -438,8 +438,8 @@ class ViewTest extends buddy.BuddySuite {
 					beforeEach({
 						Workflow.addSystem(ivs);
 						var id = 0;
-						for (i in 0...3) {
-							for (j in 1...4) {
+						for(i in 0...3) {
+							for(j in 1...4) {
 								new Entity().add(
 									new V(j * 2), 
 									new A()
@@ -544,7 +544,7 @@ class IteratingViewSystem extends echoes.System {
 	public var f:Entity->A->V->Void = null;
 	
 	@u function update(id:Entity, a:A, v:V) {
-		if (f != null) {
+		if(f != null) {
 			f(id, a, v);
 		}
 	}

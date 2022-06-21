@@ -26,7 +26,7 @@ class EntityTools {
 	 * @return `Entity`
 	 */
 	public static function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echoes.Entity> {
-		if (components.length == 0) {
+		if(components.length == 0) {
 			Context.error("Nothing to add; required one or more components", Context.currentPos());
 		}
 		
@@ -58,11 +58,11 @@ class EntityTools {
 				return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().addIfMatched(__entity__);
 			});
 			
-		return macro #if (haxe_ver >= 4) inline #end
-			( function (__entity__:echoes.Entity) {
+		return macro #if(haxe_ver >= 4) inline #end
+			( function(__entity__:echoes.Entity) {
 				$b{addComponentsToContainersExprs}
 				
-				if (__entity__.isActive()) $b{ addEntityToRelatedViewsExprs }
+				if(__entity__.isActive()) $b{ addEntityToRelatedViewsExprs }
 				
 				return __entity__;
 			} )($self);
@@ -74,7 +74,7 @@ class EntityTools {
 	 * @return `Entity`
 	 */
 	public static function remove(self:Expr, types:Array<ComplexType>):ExprOf<echoes.Entity> {
-		if (types.length == 0) {
+		if(types.length == 0) {
 			Context.error("Nothing to remove; required one or more component types", Context.currentPos());
 		}
 		
@@ -94,9 +94,9 @@ class EntityTools {
 				return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().removeIfExists(__entity__);
 			});
 			
-		return macro #if (haxe_ver >= 4) inline #end 
-			( function (__entity__:echoes.Entity) {
-				if (__entity__.isActive()) $b{ removeEntityFromRelatedViewsExprs }
+		return macro #if(haxe_ver >= 4) inline #end 
+			( function(__entity__:echoes.Entity) {
+				if(__entity__.isActive()) $b{ removeEntityFromRelatedViewsExprs }
 				
 				$b{ removeComponentsFromContainersExprs }
 				

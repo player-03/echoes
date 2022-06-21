@@ -50,10 +50,10 @@ class SystemBuilder {
 		systemIds[ct.followName()] = index;
 		
 		// prevent wrong override
-		for (field in fields) {
-			switch (field.kind) {
+		for(field in fields) {
+			switch(field.kind) {
 				case FFun(func): 
-					switch (field.name) {
+					switch(field.name) {
 						case "__update__":
 							Context.error("Do not override the `__update__` function! Use `@update` meta instead! More info at README example", field.pos);
 						case "__activate__":
@@ -70,7 +70,7 @@ class SystemBuilder {
 		
 		// @meta f(a:T1, b:T2, deltatime:Float) --> a, b, __dt__
 		function metaFuncArgToCallArg(a:FunctionArg) {
-			return switch (a.type.followComplexType()) {
+			return switch(a.type.followComplexType()) {
 				case macro:StdTypes.Float : macro __dt__;
 				case macro:StdTypes.Int : macro __entity__;
 				case macro:echoes.Entity : macro __entity__;
@@ -79,7 +79,7 @@ class SystemBuilder {
 		}
 		
 		function metaFuncArgIsEntity(a:FunctionArg) {
-			return switch (a.type.followComplexType()) {
+			return switch(a.type.followComplexType()) {
 				case macro:StdTypes.Int, macro:echoes.Entity : true;
 				default: false;
 			}
@@ -88,7 +88,7 @@ class SystemBuilder {
 		function refComponentDefToFuncArg(c:{ cls:ComplexType }, args:Array<FunctionArg>) {
 			var copmonentClsName = c.cls.followName();
 			var a = args.find(function(a) return a.type.followName() == copmonentClsName);
-			if (a != null) {
+			if(a != null) {
 				return arg(a.name, a.type);
 			} else {
 				return arg(c.cls.typeName().toLowerCase(), c.cls);
@@ -96,7 +96,7 @@ class SystemBuilder {
 		}
 		
 		function metaFuncArgToComponentDef(a:FunctionArg) {
-			return switch (a.type.followComplexType()) {
+			return switch(a.type.followComplexType()) {
 				case macro:StdTypes.Float : null;
 				case macro:StdTypes.Int : null;
 				case macro:echoes.Entity : null;
@@ -110,16 +110,16 @@ class SystemBuilder {
 		fields
 			.filter(notSkipped)
 			.iter(function(field) {
-				switch (field.kind) {
+				switch(field.kind) {
 					// defined var only
-					case FVar(cls, _) if (cls != null):
+					case FVar(cls, _) if(cls != null):
 						var complexType = cls.followComplexType();
-						switch (complexType) {
+						switch(complexType) {
 							// tpath only
 							case TPath(_):
 								var clsName = complexType.followName();
 								// if it is a view, it was built (and collected to cache) when followComplexType() was called
-								if (viewCache.exists(clsName)) {
+								if(viewCache.exists(clsName)) {
 									// init
 									field.kind = FVar(complexType, macro $i{clsName}.inst());
 									
@@ -136,15 +136,15 @@ class SystemBuilder {
 			.filter(notSkipped)
 			.filter(containsMeta.bind(_, UPD_META.concat(AD_META).concat(RM_META)))
 			.iter(function(field) {
-				switch (field.kind) {
+				switch(field.kind) {
 					case FFun(func):
 						var components = func.args.map(metaFuncArgToComponentDef).filter(notNull);
 						
-						if (components.length > 0) {
+						if(components.length > 0) {
 							var viewClsName = getViewName(components);
 							var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
 							
-							if (view == null) {
+							if(view == null) {
 								var viewComplexType = getView(components);
 								
 								// instant define and init
@@ -158,13 +158,13 @@ class SystemBuilder {
 			} );
 			
 		function procMetaFunc(field:Field) {
-			switch (field.kind) {
+			switch(field.kind) {
 				case FFun(func):
 					var funcName = field.name;
 					var funcCallArgs = func.args.map(metaFuncArgToCallArg).filter(notNull);
 					var components = func.args.map(metaFuncArgToComponentDef).filter(notNull);
 					
-					if (components.length > 0) {
+					if(components.length > 0) {
 						// view iterate
 						
 						var viewClsName = getViewName(components);
@@ -173,7 +173,7 @@ class SystemBuilder {
 						
 						return { name: funcName, args: funcCallArgs, view: view, viewargs: viewArgs, type: VIEW_ITER };
 					} else {
-						if (func.args.exists(metaFuncArgIsEntity)) {
+						if(func.args.exists(metaFuncArgIsEntity)) {
 							// every entity iterate
 							Context.warning("Are you sure you want to iterate over all the entities? If not, you should add some components or remove the Entity / Int argument", field.pos);
 							
@@ -189,7 +189,7 @@ class SystemBuilder {
 		}
 		
 		// define new() if not exists (just for comfort)
-		if (!fields.exists(function(f) return f.name == "new")) {
+		if(!fields.exists(function(f) return f.name == "new")) {
 			fields.push(ffun([APublic], "new", null, null, null, Context.currentPos()));
 		}
 		
@@ -214,14 +214,14 @@ class SystemBuilder {
 			#end
 			.concat(
 				ufuncs.map(function(f) {
-					switch (f.type) {
+					switch(f.type) {
 						case SINGLE_CALL:
 							return macro $i{ f.name }($a{ f.args });
 						case VIEW_ITER:
 							var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
 							return macro $i{ f.view.name }.iter($fwrapper);
 						case ENTITY_ITER:
-							return macro for (__entity__ in echoes.Workflow.entities) {
+							return macro for(__entity__ in echoes.Workflow.entities) {
 								$i{ f.name }($a{ f.args });
 							};
 					}
@@ -235,7 +235,7 @@ class SystemBuilder {
 			)
 			#end;
 			
-		var aexpr = macro if (!activated) $b{
+		var aexpr = macro if(!activated) $b{
 			[].concat(
 				[
 					macro activated = true
@@ -279,7 +279,7 @@ class SystemBuilder {
 			)
 		};
 		
-		var dexpr = macro if (activated) $b{
+		var dexpr = macro if(activated) $b{
 			[].concat(
 				[
 					macro activated = false,
@@ -312,7 +312,7 @@ class SystemBuilder {
 			)
 		};
 		
-		if (uexprs.length > 0) {
+		if(uexprs.length > 0) {
 			fields.push(ffun([APublic, AOverride], "__update__", [arg("__dt__", macro:Float)], null, macro $b{ uexprs }, Context.currentPos()));
 		}
 		
@@ -324,8 +324,8 @@ class SystemBuilder {
 		
 		var clsType = Context.getLocalClass().get();
 		
-		if (PRINT_META.exists(function(m) return clsType.meta.has(m))) {
-			switch (ct) {
+		if(PRINT_META.exists(function(m) return clsType.meta.has(m))) {
+			switch(ct) {
 				case TPath(p):
 					var td:TypeDefinition = {
 						pack: p.pack,

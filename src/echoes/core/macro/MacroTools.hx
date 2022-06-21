@@ -95,13 +95,13 @@ class MacroTools {
 		
 		try {
 			return followMono(type.getType()).toComplexType();
-		} catch (err:String) {
+		} catch(err:String) {
 			throw 'Failed to parse `$type`. Try making a typedef, or use the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.';
 		}
 	}
 	
 	static function error(msg:String, pos:Position) {
-		#if (haxe_ver < 4) 
+		#if(haxe_ver < 4) 
 		throw msg;
 		#else
 		Context.error(msg, pos);
@@ -113,7 +113,7 @@ class MacroTools {
 	}
 	
 	static function typeParamName(p:TypeParam, f:ComplexType->String):String {
-		switch (p) {
+		switch(p) {
 			case TPType(ct):
 				return f(ct);
 			case x:
@@ -127,7 +127,7 @@ class MacroTools {
 	}
 	
 	public static function typeName(ct:ComplexType, shortify = false, escape = true):String {
-		switch (followComplexType(ct)) {
+		switch(followComplexType(ct)) {
 			case TFunction(args, ret):
 				return (escape ? "F" : "(")
 					+ args.map(typeName.bind(_, shortify, escape)).join(escape ? "_" : "->") + (escape ? "_R" : "->") + typeName(ret, shortify, escape)
@@ -143,7 +143,7 @@ class MacroTools {
 				ret += shortify ? (t.sub != null ? t.sub : t.name) : (t.name + (t.sub != null ? t.sub : ""));
 				
 				// type params
-				if (t.params != null && t.params.length > 0) {
+				if(t.params != null && t.params.length > 0) {
 					var tpName = typeParamName.bind(_, typeName.bind(_, shortify, escape));
 					ret += (escape ? "Of" : "<") + t.params.map(tpName).join(escape ? "_" : ",") + (escape ? "" : ">");
 				}

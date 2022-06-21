@@ -32,18 +32,18 @@ class SystemList implements ISystem {
 	}
 	
 	@:noCompletion @:final public function __activate__() {
-		if (!activated) {
+		if(!activated) {
 			activated = true;
-			for (s in systems) {
+			for(s in systems) {
 				s.__activate__();
 			}
 		}
 	}
 	
 	@:noCompletion @:final public function __deactivate__() {
-		if (activated) {
+		if(activated) {
 			activated = false;
-			for (s in systems) {
+			for(s in systems) {
 				s.__deactivate__();
 			}
 		}
@@ -56,7 +56,7 @@ class SystemList implements ISystem {
 		
 		timestep.advance(dt);
 		for(step in timestep) {
-			for (s in systems) {
+			for(s in systems) {
 				s.__update__(step);
 			}
 		}
@@ -79,8 +79,8 @@ class SystemList implements ISystem {
 		ret += ' : $__updateTime__ ms';
 		#end
 		
-		if (systems.length > 0) {
-			for (s in systems) {
+		if(systems.length > 0) {
+			for(s in systems) {
 				ret += '\n${ s.info(indent, level + 1) }';
 			}
 		}
@@ -89,9 +89,9 @@ class SystemList implements ISystem {
 	}
 	
 	public function add(s:ISystem):SystemList {
-		if (!exists(s)) {
+		if(!exists(s)) {
 			systems.add(s);
-			if (activated) {
+			if(activated) {
 				s.__activate__();
 			}
 		}
@@ -99,9 +99,9 @@ class SystemList implements ISystem {
 	}
 	
 	public function remove(s:ISystem):SystemList {
-		if (exists(s)) {
+		if(exists(s)) {
 			systems.remove(s);
-			if (activated) {
+			if(activated) {
 				s.__deactivate__();
 			}
 		}

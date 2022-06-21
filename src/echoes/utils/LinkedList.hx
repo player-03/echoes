@@ -15,7 +15,7 @@ class LinkedList<T> {
 	
 	public function add(value:T) {
 		var node = new LinkedNode<T>(value);
-		if (head == null) {
+		if(head == null) {
 			head = node;
 		} else {
 			tail.next = node;
@@ -25,10 +25,10 @@ class LinkedList<T> {
 	}
 	
 	public function pop():Null<T> {
-		if (head != null) {
+		if(head != null) {
 			var value = head.value;
 			head = head.next;
-			if (head == null) {
+			if(head == null) {
 				tail = null;
 			}
 			length--;
@@ -41,14 +41,14 @@ class LinkedList<T> {
 	public function remove(value:T):Bool {
 		var prev:LinkedNode<T> = null;
 		var node = head;
-		while (node != null) {
-			if (node.value == value) {
-				if (prev == null) {
+		while(node != null) {
+			if(node.value == value) {
+				if(prev == null) {
 					head = node.next;
 				} else {
 					prev.next = node.next;
 				}
-				if (node == tail) {
+				if(node == tail) {
 					tail = prev;
 				}
 				length--;
@@ -62,8 +62,8 @@ class LinkedList<T> {
 	
 	public function exists(value:T):Bool {
 		var node = head;
-		while (node != null) {
-			if (node.value == value) return true;
+		while(node != null) {
+			if(node.value == value) return true;
 			node = node.next;
 		}
 		return false;
@@ -77,29 +77,29 @@ class LinkedList<T> {
 	public function sort(f:T->T->Int) {
 		var insize = 1, nmerges, psize = 0, qsize = 0;
 		var p, q, e:LinkedNode<T>;
-		while (true) {
+		while(true) {
 			p = head;
 			head = null;
 			tail = null;
 			nmerges = 0;
-			while (p != null) {
+			while(p != null) {
 				nmerges++;
 				q = p;
 				psize = 0;
-				for (i in 0...insize) {
+				for(i in 0...insize) {
 					psize++;
 					q = q.next;
-					if (q == null) {
+					if(q == null) {
 						break;
 					}
 				}
 				qsize = insize;
-				while (psize > 0 || (qsize > 0 && q != null)) {
-					if (psize == 0) {
+				while(psize > 0 || (qsize > 0 && q != null)) {
+					if(psize == 0) {
 						e = q;
 						q = q.next;
 						qsize--;
-					} else if (qsize == 0 || q == null || f(p.value, q.value) <= 0) {
+					} else if(qsize == 0 || q == null || f(p.value, q.value) <= 0) {
 						e = p;
 						p = p.next;
 						psize--;
@@ -108,7 +108,7 @@ class LinkedList<T> {
 						q = q.next;
 						qsize--;
 					}
-					if (tail != null) {
+					if(tail != null) {
 						tail.next = e;
 					} else {
 						head = e;
@@ -118,7 +118,7 @@ class LinkedList<T> {
 				p = q;
 			}
 			tail.next = null;
-			if (nmerges <= 1) {
+			if(nmerges <= 1) {
 				break;
 			}
 			insize *= 2;

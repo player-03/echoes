@@ -15,7 +15,7 @@ class Report {
 	
 	public static function gen() {
 		#if echoes_report
-		if (!reportRegistered) {
+		if(!reportRegistered) {
 			Context.onGenerate(function(types) {
 				function sortedlist(array:Array<String>) {
 					array.sort(compareStrings);

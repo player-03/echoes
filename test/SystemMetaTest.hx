@@ -36,7 +36,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 							
 							describe("Then add Entities", {
 								beforeEach({
-									entities = [ for (i in 0...2) new Entity() ];
+									entities = [ for(i in 0...2) new Entity() ];
 								});
 								it("should have correct result", {
 									BuildResult.value.should.be('^[0____]');
@@ -50,7 +50,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 									
 									describe("Then add Component A", {
 										beforeEach({
-											for (e in entities) e.add(new CompA());
+											for(e in entities) e.add(new CompA());
 										});
 										it("should have correct result", {
 											BuildResult.value.should.be('^[0____][0___0e0e_]');
@@ -64,7 +64,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 											
 											describe("Then add Component B", {
 												beforeEach({
-													for (e in entities) e.add(new CompB());
+													for(e in entities) e.add(new CompB());
 												});
 												it("should have correct result", {
 													BuildResult.value.should.be('^[0____][0___0e0e_][0_AA_0A0A_0e0e_0eA0eA]');
@@ -106,7 +106,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 				
 				describe("Then create Entities", {
 					beforeEach({
-						entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
+						entities = [ for(i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
 					});
 					it("should have correct result", {
 						BuildResult.value.should.be('');
@@ -126,7 +126,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 							
 							describe("Then destroy Entities", {
 								beforeEach({
-									for (e in entities) e.destroy();
+									for(e in entities) e.destroy();
 								});
 								it("should have correct result", {
 									BuildResult.value.should.be('+A+A>A>A+Ae+Ae<A-A-Ae<A-A-Ae');
@@ -155,7 +155,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 					
 					describe("Then create Entities", {
 						beforeEach({
-							entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
+							entities = [ for(i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
 						});
 						it("should have correct result", {
 							BuildResult.value.should.be('+A>A+Ae+A>A+Ae');
@@ -163,7 +163,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 						
 						describe("Then destroy Entities", {
 							beforeEach({
-								for (e in entities) e.destroy();
+								for(e in entities) e.destroy();
 							});
 							it("should have correct result", {
 								BuildResult.value.should.be('+A>A+Ae+A>A+Ae<A-A-Ae<A-A-Ae');
@@ -200,7 +200,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 							
 							describe("Then create Entities", {
 								beforeEach({
-									entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
+									entities = [ for(i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
 								});
 								it("should have correct result", {
 									BuildResult.value.should.be('+A>A+Ae+A>A+Ae');
@@ -208,7 +208,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 								
 								describe("Then destroy Entities", {
 									beforeEach({
-										for (e in entities) e.destroy();
+										for(e in entities) e.destroy();
 									});
 									it("should have correct result", {
 										BuildResult.value.should.be('+A>A+Ae+A>A+Ae<A-A-Ae<A-A-Ae');
@@ -227,7 +227,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 							
 							describe("Then create Entities", {
 								beforeEach({
-									entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
+									entities = [ for(i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
 								});
 								it("should have correct result", {
 									BuildResult.value.should.be('!!');
@@ -235,7 +235,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 								
 								describe("Then destroy Entities", {
 									beforeEach({
-										for (e in entities) e.destroy();
+										for(e in entities) e.destroy();
 									});
 									it("should have correct result", {
 										BuildResult.value.should.be('!!##');
@@ -246,7 +246,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 						
 						describe("Then create Entities", {
 							beforeEach({
-								entities = [ for (i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
+								entities = [ for(i in 0...2) new Entity().add(new CompA(), new CompB(), new CompC()) ];
 							});
 							it("should have correct result", {
 								BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!');
@@ -254,7 +254,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 							
 							describe("Then destroy Entities", {
 								beforeEach({
-									for (e in entities) e.destroy();
+									for(e in entities) e.destroy();
 								});
 								it("should have correct result", {
 									BuildResult.value.should.be('+A>A+Ae!+A>A+Ae!<A-A-Ae#<A-A-Ae#');

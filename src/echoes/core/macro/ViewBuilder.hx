@@ -40,7 +40,7 @@ class ViewBuilder {
 	
 	static function parseComponents(type:haxe.macro.Type) {
 		return switch(type) {
-			case TInst(_, params = [x = TType(_, _) | TAnonymous(_) | TFun(_, _)]) if (params.length == 1):
+			case TInst(_, params = [x = TType(_, _) | TAnonymous(_) | TFun(_, _)]) if(params.length == 1):
 				parseComponents(x);
 				
 			case TType(_.get() => { type: x }, []):
@@ -55,7 +55,7 @@ class ViewBuilder {
 					.map(function(a) return a.t.followMono().toComplexType())
 					.concat([ ret.followMono().toComplexType() ])
 					.filter(function(ct) {
-						return switch (ct) {
+						return switch(ct) {
 							case (macro:StdTypes.Void): false;
 							default: true;
 						}
@@ -76,12 +76,12 @@ class ViewBuilder {
 		var viewClsName = getViewName(components);
 		var viewType = viewTypeCache.get(viewClsName);
 		
-		if (viewType == null) { 
+		if(viewType == null) { 
 			// first time call in current build
 			
 			var index = ++viewIndex;
 			
-			try viewType = Context.getType(viewClsName) catch (err:String) {
+			try viewType = Context.getType(viewClsName) catch(err:String) {
 				// type was not cached in previous build
 				
 				var viewTypePath = tpath([], viewClsName, []);
@@ -141,7 +141,7 @@ class ViewBuilder {
 					var funcComplexType = TFunction([ macro:echoes.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
 					var funcCallArgs = [ macro __entity__ ].concat(components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(__entity__)));
 					var body = macro {
-						for (__entity__ in entities) {
+						for(__entity__ in entities) {
 							f($a{ funcCallArgs });
 						}
 					}

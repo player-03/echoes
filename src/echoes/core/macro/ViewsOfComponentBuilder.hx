@@ -16,10 +16,10 @@ class ViewsOfComponentBuilder {
 		var viewsOfComponentTypeName = "ViewsOfComponent" + componentComplexType.typeName();
 		var viewsOfComponentType = viewsOfComponentTypeCache.get(viewsOfComponentTypeName);
 		
-		if (viewsOfComponentType == null) {
+		if(viewsOfComponentType == null) {
 			// first time call in current build
 			
-			try viewsOfComponentType = Context.getType(viewsOfComponentTypeName) catch (err:String) {
+			try viewsOfComponentType = Context.getType(viewsOfComponentTypeName) catch(err:String) {
 				// type was not cached in previous build
 				
 				var viewsOfComponentTypePath = tpath([], viewsOfComponentTypeName, []);
@@ -43,16 +43,16 @@ class ViewsOfComponentBuilder {
 					}
 					
 					public inline function addIfMatched(id:Int) {
-						for (v in views) {
-							if (v.isActive()) {
+						for(v in views) {
+							if(v.isActive()) {
 								 @:privateAccess v.addIfMatched(id);
 							}
 						}
 					}
 					
 					public inline function removeIfExists(id:Int) {
-						for (v in views) {
-							if (v.isActive()) {
+						for(v in views) {
+							if(v.isActive()) {
 								 @:privateAccess v.removeIfExists(id);
 							}
 						}

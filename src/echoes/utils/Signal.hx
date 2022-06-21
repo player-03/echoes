@@ -22,7 +22,7 @@ abstract Signal<T>(LinkedList<T>) {
 	}
 	
 	public inline function removeAll() {
-		while (this.length > 0) this.pop();
+		while(this.length > 0) this.pop();
 	}
 	
 	public inline function size() {
@@ -35,7 +35,7 @@ abstract Signal<T>(LinkedList<T>) {
 	
 	macro public function dispatch(self:Expr, args:Array<Expr>) {
 		return macro {
-			for (listener in $self) {
+			for(listener in $self) {
 				listener($a{args});
 			}
 		}

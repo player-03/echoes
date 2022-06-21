@@ -22,12 +22,12 @@ class ComponentBuilder {
 		var componentContainerTypeName = "ContainerOf" + componentComplexType.typeName();
 		var componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
 		
-		if (componentContainerType == null) {
+		if(componentContainerType == null) {
 			// first time call in current build
 			
 			var index = ++componentIndex;
 			
-			try componentContainerType = Context.getType(componentContainerTypeName) catch (err:String) {
+			try componentContainerType = Context.getType(componentContainerTypeName) catch(err:String) {
 				// type was not cached in previous build
 				
 				var componentContainerTypePath = tpath([], componentContainerTypeName, []);

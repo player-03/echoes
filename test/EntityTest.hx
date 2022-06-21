@@ -503,7 +503,7 @@ class EntityTest extends buddy.BuddySuite {
 				var entities:Array<Entity>;
 				var last:Entity;
 				beforeEach({
-					entities = [ for (i in 0...1000) new Entity() ];
+					entities = [ for(i in 0...1000) new Entity() ];
 					last = entities[entities.length - 1];
 				});
 				it("should be added to the flow", echoes.Workflow.entities.length.should.be(1000));

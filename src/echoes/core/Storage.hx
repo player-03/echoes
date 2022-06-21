@@ -11,7 +11,7 @@ class Storage<T> {
 	}
 	
 	public function add(id:Int, c:T) {
-		if (id >= size) {
+		if(id >= size) {
 			growTo(id);
 		}
 		h[id] = c;
@@ -22,7 +22,7 @@ class Storage<T> {
 	}
 	
 	public function remove(id:Int) {
-		if (id < size) {
+		if(id < size) {
 			h[id] = null;
 		}
 	}
@@ -43,7 +43,7 @@ class Storage<T> {
 	inline function growTo(id:Int) {
 		var nsize = size;
 		
-		while (id >= nsize) {
+		while(id >= nsize) {
 			nsize *= 2;
 		}
 		
@@ -97,9 +97,9 @@ abstract Storage<T>(haxe.ds.IntMap<T>) {
 	}
 	
 	public function reset() {
-		// for (k in this.keys()) this.remove(k); // python "dictionary changed size during iteration"
+		// for(k in this.keys()) this.remove(k); // python "dictionary changed size during iteration"
 		var i = @:privateAccess echoes.Workflow.nextId;
-		while (--i > -1) this.remove(i); 
+		while(--i > -1) this.remove(i); 
 	}
 }
 
