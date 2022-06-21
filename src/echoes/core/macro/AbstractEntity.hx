@@ -18,21 +18,51 @@ import echoes.Entity;
 #end
 
 /**
- * Any abstract extending Entity can be used to access components
- * as if they were instance variables. For example, this:
+ * Enables a way to treat entities more like class instances. Simply create an
+ * `abstract` wrapping `Entity`, and define one or more properties:
  * 
+ * ```haxe
  * typedef Color = Int;
  * abstract ColorfulEntity(Entity) {
  *     public var color:Color;
  * }
+ * ```
  * 
- * Enables this:
+ * Instead of acting like normal variables, these will get and set the entity's
+ * components. They function the same as `add()`, `get()`, and `remove()` which
+ * are also still available.
  * 
+ * ```haxe
  * var redBall = new ColorfulEntity();
+ * redBall.add((0x990000:Color));
+ * trace(StringTools.hex(redBall.color)); //990000
  * redBall.color = 0xFF0000;
- * redBall.add(new SphericalHitbox(5));
- * redBall.add(new ElasticCollision(1));
  * trace(StringTools.hex(redBall.get(Color))); //FF0000
+ * redBall.color = null;
+ * trace(redBall.exists(Color)); //false
+ * ```
+ * 
+ * You can add functions to your `abstract` as normal:
+ * 
+ * ```haxe
+ * typedef Color = Int;
+ * abstract ColorfulEntity(Entity) {
+ *     public var color:Color;
+ *     
+ *     public inline function getRed():Int {
+ *         return color >> 16;
+ *     }
+ *     public inline function getGreen():Int {
+ *         return (color >> 8) & 0xFF;
+ *     }
+ *     public inline function getBlue():Int {
+ *         return color & 0xFF;
+ *     }
+ *     public function setRGB(r:Int, g:Int, b:Int):Void {
+ *         color = (r << 16) | (g << 8) | b;
+ *     }
+ * }
+ * ```
  */
 class AbstractEntity {
 	#if !macro

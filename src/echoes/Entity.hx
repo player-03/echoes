@@ -11,119 +11,119 @@ using Lambda;
 #end
 
 /**
- * Entity is an abstract over the `Int` key.
+ * The entity part of entity-component-system.
  * 
- * - Do not use the Entity as a unique id, as destroyed entities will be cached and reused!
+ * Under the hood, an `Entity` is an integer key, used to look up components in
+ * `Storage`. (Caution: don't use this integer as a unique id, as destroyed
+ * entities will be cached and reused!)
  */
 abstract Entity(Int) from Int to Int {
 	public static inline var INVALID:Entity = Workflow.INVALID_ID;
 	
 	/**
-	 * Creates a new Entity instance
-	 * @param immediate immediately adds this entity to the workflow if `true`, otherwise `activate()` call is required
+	 * @param immediate Immediately adds this entity to the workflow if `true`,
+	 * otherwise `activate()` call is required.
 	 */
 	public inline function new(immediate = true) {
 		this = Workflow.id(immediate);
 	}
 	
 	/**
-	 * Adds this entity to the workflow, so it can be collected by views
+	 * Adds this entity to the workflow, so it can be collected by views.
 	 */
 	public inline function activate() {
 		Workflow.add(this);
 	}
 	
 	/**
-	 * Removes this entity from the workflow (and also from all views), but saves all associated components.
-	 * Entity can be added to the workflow again by `activate()` call
+	 * Removes this entity from the workflow (and also from all views), but
+	 * saves all associated components. Call `activate()` to add it again.
 	 */
 	public inline function deactivate() {
 		Workflow.remove(this);
 	}
 	
 	/**
-	 * Returns `true` if this entity is added to the workflow, otherwise returns `false`
-	 * @return Bool
+	 * Returns `true` if this entity is added to the workflow, otherwise returns
+	 * `false`.
 	 */
 	public inline function isActive():Bool {
 		return Workflow.status(this) == Active;
 	}
 	
 	/**
-	 * Returns `true` if this entity has not been destroyed and therefore can be used safely
-	 * @return Bool
+	 * Returns `true` if this entity has not been destroyed and therefore can be
+	 * used safely.
 	 */
 	public inline function isValid():Bool {
 		return Workflow.status(this) < Cached;
 	}
 	
 	/**
-	 * Returns the status of this entity: Active, Inactive, Cached or Invalid. Method is used mostly for debug purposes
-	 * @return Status
+	 * Returns the status of this entity: Active, Inactive, Cached or Invalid.
+	 * Method is used mostly for debug purposes.
 	 */
 	public inline function status():Status {
 		return Workflow.status(this);
 	}
 	
 	/**
-	 * Removes all of associated to this entity components.
-	 * __Note__ that this entity will be still exists after call this method (just without any associated components).
-	 * If entity is not required anymore - `destroy()` should be called
+	 * Removes all of this entity's components, but does not deactivate or
+	 * destroy it.
 	 */
 	public inline function removeAll() {
 		Workflow.removeAllComponentsOf(this);
 	}
 	
 	/**
-	 * Removes this entity from the workflow with removing all associated components.
-	 * The `Int` id will be cached and then will be used again in new created entities.
-	 * __Note__ that using this entity after call this method is incorrect!
+	 * Removes all of this entity's components, deactivates it, and frees its id
+	 * for reuse. Do not call any of the entity's functions after this; their
+	 * behavior is unspecified.
 	 */
 	public inline function destroy() {
 		Workflow.cache(this);
 	}
 	
 	/**
-	 * Returns list of all associated to this entity components.
-	 * @return String
+	 * Returns the entity's id and components in string form.
 	 */
 	public inline function print():String {
 		return Workflow.printAllComponentsOf(this);
 	}
 	
 	/**
-	 * Adds a specified components to this entity.
-	 * If a component with the same type is already added - it will be replaced
-	 * @param components comma separated list of components of `Any` type
-	 * @return `Entity`
+	 * Adds one or more components to the entity. If the entity already has a
+	 * component of the same type, the old component will be replaced.
+	 * @param components Components of `Any` type.
+	 * @return This entity.
 	 */
 	public macro function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echoes.Entity> {
 		return EntityTools.add(self, components);
 	}
 	
 	/**
-	 * Removes a component from this entity with specified type
-	 * @param types comma separated `Class<Any>` types of components that should be removed
-	 * @return `Entity`
+	 * Removes one or more components from the entity.
+	 * @param types The type(s) of the components to remove. _Not_ the
+	 * components themselves!
+	 * @return This entity.
 	 */
 	public macro function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echoes.Entity> {
 		return EntityTools.remove(self, [for(type in types) type.parseComplexType()]);
 	}
 	
 	/**
-	 * Returns a component of this entity of specified type.
-	 * If a component with specified type is not added to this entity, `null` will be returned
-	 * @param type `Class<T:Any>` type of component
-	 * @return `T:Any` component instance
+	 * Gets this entity's component of the given type, if this entity has a
+	 * component of the given type.
+	 * @param type The type of the component to get.
+	 * @return The component, or `null` if the entity doesn't have it.
 	 */
 	public macro function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
 		return EntityTools.get(self, type.parseComplexType());
 	}
 	
 	/**
-	 * Returns `true` if this entity contains a component of specified type, otherwise returns `false`
-	 * @param type `Class<T:Any>` type of component
-	 * @return `Bool`
+	 * Returns whether the entity has a component of the given type.
+	 * @param type The type to check for.
 	 */
 	public macro function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
 		return EntityTools.exists(self, type.parseComplexType());

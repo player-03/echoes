@@ -1,7 +1,9 @@
 package echoes.core;
 
 class AbstractView {
-	/** List of matched entities */
+	/**
+	 * List of entities in view.
+	 */
 	public var entities(default, null) = new RestrictedLinkedList<Entity>();
 	
 	private var collected = new Array<Bool>();
@@ -36,8 +38,10 @@ class AbstractView {
 		return entities.length;
 	}
 	
+	/**
+	 * Returns whether the entity has all of the view's required components.
+	 */
 	private function isMatched(id:Int):Bool {
-		// each required component exists in component container with this id
 		// macro generated
 		return false;
 	}

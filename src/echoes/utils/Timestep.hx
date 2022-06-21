@@ -1,26 +1,22 @@
 package echoes.utils;
 
 /**
- * A timestep determines how to split up chunks of time.
- * Think of it like a wind-up clock. When you wind it up,
- * it will tick one or more times as it unwinds.
+ * A timestep determines how to split up chunks of time. Think of it like a
+ * wind-up clock. When you wind it up, it will tick as it unwinds.
  * 
- * "Winding" a timestep is done with the `advance()`
- * function, where you enter in a certain amount of time.
- * "Unwinding" a timestep is done with a `for()` loop:
- * `for(tick in timestep) { ... }`. When the loop
- * completes, the timestep is finished unwinding.
+ * "Winding" a timestep is done with the `advance()` function, where you enter
+ * in the total time that should pass. "Unwinding" a timestep is done with a
+ * `for()` loop: `for(tick in timestep) { ... }`. When the loop completes, the
+ * timestep is finished unwinding.
  * 
- * By default, timesteps only tick once. You enter an
- * amount of time, and they return that entire value.
+ * By default, timesteps only tick once. You enter an amount of time, and they
+ * return that entire value.
  * 
- * Subclasses use the decorator pattern to allow more
- * customization. You can use this to combine subclasses,
- * applying a cap from `CappedTimestep`, the fixed ticks
- * from `FixedTimestep`, and/or the speed adjustment from
- * `ScaledTimestep`. To combine subclasses, create an
- * instance of each, passing the last-created instance to
- * the next constructor.
+ * Subclasses use the decorator pattern to allow more customization. You can use
+ * this to combine subclasses, applying a cap from `CappedTimestep`, the fixed
+ * ticks from `FixedTimestep`, and/or the speed adjustment from
+ * `ScaledTimestep`. To combine subclasses, create an instance of each, passing
+ * the last-created instance to the next constructor.
  */
 class Timestep {
 	private var time:Time;
@@ -76,19 +72,15 @@ private class Time {
 }
 
 /**
- * Each tick from a fixed timestep is exactly the same
- * length. This is useful for physics simulations,
- * which tend to require consistency.
+ * Each tick from a fixed timestep is exactly the same length. This is useful
+ * for physics simulations, which tend to require consistency.
  * 
- * Usually, a fixed timestep will have a little time
- * left over at the end of the frame, not quite enough
- * for another tick. This time is saved until the next
- * frame, and may cause some frames to advance farther
- * than others.
+ * Usually, a fixed timestep will have a little time left over at the end of the
+ * frame, not quite enough for another tick. This time is saved until the next
+ * frame, and may cause some frames to advance farther than others.
  * 
- * This class is incompatible with any other class that
- * overrides `next()`. (No other class defined in
- * Timestep.hx does so.)
+ * This class is incompatible with any other class that overrides `next()`. (No
+ * other class defined in Timestep.hx does so.)
  */
 class FixedTimestep extends Timestep {
 	public var tickLength:Float;
@@ -113,16 +105,14 @@ class FixedTimestep extends Timestep {
 }
 
 /**
- * A capped timestep limits how much time can elapse in
- * one frame. This helps in cases of extreme lag, or in
- * cases where a device goes to sleep for hours.
+ * A capped timestep limits how much time can elapse in one frame. This helps in
+ * cases of extreme lag, or in cases where a device goes to sleep for hours.
  * 
- * Capped timesteps go well with fixed timesteps. Without
- * a cap, a fixed timestep could tick dozens if not
- * hundreds of times after a particularly laggy frame.
- * Processing all those ticks would, of course, create
- * even more lag. A cap would limit the number of ticks
- * dispatched, and hopefully prevent any viscious spirals.
+ * Capped timesteps go well with fixed timesteps. Without a cap, a fixed
+ * timestep could tick dozens if not hundreds of times after a particularly
+ * laggy frame. Processing all those ticks would, of course, create even more
+ * lag. A cap would limit the number of ticks dispatched, and hopefully prevent
+ * any viscious spirals.
  */
 class CappedTimestep extends Timestep {
 	public var tickCap:Float;
@@ -141,10 +131,9 @@ class CappedTimestep extends Timestep {
 }
 
 /**
- * A scaled timestamp multiplies all elapsed time.
- * Depending on the multiplier, this can speed time up,
- * slow it down, pause it, or reverse it. (Caution:
- * reversing time may create edge cases.)
+ * A scaled timestamp multiplies all elapsed time. Depending on the multiplier,
+ * this can speed time up, slow it down, pause it, or (theoretically) reverse
+ * it. (Caution: reversing time will cause unspecified behavior.)
  */
 class ScaledTimestep extends Timestep {
 	public var scale:Float;

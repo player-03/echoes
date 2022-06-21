@@ -10,20 +10,17 @@ using haxe.macro.Context;
 using Lambda;
 
 /**
- * Entity manipulation functions. Equivalent to the macros found in
- * `Entity`, except:
- * 
- * 1. Macros can call these.
- * 2. Non-macros cannot call these.
- * 3. These take `ComplexType`s instead of `ExprOf<Class<Any>>`s, which
- *    is convenient for macros.
+ * Entity manipulation functions. Mostly equivalent to the macros found in
+ * `Entity`, except these are designed to be called by macros. The biggest
+ * difference is that these take `ComplexType` instead of `ExprOf<Class<Any>>`,
+ * because this way is more convenient for macros.
  */
 class EntityTools {
 	/**
-	 * Adds a specified components to this entity.
-	 * If a component with the same type is already added - it will be replaced 
-	 * @param components comma separated list of components of `Any` type
-	 * @return `Entity`
+	 * Adds one or more components to the entity. If the entity already has a
+	 * component of the same type, the old component will be replaced.
+	 * @param components Components of `Any` type.
+	 * @return The entity.
 	 */
 	public static function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echoes.Entity> {
 		if(components.length == 0) {
@@ -69,9 +66,10 @@ class EntityTools {
 	}
 	
 	/**
-	 * Removes a component from this entity with specified type
-	 * @param types `ComplexType` types of components that should be removed
-	 * @return `Entity`
+	 * Removes one or more components from the entity.
+	 * @param types The type(s) of the components to remove. _Not_ the
+	 * components themselves!
+	 * @return The entity.
 	 */
 	public static function remove(self:Expr, types:Array<ComplexType>):ExprOf<echoes.Entity> {
 		if(types.length == 0) {
@@ -105,10 +103,10 @@ class EntityTools {
 	}
 	
 	/**
-	 * Returns a component of this entity of specified type.
-	 * If a component with specified type is not added to this entity, `null` will be returned 
-	 * @param type `Class<T:Any>` type of component
-	 * @return `T:Any` component instance
+	 * Gets this entity's component of the given type, if this entity has a
+	 * component of the given type.
+	 * @param type The type of the component to get.
+	 * @return The component, or `null` if the entity doesn't have it.
 	 */
 	public static function get<T>(self:Expr, complexType:ComplexType):ExprOf<T> {
 		var containerName = complexType.getComponentContainer().followName();
@@ -119,9 +117,8 @@ class EntityTools {
 	}
 	
 	/**
-	 * Returns `true` if this entity contains a component of specified type, otherwise returns `false` 
-	 * @param type `Class<T:Any>` type of component
-	 * @return `Bool`
+	 * Returns whether the entity has a component of the given type.
+	 * @param type The type to check for.
 	 */
 	public static function exists(self:Expr, complexType:ComplexType):ExprOf<Bool> {
 		var containerName = complexType.getComponentContainer().followName();

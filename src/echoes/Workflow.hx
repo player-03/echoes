@@ -21,16 +21,16 @@ class Workflow {
 	private static var definedViews = new Array<AbstractView>();
 	
 	/**
-	 * All active entities
+	 * All active entities.
 	 */
 	public static var entities(default, null) = new RestrictedLinkedList<Entity>();
 	/**
-	 * All active views
+	 * All active views.
 	 */
 	public static var views(default, null) = new RestrictedLinkedList<AbstractView>();
 	
 	/**
-	 * All systems that will be called when `update()` is called
+	 * All systems that will be called when `update()` is called.
 	 */
 	public static var systems(default, null) = new RestrictedLinkedList<ISystem>();
 	
@@ -40,11 +40,18 @@ class Workflow {
 	
 	/**
 	 * Returns the workflow statistics:
-	 * _( systems count ) { views count } [ entities count | entity cache size ]_
-	 * With `echoes_profiling` flag additionaly returns:
-	 * _( system name ) : time for update ms_
-	 * _{ view name } [ collected entities count ]_
-	 * @return String
+	 * 
+	 * ```text
+	 * ( systems count ) { views count } [ entities count | entity cache size ]
+	 * ```
+	 * 
+	 * If `echoes_profiling` is set, additionally returns:
+	 * 
+	 * ```text
+	 *  : update time ms
+	 * ( system name ) : update time ms
+	 * { view name } [ entities in view ]
+	 * ```
 	 */
 	public static function info():String {
 		var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idPool.length} ]'; // TODO version or something
@@ -62,10 +69,6 @@ class Workflow {
 		return ret;
 	}
 	
-	/**
-	 * Update 
-	 * @param dt deltatime
-	 */
 	public static function update(dt:Float) {
 		#if echoes_profiling
 		var timestamp = Date.now().getTime();
@@ -81,7 +84,8 @@ class Workflow {
 	}
 	
 	/**
-	 * Removes all views, systems and entities from the workflow, and resets the id sequence 
+	 * Removes all views, systems and entities from the workflow, and resets the
+	 * id sequence.
 	 */
 	public static function reset() {
 		for(e in entities) {
@@ -105,10 +109,6 @@ class Workflow {
 	
 	// System
 	
-	/**
-	 * Adds the system to the workflow
-	 * @param s `System` instance
-	 */
 	public static function addSystem(s:ISystem) {
 		if(!hasSystem(s)) {
 			systems.add(s);
@@ -116,10 +116,6 @@ class Workflow {
 		}
 	}
 	
-	/**
-	 * Removes the system from the workflow
-	 * @param s `System` instance
-	 */
 	public static function removeSystem(s:ISystem) {
 		if(hasSystem(s)) {
 			s.__deactivate__();
@@ -127,11 +123,6 @@ class Workflow {
 		}
 	}
 	
-	/**
-	 * Returns `true` if the system is added to the workflow, otherwise returns `false`
-	 * @param s `System` instance
-	 * @return `Bool`
-	 */
 	public static function hasSystem(s:ISystem):Bool {
 		return systems.exists(s);
 	}
