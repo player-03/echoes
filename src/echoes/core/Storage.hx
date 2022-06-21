@@ -3,8 +3,8 @@ package echoes.core;
 #if echoes_vector_container
 
 class Storage<T> {
-	var size:Int;
-	var h:haxe.ds.Vector<T>;
+	private var size:Int;
+	private var h:haxe.ds.Vector<T>;
 	
 	public function new() {
 		init(64);

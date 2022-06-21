@@ -16,16 +16,16 @@ import echoes.utils.Timestep;
  */
 class SystemList implements ISystem {
 	#if echoes_profiling
-	var __updateTime__ = .0;
+	private var __updateTime__ = .0;
 	#end
 	
-	var name:String;
+	private var name:String;
 	
-	var systems = new LinkedList<ISystem>();
+	private var systems = new LinkedList<ISystem>();
 	
-	var activated = false;
+	private var activated = false;
 	
-	var timestep:Timestep;
+	private var timestep:Timestep;
 	
 	public function new(name = "list", ?timestep:Timestep) {
 		this.name = name;

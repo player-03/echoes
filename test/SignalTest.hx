@@ -111,7 +111,7 @@ class SignalTest extends buddy.BuddySuite {
 }
 
 class O {
-	var val:String;
+	private var val:String;
 	public function new(val) this.val = val;
 	public function toString() return val;
 }

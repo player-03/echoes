@@ -18,22 +18,22 @@ using StringTools;
 using Lambda;
 
 class SystemBuilder {
-	static var SKIP_META = [ "skip" ];
+	private static var SKIP_META = [ "skip" ];
 	
-	static var PRINT_META = [ "print" ];
+	private static var PRINT_META = [ "print" ];
 	
-	static var AD_META = [ "added", "ad", "a" ];
-	static var RM_META = [ "removed", "rm", "r" ];
-	static var UPD_META = [ "update", "up", "u" ];
+	private static var AD_META = [ "added", "ad", "a" ];
+	private static var RM_META = [ "removed", "rm", "r" ];
+	private static var UPD_META = [ "update", "up", "u" ];
 	
 	public static var systemIndex = -1;
 	public static var systemIds = new Map<String, Int>();
 	
-	static function notSkipped(field:Field) {
+	private static function notSkipped(field:Field) {
 		return !containsMeta(field, SKIP_META);
 	}
 	
-	static function containsMeta(field:Field, metas:Array<String>) {
+	private static function containsMeta(field:Field, metas:Array<String>) {
 		return field.meta
 			.exists(function(me) {
 				return metas.exists(function(name) return me.name == name);

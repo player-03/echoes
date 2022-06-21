@@ -9,32 +9,32 @@ using haxe.macro.ComplexTypeTools;
 using Lambda;
 
 class ComponentBuilder {
-	static var componentIndex = -1;
+	private static var componentIndex = -1;
 	
 	// componentContainerTypeName / componentContainerType
-	static var componentContainerTypeCache = new Map<String, haxe.macro.Type>();
+	private static var componentContainerTypeCache = new Map<String, haxe.macro.Type>();
 	
 	public static var componentIds = new Map<String, Int>();
 	public static var componentNames = new Array<String>();
 	
 	public static function createComponentContainerType(componentComplexType:ComplexType) {
-		var componentTypeName = componentComplexType.followName();
-		var componentContainerTypeName = "ContainerOf" + componentComplexType.typeName();
-		var componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
+	 componentTypeName = componentComplexType.followName();
+	 componentContainerTypeName = "ContainerOf" + componentComplexType.typeName();
+	 componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
 		
 		if(componentContainerType == null) {
 			// first time call in current build
 			
-			var index = ++componentIndex;
+		 index = ++componentIndex;
 			
 			try componentContainerType = Context.getType(componentContainerTypeName) catch(err:String) {
 				// type was not cached in previous build
 				
-				var componentContainerTypePath = tpath([], componentContainerTypeName, []);
-				var componentContainerComplexType = TPath(componentContainerTypePath);
+			 componentContainerTypePath = tpath([], componentContainerTypeName, []);
+			 componentContainerComplexType = TPath(componentContainerTypePath);
 				
-				var def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
-					static var instance = new $componentContainerTypePath();
+			 def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
+					private static var instance = new $componentContainerTypePath();
 					
 					@:keep public static inline function inst():$componentContainerComplexType {
 						return instance;
@@ -42,9 +42,9 @@ class ComponentBuilder {
 					
 					// instance
 					
-					var storage = new echoes.core.Storage<$componentComplexType>();
+					private var storage = new echoes.core.Storage<$componentComplexType>();
 					
-					function new() {
+					private function new() {
 						@:privateAccess echoes.Workflow.definedContainers.push(this);
 					}
 					

@@ -23,9 +23,9 @@ package echoes.utils;
  * the next constructor.
  */
 class Timestep {
-	var time:Time;
+	private var time:Time;
 	
-	var nextTimestep:Null<Timestep>;
+	private var nextTimestep:Null<Timestep>;
 	
 	/**
 	 * While paused, time cannot be added to a `Timestep`.

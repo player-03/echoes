@@ -11,7 +11,7 @@ using Lambda;
 @:final
 @:dce
 class Report {
-	static var reportRegistered = false;
+	private static var reportRegistered = false;
 	
 	public static function gen() {
 		#if echoes_report

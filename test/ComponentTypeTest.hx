@@ -180,7 +180,7 @@ class ComponentTypeTest extends buddy.BuddySuite {
 }
 
 class ObjectComponent implements IObjectComponent {
-	var value:String;
+	private var value:String;
 	public function new(v:String) this.value = v;
 	public function getValue() return value;
 }
@@ -218,7 +218,7 @@ class ExtendObjectComponent extends ObjectComponent {
 }
 
 class TypeParamComponent<T> {
-	var value:T;
+	private var value:T;
 	public function new(v:T) {
 		this.value = v;
 	}

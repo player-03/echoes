@@ -518,7 +518,7 @@ class EntityTest extends buddy.BuddySuite {
 }
 
 class ComponentA {
-	var val:Int;
+	private var val:Int;
 	public function new(val) this.val = val;
 	@:keep public function toString() return Std.string(val);
 }

@@ -100,7 +100,7 @@ class MacroTools {
 		}
 	}
 	
-	static function error(msg:String, pos:Position) {
+	private static function error(msg:String, pos:Position) {
 		#if(haxe_ver < 4) 
 		throw msg;
 		#else
@@ -108,11 +108,11 @@ class MacroTools {
 		#end
 	}
 	
-	static function capitalize(s:String) {
+	private static function capitalize(s:String) {
 		return s.substr(0, 1).toUpperCase() + (s.length > 1 ? s.substr(1).toLowerCase() : "");
 	}
 	
-	static function typeParamName(p:TypeParam, f:ComplexType->String):String {
+	private static function typeParamName(p:TypeParam, f:ComplexType->String):String {
 		switch(p) {
 			case TPType(ct):
 				return f(ct);

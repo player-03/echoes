@@ -14,8 +14,8 @@ using haxe.macro.Context;
 using Lambda;
 
 class ViewBuilder {
-	static var viewIndex = -1;
-	static var viewTypeCache = new Map<String, haxe.macro.Type>();
+	private static var viewIndex = -1;
+	private static var viewTypeCache = new Map<String, haxe.macro.Type>();
 	
 	public static var viewIds = new Map<String, Int>();
 	public static var viewNames = new Array<String>();
@@ -38,7 +38,7 @@ class ViewBuilder {
 		return createViewType(parseComponents(Context.getLocalType()));
 	}
 	
-	static function parseComponents(type:haxe.macro.Type) {
+	private static function parseComponents(type:haxe.macro.Type) {
 		return switch(type) {
 			case TInst(_, params = [x = TType(_, _) | TAnonymous(_) | TFun(_, _)]) if(params.length == 1):
 				parseComponents(x);
@@ -102,9 +102,9 @@ class ViewBuilder {
 				
 				// type def
 				var def:TypeDefinition = macro class $viewClsName extends echoes.core.AbstractView {
-					static var instance = new $viewTypePath();
+					private static var instance = new $viewTypePath();
 					
-					@:keep inline public static function inst():$viewComplexType {
+					@:keep public static inline function inst():$viewComplexType {
 						return instance;
 					}
 					
@@ -113,20 +113,20 @@ class ViewBuilder {
 					public var onAdded(default, null) = new $signalTypePath();
 					public var onRemoved(default, null) = new $signalTypePath();
 					
-					function new() {
+					private function new() {
 						@:privateAccess echoes.Workflow.definedViews.push(this);
 						$b{ addViewToViewsOfComponent }
 					}
 					
-					override function dispatchAddedCallback(id:Int) {
+					private override function dispatchAddedCallback(id:Int) {
 						onAdded.dispatch($a{ signalArgs });
 					}
 					
-					override function dispatchRemovedCallback(id:Int) {
+					private override function dispatchRemovedCallback(id:Int) {
 						onRemoved.dispatch($a{ signalArgs });
 					}
 					
-					override function reset() {
+					private override function reset() {
 						super.reset();
 						onAdded.removeAll();
 						onRemoved.removeAll();

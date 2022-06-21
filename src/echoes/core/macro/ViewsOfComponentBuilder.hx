@@ -9,7 +9,7 @@ using haxe.macro.ComplexTypeTools;
 
 class ViewsOfComponentBuilder {
 	// viewsOfComponentTypeName / viewsOfComponentType
-	static var viewsOfComponentTypeCache = new Map<String, haxe.macro.Type>();
+	private static var viewsOfComponentTypeCache = new Map<String, haxe.macro.Type>();
 	
 	public static function createViewsOfComponentType(componentComplexType:ComplexType):haxe.macro.Type {
 		var componentTypeName = componentComplexType.followName();
@@ -26,7 +26,7 @@ class ViewsOfComponentBuilder {
 				var viewsOfComponentComplexType = TPath(viewsOfComponentTypePath);
 				
 				var def = macro class $viewsOfComponentTypeName {
-					static var instance = new $viewsOfComponentTypePath();
+					private static var instance = new $viewsOfComponentTypePath();
 					
 					@:keep public static inline function inst():$viewsOfComponentComplexType {
 						return instance;
@@ -34,9 +34,9 @@ class ViewsOfComponentBuilder {
 					
 					// instance
 					
-					var views = new Array<echoes.core.AbstractView>();
+					private var views = new Array<echoes.core.AbstractView>();
 					
-					function new() { }
+					private function new() { }
 					
 					public inline function addRelatedView(v:echoes.core.AbstractView) {
 						views.push(v);

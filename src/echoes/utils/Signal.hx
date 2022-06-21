@@ -33,7 +33,7 @@ abstract Signal<T>(LinkedList<T>) {
 		return this.iterator();
 	}
 	
-	macro public function dispatch(self:Expr, args:Array<Expr>) {
+	public macro function dispatch(self:Expr, args:Array<Expr>) {
 		return macro {
 			for(listener in $self) {
 				listener($a{args});

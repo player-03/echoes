@@ -4,9 +4,9 @@ class AbstractView {
 	/** List of matched entities */
 	public var entities(default, null) = new RestrictedLinkedList<Entity>();
 	
-	var collected = new Array<Bool>();
+	private var collected = new Array<Bool>();
 	
-	var activations = 0;
+	private var activations = 0;
 	
 	public function activate() {
 		activations++;
@@ -36,17 +36,17 @@ class AbstractView {
 		return entities.length;
 	}
 	
-	function isMatched(id:Int):Bool {
+	private function isMatched(id:Int):Bool {
 		// each required component exists in component container with this id
 		// macro generated
 		return false;
 	}
 	
-	function dispatchAddedCallback(id:Int) {
+	private function dispatchAddedCallback(id:Int) {
 		// macro generated
 	}
 	
-	function dispatchRemovedCallback(id:Int) {
+	private function dispatchRemovedCallback(id:Int) {
 		// macro generated
 	}
 	

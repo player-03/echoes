@@ -23,10 +23,10 @@ package echoes;
 #end
 class System implements echoes.core.ISystem {
 	#if echoes_profiling
-	var __updateTime__ = .0;
+	private var __updateTime__ = .0;
 	#end
 	
-	var activated = false;
+	private var activated = false;
 	
 	@:noCompletion public function __activate__() {
 		onactivate();

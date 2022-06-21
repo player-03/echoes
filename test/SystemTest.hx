@@ -365,8 +365,8 @@ class Y {
 }
 
 class SystemX extends echoes.System {
-	var x:View<X>;
-	var xy:View<X, Y>;
+	private var x:View<X>;
+	private var xy:View<X, Y>;
 }
 
 class SystemY extends echoes.System {

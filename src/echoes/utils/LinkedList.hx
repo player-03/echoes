@@ -133,7 +133,7 @@ class LinkedNode<T> {
 	
 	public var value(default, null):T;
 	
-	function new(value:T) {
+	private function new(value:T) {
 		this.value = value;
 	}
 }
@@ -141,7 +141,7 @@ class LinkedNode<T> {
 @:allow(echoes.utils.LinkedList)
 @:generic
 class LinkedListIterator<T> {
-	var node:LinkedNode<T>;
+	private var node:LinkedNode<T>;
 	
 	inline function new(node:LinkedNode<T>) {
 		this.node = node;

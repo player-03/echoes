@@ -9,16 +9,16 @@ import echoes.core.RestrictedLinkedList;
 class Workflow {
 	@:allow(echoes.Entity) static inline var INVALID_ID = -1;
 	
-	static var nextId = INVALID_ID + 1;
+	private static var nextId = INVALID_ID + 1;
 	
-	static var idPool = new Array<Int>();
+	private static var idPool = new Array<Int>();
 	
-	static var statuses = new Array<Status>();
+	private static var statuses = new Array<Status>();
 	
 	// all of every defined component container
-	static var definedContainers = new Array<ICleanableComponentContainer>();
+	private static var definedContainers = new Array<ICleanableComponentContainer>();
 	// all of every defined view
-	static var definedViews = new Array<AbstractView>();
+	private static var definedViews = new Array<AbstractView>();
 	
 	/**
 	 * All active entities
@@ -35,7 +35,7 @@ class Workflow {
 	public static var systems(default, null) = new RestrictedLinkedList<ISystem>();
 	
 	#if echoes_profiling
-	static var updateTime = .0;
+	private static var updateTime = .0;
 	#end
 	
 	/**
