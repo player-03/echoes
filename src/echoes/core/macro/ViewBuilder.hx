@@ -131,7 +131,6 @@ class ViewBuilder {
 						onAdded.removeAll();
 						onRemoved.removeAll();
 					}
-					
 				}
 				
 				//var iteratorTypePath = getViewIterator(components).tp();

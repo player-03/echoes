@@ -156,7 +156,6 @@ class SystemBuilder {
 								
 								definedViews.push({ name: viewClsName.toLowerCase(), cls: viewComplexType, components: viewCache.get(viewClsName).components });
 							}
-							
 						}
 					}
 					default:
@@ -191,7 +190,6 @@ class SystemBuilder {
 							// single call
 							{ name: funcName, args: funcCallArgs, view: null, viewargs: null, type: SINGLE_CALL };
 						}
-						
 					}
 				}
 				default: null;

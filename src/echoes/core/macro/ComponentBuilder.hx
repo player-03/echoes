@@ -71,7 +71,6 @@ class ComponentBuilder {
 					public inline function print(id:Int):String {
 						return $v{componentTypeName} + '=' + Std.string(storage.get(id));
 					}
-					
 				}
 				
 				Context.defineType(def);

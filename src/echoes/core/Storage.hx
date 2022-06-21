@@ -59,7 +59,6 @@ class Storage<T> {
 #elseif echoes_array_container
 
 abstract Storage<T>(Array<T>) {
-
 	public inline function new() {
 		this = new Array<T>();
 	}
@@ -89,7 +88,6 @@ abstract Storage<T>(Array<T>) {
 
 @:forward(get, remove, exists)
 abstract Storage<T>(haxe.ds.IntMap<T>) {
-
 	public inline function new() {
 		this = new haxe.ds.IntMap<T>();
 	}

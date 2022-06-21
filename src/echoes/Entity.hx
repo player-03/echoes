@@ -16,7 +16,6 @@ using Lambda;
  * - Do not use the Entity as a unique id, as destroyed entities will be cached and reused!
  */
 abstract Entity(Int) from Int to Int {
-
 	public static inline var INVALID:Entity = Workflow.INVALID_ID;
 	
 	/**
