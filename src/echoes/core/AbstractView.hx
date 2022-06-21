@@ -1,16 +1,18 @@
 package echoes.core;
 
+import echoes.Entity;
+
 class AbstractView {
 	/**
 	 * List of entities in view.
 	 */
-	public var entities(default, null) = new RestrictedLinkedList<Entity>();
+	public var entities(default, null):RestrictedLinkedList<Entity> = new RestrictedLinkedList();
 	
-	private var collected = new Array<Bool>();
+	private var collected:Array<Bool> = [];
 	
-	private var activations = 0;
+	private var activations:Int = 0;
 	
-	public function activate() {
+	public function activate():Void {
 		activations++;
 		if(activations == 1) {
 			Workflow.views.add(this);
@@ -20,7 +22,7 @@ class AbstractView {
 		}
 	}
 	
-	public function deactivate() {
+	public function deactivate():Void {
 		activations--;
 		if(activations == 0) {
 			Workflow.views.remove(this);
@@ -41,34 +43,34 @@ class AbstractView {
 	/**
 	 * Returns whether the entity has all of the view's required components.
 	 */
-	private function isMatched(id:Int):Bool {
+	private function isMatched(entity:Entity):Bool {
 		// macro generated
 		return false;
 	}
 	
-	private function dispatchAddedCallback(id:Int) {
+	private function dispatchAddedCallback(entity:Entity):Void {
 		// macro generated
 	}
 	
-	private function dispatchRemovedCallback(id:Int) {
+	private function dispatchRemovedCallback(entity:Entity):Void {
 		// macro generated
 	}
 	
-	@:allow(echoes.Workflow) function addIfMatched(id:Int) {
-		if(isMatched(id)) {
-			if(collected[id] != true) {
-				collected[id] = true;
-				entities.add(id);
-				dispatchAddedCallback(id);
+	@:allow(echoes.Workflow) function addIfMatched(entity:Entity):Void {
+		if(isMatched(entity)) {
+			if(collected[entity] != true) {
+				collected[entity] = true;
+				entities.add(entity);
+				dispatchAddedCallback(entity);
 			}
 		}
 	}
 	
-	@:allow(echoes.Workflow) function removeIfExists(id:Int) {
-		if(collected[id] == true) {
-			collected[id] = false;
-			entities.remove(id);
-			dispatchRemovedCallback(id);
+	@:allow(echoes.Workflow) function removeIfExists(entity:Entity):Void {
+		if(collected[entity] == true) {
+			collected[entity] = false;
+			entities.remove(entity);
+			dispatchRemovedCallback(entity);
 		}
 	}
 	

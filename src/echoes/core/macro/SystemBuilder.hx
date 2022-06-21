@@ -85,13 +85,13 @@ class SystemBuilder {
 			}
 		}
 		
-		function refComponentDefToFuncArg(c:{ cls:ComplexType }, args:Array<FunctionArg>) {
-			var copmonentClsName = c.cls.followName();
+		function refComponentDefToFuncArg(c:ComplexType, args:Array<FunctionArg>) {
+			var copmonentClsName = c.followName();
 			var a = args.find(function(a) return a.type.followName() == copmonentClsName);
 			if(a != null) {
 				return arg(a.name, a.type);
 			} else {
-				return arg(c.cls.typeName().toLowerCase(), c.cls);
+				return arg(c.typeName().toLowerCase(), c);
 			}
 		}
 		
@@ -100,11 +100,11 @@ class SystemBuilder {
 				case macro:StdTypes.Float : null;
 				case macro:StdTypes.Int : null;
 				case macro:echoes.Entity : null;
-				default: { cls: a.type.followComplexType() };
+				default: a.type.followComplexType();
 			}
 		}
 		
-		var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<{ cls:ComplexType }> }>();
+		var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<ComplexType> }>();
 		
 		// find and init manually defined views
 		fields
