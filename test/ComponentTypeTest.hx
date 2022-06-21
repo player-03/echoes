@@ -179,7 +179,6 @@ class ComponentTypeTest extends buddy.BuddySuite {
     }
 }
 
-
 class ObjectComponent implements IObjectComponent {
     var value:String;
     public function new(v:String) this.value = v;
@@ -233,7 +232,6 @@ typedef TypedefNestedTypeParamComponent = TypeParamComponent<Array<ObjectCompone
 typedef TypedefFunc = ObjectComponent->ObjectComponent->Void;
 typedef TypedefNestedFunc = (ObjectComponent->ObjectComponent)->Void;
 typedef TypedefTypeParamFunc = Array<ObjectComponent->ObjectComponent>->Void;
-
 
 class ComponentTypeSystem extends System {
     public var objects:View<ObjectComponent>;

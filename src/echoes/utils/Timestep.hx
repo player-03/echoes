@@ -23,8 +23,6 @@ package echoes.utils;
  * the next constructor.
  */
 class Timestep {
-
-
 	var time:Time;
 
 	var nextTimestep:Null<Timestep>;
@@ -68,8 +66,6 @@ class Timestep {
 			return time;
 		}
 	}
-
-
 }
 
 private class Time {
@@ -95,8 +91,6 @@ private class Time {
  * Timestep.hx does so.)
  */
 class FixedTimestep extends Timestep {
-
-
 	public var tickLength:Float;
 
 	public function new(tickLength:Float, ?nextTimestep:Timestep) {
@@ -116,8 +110,6 @@ class FixedTimestep extends Timestep {
 			return super.next();
 		}
 	}
-
-
 }
 
 /**
@@ -133,8 +125,6 @@ class FixedTimestep extends Timestep {
  * dispatched, and hopefully prevent any viscious spirals.
  */
 class CappedTimestep extends Timestep {
-
-
 	public var tickCap:Float;
 
 	public function new(tickCap:Float, ?nextTimestep:Timestep) {
@@ -148,8 +138,6 @@ class CappedTimestep extends Timestep {
 			this.time.left = tickCap;
 		}
 	}
-
-
 }
 
 /**
@@ -159,8 +147,6 @@ class CappedTimestep extends Timestep {
  * reversing time may create edge cases.)
  */
 class ScaledTimestep extends Timestep {
-
-
 	public var scale:Float;
 
 	public function new(scale:Float = 1, ?nextTimestep:Timestep) {
@@ -171,6 +157,4 @@ class ScaledTimestep extends Timestep {
 	public override function advance(time:Float):Void {
 		super.advance(time * scale);
 	}
-
-
 }

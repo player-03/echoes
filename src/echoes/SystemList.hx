@@ -5,25 +5,18 @@ import echoes.utils.LinkedList;
 import echoes.utils.Timestep;
 
 /**
- * SystemList  
- * 
- * List of Systems. Can be used for better update control:  
+ * List of Systems. Can be used for better update control:
  * ```
  *   var physics = new SystemList();
  *   physics.add(new MovementSystem());
  *   physics.add(new CollisionResolveSystem());
  *   Workflow.add(physics);
  * ```
- * 
- * @author https://github.com/deepcake
  */
 class SystemList implements ISystem {
-
-
     #if echoes_profiling
     var __updateTime__ = .0;
     #end
-
 
     var name:String;
 
@@ -37,7 +30,6 @@ class SystemList implements ISystem {
         this.name = name;
         this.timestep = timestep != null ? timestep : new Timestep();
     }
-
 
     @:noCompletion @:final public function __activate__() {
         if (!activated) {
@@ -96,7 +88,6 @@ class SystemList implements ISystem {
         return ret;
     }
 
-
     public function add(s:ISystem):SystemList {
         if (!exists(s)) {
             systems.add(s);
@@ -121,8 +112,6 @@ class SystemList implements ISystem {
         return systems.exists(s);
     }
 
-
     public function toString():String return 'SystemList';
-
 
 }

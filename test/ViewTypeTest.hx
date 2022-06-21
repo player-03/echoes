@@ -99,9 +99,7 @@ abstract VC(String) {
     public function new() this = 'C';
 }
 
-
 class TypeViewSystem extends echoes.System {
-
     public var rest:View<VA, VB>;
 
     public var restReversed:View<VA, VB>;
@@ -119,11 +117,9 @@ class TypeViewSystem extends echoes.System {
     @u function iab(i:Int, a:VA, b:VB) { }
 
     @u function feab(f:Float, e:Entity, a:VA, b:VB) { }
-
 }
 
 class FuncViewSystem extends echoes.System {
-
     public var fv:View<VA->VB->Void, VA->VB>;
 
     public var fvReversed:View<VA->VB, VA->VB->Void>;
@@ -133,7 +129,6 @@ class FuncViewSystem extends echoes.System {
     @u function ab_abv(ab:VA->VB, abv:VA->VB->Void) { }
 
     @u function dt_e_abv_ab(f:Float, e:Entity, abv:VA->VB->Void, ab:VA->VB) { }
-
 }
 
 class StandaloneTypeViewSystem extends echoes.System {

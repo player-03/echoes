@@ -1,21 +1,13 @@
 package echoes.utils;
 
-/**
- * ...
- * @author https://github.com/deepcake
- */
 @:generic
 class LinkedList<T> {
-
-
     public var head(default, null):LinkedNode<T> = null;
     public var tail(default, null):LinkedNode<T> = null;
 
     public var length(default, null) = 0;
 
-
     public function new() { }
-
 
     public inline function iterator():LinkedListIterator<T> {
         return new LinkedListIterator<T>(head);
@@ -78,7 +70,7 @@ class LinkedList<T> {
     }
 
     /**
-     * Sorts this LinkedList according to the comparison function `f`, where `f(x,y)` returns 0 if `x == y`, a positive Int if `x > y` and a negative Int if `x < y`  
+     * Sorts this LinkedList according to the comparison function `f`, where `f(x,y)` returns 0 if `x == y`, a positive Int if `x > y` and a negative Int if `x < y`
      * 
      * __Based on `haxe.ds.ListSort.sortSingleLinked()` function with minor changes__.
      */
@@ -132,14 +124,11 @@ class LinkedList<T> {
             insize *= 2;
         }
     }
-
-
 }
 
 @:allow(echoes.utils.LinkedList)
 @:generic
 class LinkedNode<T> {
-
     public var next:LinkedNode<T>;
 
     public var value(default, null):T;
@@ -147,13 +136,11 @@ class LinkedNode<T> {
     function new(value:T) {
         this.value = value;
     }
-
 }
 
 @:allow(echoes.utils.LinkedList)
 @:generic
 class LinkedListIterator<T> {
-
     var node:LinkedNode<T>;
 
     inline function new(node:LinkedNode<T>) {
@@ -169,5 +156,4 @@ class LinkedListIterator<T> {
         node = node.next;
         return value;
     }
-
 }

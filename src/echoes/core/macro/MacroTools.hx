@@ -15,13 +15,8 @@ using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using Lambda;
 
-/**
- * ...
- * @author https://github.com/deepcake
- */
 @:dce
 class MacroTools {
-
     public static function ffun(?meta:Metadata, ?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr, pos:Position):Field {
         return {
             meta: meta != null ? meta : [],
@@ -45,7 +40,6 @@ class MacroTools {
             pos: pos
         };
     }
-
 
     public static function arg(name:String, type:ComplexType):FunctionArg {
         return {
@@ -71,7 +65,6 @@ class MacroTools {
         }
     }
 
-
     public static function followMono(t:Type) {
         return switch(t) {
             case TMono(_.get() => tt):
@@ -91,7 +84,6 @@ class MacroTools {
         return new Printer().printComplexType(followComplexType(ct));
     }
 
-
     public static function parseComplexType(e:Expr):ComplexType {
         switch(e.expr) {
             case EParenthesis({expr:ECheckType(_, ct)}):
@@ -110,7 +102,6 @@ class MacroTools {
         }
     }
 
-
     static function error(msg:String, pos:Position) {
         #if (haxe_ver < 4) 
         throw msg;
@@ -118,7 +109,6 @@ class MacroTools {
         Context.error(msg, pos);
         #end
     }
-
 
     static function capitalize(s:String) {
         return s.substr(0, 1).toUpperCase() + (s.length > 1 ? s.substr(1).toLowerCase() : '');
@@ -190,6 +180,5 @@ class MacroTools {
         typeNames.sort(compareStrings);
         return typeNames.join(sep);
     }
-
 }
 #end

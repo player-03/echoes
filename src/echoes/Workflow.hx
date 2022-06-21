@@ -6,16 +6,8 @@ import echoes.core.ICleanableComponentContainer;
 import echoes.core.ISystem;
 import echoes.core.RestrictedLinkedList;
 
-/**
- *  Workflow  
- * 
- * @author https://github.com/deepcake
- */
 class Workflow {
-
-
     @:allow(echoes.Entity) static inline var INVALID_ID = -1;
-
 
     static var nextId = INVALID_ID + 1;
 
@@ -42,18 +34,16 @@ class Workflow {
      */
     public static var systems(default, null) = new RestrictedLinkedList<ISystem>();
 
-
     #if echoes_profiling
     static var updateTime = .0;
     #end
 
-
     /**
-     * Returns the workflow statistics:  
-     * _( systems count ) { views count } [ entities count | entity cache size ]_  
-     * With `echoes_profiling` flag additionaly returns:  
-     * _( system name ) : time for update ms_  
-     * _{ view name } [ collected entities count ]_  
+     * Returns the workflow statistics:
+     * _( systems count ) { views count } [ entities count | entity cache size ]_
+     * With `echoes_profiling` flag additionaly returns:
+     * _( system name ) : time for update ms_
+     * _{ view name } [ collected entities count ]_
      * @return String
      */
     public static function info():String {
@@ -71,7 +61,6 @@ class Workflow {
 
         return ret;
     }
-
 
     /**
      * Update 
@@ -92,7 +81,6 @@ class Workflow {
         updateTime = Std.int(Date.now().getTime() - timestamp);
         #end
     }
-
 
     /**
      * Removes all views, systems and entities from the workflow, and resets the id sequence 
@@ -116,7 +104,6 @@ class Workflow {
 
         nextId = INVALID_ID + 1;
     }
-
 
     // System
 
@@ -143,14 +130,13 @@ class Workflow {
     }
 
     /**
-     * Returns `true` if the system is added to the workflow, otherwise returns `false`  
+     * Returns `true` if the system is added to the workflow, otherwise returns `false`
      * @param s `System` instance
      * @return `Bool`
      */
     public static function hasSystem(s:ISystem):Bool {
         return systems.exists(s);
     }
-
 
     // Entity
 
@@ -220,6 +206,4 @@ class Workflow {
         }
         return ret.substr(0, ret.length - 1);
     }
-
-
 }

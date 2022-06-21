@@ -3,16 +3,12 @@ package echoes.core;
 #if echoes_vector_container
 
 class Storage<T> {
-
-
     var size:Int;
     var h:haxe.ds.Vector<T>;
-
 
     public function new() {
         init(64);
     }
-
 
     public function add(id:Int, c:T) {
         if (id >= size) {
@@ -39,7 +35,6 @@ class Storage<T> {
         init(64);
     }
 
-
     inline function init(size:Int) {
         this.size = size;
         this.h = new haxe.ds.Vector<T>(size);
@@ -59,19 +54,15 @@ class Storage<T> {
         this.h = nh;
         this.size = nsize;
     }
-
-
 }
 
 #elseif echoes_array_container
 
 abstract Storage<T>(Array<T>) {
 
-
     public inline function new() {
         this = new Array<T>();
     }
-
 
     public inline function add(id:Int, c:T) {
         this[id] = c;
@@ -92,8 +83,6 @@ abstract Storage<T>(Array<T>) {
     public inline function reset() {
         this.splice(0, this.length);
     }
-
-
 }
 
 #else
@@ -101,11 +90,9 @@ abstract Storage<T>(Array<T>) {
 @:forward(get, remove, exists)
 abstract Storage<T>(haxe.ds.IntMap<T>) {
 
-
     public inline function new() {
         this = new haxe.ds.IntMap<T>();
     }
-
 
     public inline function add(id:Int, c:T) {
         this.set(id, c);
@@ -116,8 +103,6 @@ abstract Storage<T>(haxe.ds.IntMap<T>) {
         var i = @:privateAccess echoes.Workflow.nextId;
         while (--i > -1) this.remove(i); 
     }
-
-
 }
 
 #end

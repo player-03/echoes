@@ -18,8 +18,6 @@ using StringTools;
 using Lambda;
 
 class SystemBuilder {
-
-
     static var SKIP_META = [ 'skip' ];
 
     static var PRINT_META = [ 'print' ];
@@ -31,7 +29,6 @@ class SystemBuilder {
     public static var systemIndex = -1;
     public static var systemIds = new Map<String, Int>();
 
-
     static function notSkipped(field:Field) {
         return !containsMeta(field, SKIP_META);
     }
@@ -42,7 +39,6 @@ class SystemBuilder {
                 return metas.exists(function(name) return me.name == name);
             });
     }
-
 
     public static function build() {
         var fields = Context.getBuildFields();
@@ -69,7 +65,6 @@ class SystemBuilder {
                 default:
             }
         }
-
 
         function notNull<T>(e:Null<T>) return e != null;
 
@@ -109,7 +104,6 @@ class SystemBuilder {
             }
         }
 
-
         var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<{ cls:ComplexType }> }>();
 
         // find and init manually defined views
@@ -138,8 +132,6 @@ class SystemBuilder {
                     default:
                 }
             } );
-
-
 
         // find and init meta defined views
         fields
@@ -170,7 +162,6 @@ class SystemBuilder {
                     default:
                 }
             } );
-
 
         function procMetaFunc(field:Field) {
             return switch (field.kind) {
@@ -207,12 +198,10 @@ class SystemBuilder {
             }
         }
 
-
         // define new() if not exists (just for comfort)
         if (!fields.exists(function(f) return f.name == 'new')) {
             fields.push(ffun([APublic], 'new', null, null, null, Context.currentPos()));
         }
-
 
         var ufuncs = fields.filter(notSkipped).filter(containsMeta.bind(_, UPD_META)).map(procMetaFunc).filter(notNull);
         var afuncs = fields.filter(notSkipped).filter(containsMeta.bind(_, AD_META)).map(procMetaFunc).filter(notNull);
@@ -303,7 +292,6 @@ class SystemBuilder {
             )
         };
 
-
         var dexpr = macro if (activated) $b{
             [].concat(
                 [
@@ -337,7 +325,6 @@ class SystemBuilder {
             )
         };
 
-
         if (uexprs.length > 0) {
 
             fields.push(ffun([APublic, AOverride], '__update__', [arg('__dt__', macro:Float)], null, macro $b{ uexprs }, Context.currentPos()));
@@ -349,7 +336,6 @@ class SystemBuilder {
 
         // toString
         fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ ct.followName() }, Context.currentPos()));
-
 
         var clsType = Context.getLocalClass().get();
 
@@ -373,7 +359,6 @@ class SystemBuilder {
 
         return fields;
     }
-
 }
 
 @:enum abstract MetaFuncType(Int) {

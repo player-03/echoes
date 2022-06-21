@@ -11,35 +11,31 @@ using Lambda;
 #end
 
 /**
- * Entity is an abstract over the `Int` key.  
- * - Do not use the Entity as a unique id, as destroyed entities will be cached and reused!  
- *  
- * @author https://github.com/deepcake
+ * Entity is an abstract over the `Int` key.
+ * 
+ * - Do not use the Entity as a unique id, as destroyed entities will be cached and reused!
  */
 abstract Entity(Int) from Int to Int {
 
-
     public static inline var INVALID:Entity = Workflow.INVALID_ID;
 
-
     /**
-     * Creates a new Entity instance  
+     * Creates a new Entity instance
      * @param immediate immediately adds this entity to the workflow if `true`, otherwise `activate()` call is required
      */
     public inline function new(immediate = true) {
         this = Workflow.id(immediate);
     }
 
-
     /**
-     * Adds this entity to the workflow, so it can be collected by views  
+     * Adds this entity to the workflow, so it can be collected by views
      */
     public inline function activate() {
         Workflow.add(this);
     }
 
     /**
-     * Removes this entity from the workflow (and also from all views), but saves all associated components.  
+     * Removes this entity from the workflow (and also from all views), but saves all associated components.
      * Entity can be added to the workflow again by `activate()` call
      */
     public inline function deactivate() {
@@ -47,7 +43,7 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Returns `true` if this entity is added to the workflow, otherwise returns `false`  
+     * Returns `true` if this entity is added to the workflow, otherwise returns `false`
      * @return Bool
      */
     public inline function isActive():Bool {
@@ -55,7 +51,7 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Returns `true` if this entity has not been destroyed and therefore can be used safely  
+     * Returns `true` if this entity has not been destroyed and therefore can be used safely
      * @return Bool
      */
     public inline function isValid():Bool {
@@ -63,7 +59,7 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Returns the status of this entity: Active, Inactive, Cached or Invalid. Method is used mostly for debug purposes  
+     * Returns the status of this entity: Active, Inactive, Cached or Invalid. Method is used mostly for debug purposes
      * @return Status
      */
     public inline function status():Status {
@@ -71,7 +67,7 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Removes all of associated to this entity components.  
+     * Removes all of associated to this entity components.
      * __Note__ that this entity will be still exists after call this method (just without any associated components). 
      * If entity is not required anymore - `destroy()` should be called 
      */
@@ -81,7 +77,7 @@ abstract Entity(Int) from Int to Int {
 
     /**
      * Removes this entity from the workflow with removing all associated components. 
-     * The `Int` id will be cached and then will be used again in new created entities.  
+     * The `Int` id will be cached and then will be used again in new created entities.
      * __Note__ that using this entity after call this method is incorrect!
      */
     public inline function destroy() {
@@ -89,16 +85,15 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Returns list of all associated to this entity components.  
+     * Returns list of all associated to this entity components.
      * @return String
      */
     public inline function print():String {
         return Workflow.printAllComponentsOf(this);
     }
 
-
     /**
-     * Adds a specified components to this entity.  
+     * Adds a specified components to this entity.
      * If a component with the same type is already added - it will be replaced 
      * @param components comma separated list of components of `Any` type
      * @return `Entity`
@@ -108,7 +103,7 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Removes a component from this entity with specified type  
+     * Removes a component from this entity with specified type
      * @param types comma separated `Class<Any>` types of components that should be removed
      * @return `Entity`
      */
@@ -117,7 +112,7 @@ abstract Entity(Int) from Int to Int {
     }
 
     /**
-     * Returns a component of this entity of specified type.  
+     * Returns a component of this entity of specified type.
      * If a component with specified type is not added to this entity, `null` will be returned 
      * @param type `Class<T:Any>` type of component
      * @return `T:Any` component instance
@@ -134,8 +129,6 @@ abstract Entity(Int) from Int to Int {
     macro public function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
         return EntityTools.exists(self, type.parseComplexType());
     }
-
-
 }
 
 @:enum abstract Status(Int) {

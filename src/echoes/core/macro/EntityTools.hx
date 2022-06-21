@@ -19,10 +19,8 @@ using Lambda;
  *    is convenient for macros.
  */
 class EntityTools {
-
-
     /**
-     * Adds a specified components to this entity.  
+     * Adds a specified components to this entity.
      * If a component with the same type is already added - it will be replaced 
      * @param components comma separated list of components of `Any` type
      * @return `Entity`
@@ -71,7 +69,7 @@ class EntityTools {
     }
 
     /**
-     * Removes a component from this entity with specified type  
+     * Removes a component from this entity with specified type
      * @param types `ComplexType` types of components that should be removed
      * @return `Entity`
      */
@@ -107,7 +105,7 @@ class EntityTools {
     }
 
     /**
-     * Returns a component of this entity of specified type.  
+     * Returns a component of this entity of specified type.
      * If a component with specified type is not added to this entity, `null` will be returned 
      * @param type `Class<T:Any>` type of component
      * @return `T:Any` component instance
@@ -132,7 +130,5 @@ class EntityTools {
 
         return ret;
 	}
-
-
 }
 #end

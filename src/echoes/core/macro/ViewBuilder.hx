@@ -14,8 +14,6 @@ using haxe.macro.Context;
 using Lambda;
 
 class ViewBuilder {
-
-
     static var viewIndex = -1;
     static var viewTypeCache = new Map<String, haxe.macro.Type>();
 
@@ -23,7 +21,6 @@ class ViewBuilder {
     public static var viewNames = new Array<String>();
 
     public static var viewCache = new Map<String, { cls:ComplexType, components:Array<{ cls:ComplexType }> }>();
-
 
     public static function getView(components:Array<{ cls:ComplexType }>):ComplexType {
         return createViewType(components).toComplexType();
@@ -37,11 +34,9 @@ class ViewBuilder {
         return 'ViewOf_' + name;
     }
 
-
     public static function build() {
         return createViewType(parseComponents(Context.getLocalType()));
     }
-
 
     static function parseComponents(type:haxe.macro.Type) {
         return switch(type) {
@@ -77,7 +72,6 @@ class ViewBuilder {
         }
     }
 
-
     public static function createViewType(components:Array<{ cls:ComplexType }>) {
         var viewClsName = getViewName(components);
         var viewType = viewTypeCache.get(viewClsName);
@@ -108,7 +102,6 @@ class ViewBuilder {
 
                 // type def
                 var def:TypeDefinition = macro class $viewClsName extends echoes.core.AbstractView {
-
                     static var instance = new $viewTypePath();
 
                     @:keep inline public static function inst():$viewComplexType {
@@ -186,7 +179,5 @@ class ViewBuilder {
 
         return viewType;
     }
-
-
 }
 #end

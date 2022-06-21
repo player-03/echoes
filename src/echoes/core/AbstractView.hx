@@ -1,19 +1,12 @@
 package echoes.core;
 
-/**
- * ...
- * @author https://github.com/deepcake
- */
 class AbstractView {
-
-
     /** List of matched entities */
     public var entities(default, null) = new RestrictedLinkedList<Entity>();
 
     var collected = new Array<Bool>();
 
     var activations = 0;
-
 
     public function activate() {
         activations++;
@@ -39,18 +32,15 @@ class AbstractView {
         return activations > 0;
     }
 
-
     public inline function size():Int {
         return entities.length;
     }
-
 
     function isMatched(id:Int):Bool {
         // each required component exists in component container with this id
         // macro generated
         return false;
     }
-
 
     function dispatchAddedCallback(id:Int) {
         // macro generated
@@ -59,7 +49,6 @@ class AbstractView {
     function dispatchRemovedCallback(id:Int) {
         // macro generated
     }
-
 
     @:allow(echoes.Workflow) function addIfMatched(id:Int) {
         if (isMatched(id)) {
@@ -79,7 +68,6 @@ class AbstractView {
         }
     }
 
-
     @:allow(echoes.Workflow) function reset() {
         activations = 0;
         Workflow.views.remove(this);
@@ -89,10 +77,7 @@ class AbstractView {
         collected.splice(0, collected.length);
     }
 
-
     public function toString():String {
         return 'AbstractView';
     }
-
-
 }

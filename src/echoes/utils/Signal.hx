@@ -4,16 +4,10 @@ import echoes.utils.LinkedList.LinkedListIterator;
 import haxe.macro.Expr;
 #end
 
-/**
- * ...
- * @author https://github.com/deepcake
- */
 @:forward(length)
 abstract Signal<T>(LinkedList<T>) {
 
-
     public inline function new() this = new LinkedList<T>();
-
 
     public inline function add(listener:T) {
         this.add(listener);
@@ -35,11 +29,9 @@ abstract Signal<T>(LinkedList<T>) {
         return this.length;
     }
 
-
     public inline function iterator():LinkedListIterator<T> {
         return this.iterator();
     }
-
 
     macro public function dispatch(self:Expr, args:Array<Expr>) {
         return macro {
@@ -48,6 +40,4 @@ abstract Signal<T>(LinkedList<T>) {
             }
         }
     }
-
-
 }

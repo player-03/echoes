@@ -8,17 +8,10 @@ import haxe.macro.Context;
 
 using Lambda;
 
-/**
- * ...
- * @author https://github.com/deepcake
- */
 @:final
 @:dce
 class Report {
-
-
     static var reportRegistered = false;
-
 
     public static function gen() {
         #if echoes_report
@@ -42,7 +35,5 @@ class Report {
         }
         #end
     }
-
-
 }
 #end

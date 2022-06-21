@@ -160,7 +160,6 @@ class ViewTest extends buddy.BuddySuite {
                 });
             });
 
-
             describe("Test Signals", {
                 var e:Entity;
                 var onad = function(id:Entity, a:A, v:V) log += '+$v';
@@ -238,7 +237,6 @@ class ViewTest extends buddy.BuddySuite {
                     });
                 });
             });
-
 
             describe("Test Iterating", {
                 var onad = function(id:Entity, a:A, v:V) log += '+$v';
@@ -377,7 +375,6 @@ class ViewTest extends buddy.BuddySuite {
                 });
             });
 
-
             describe("Test Activate/Deactivate", {
                 var onad = function(id:Entity, a:A, v:V) log += '+$v';
                 var onrm = function(id:Entity, a:A, v:V) log += '-$v';
@@ -429,7 +426,6 @@ class ViewTest extends buddy.BuddySuite {
                     });
                 });
             });
-
 
             describe("Test Sorting", {
                 var vprinter = function(e:Entity) return '${ e.get(V) }';
@@ -531,7 +527,6 @@ class ViewTest extends buddy.BuddySuite {
 }
 
 class MatchingViewSystem extends echoes.System {
-
     public var a:View<A>;
     public var b:View<B>;
 
@@ -545,7 +540,6 @@ class MatchingViewSystem extends echoes.System {
 }
 
 class IteratingViewSystem extends echoes.System {
-
     public var av:View<A, V>;
 
     public var f:Entity->A->V->Void = null;
@@ -555,7 +549,6 @@ class IteratingViewSystem extends echoes.System {
             f(id, a, v);
         }
     }
-
 }
 
 class A {

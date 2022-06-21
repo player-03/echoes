@@ -9,8 +9,6 @@ using haxe.macro.ComplexTypeTools;
 using Lambda;
 
 class ComponentBuilder {
-
-
     static var componentIndex = -1;
 
     // componentContainerTypeName / componentContainerType
@@ -18,7 +16,6 @@ class ComponentBuilder {
 
     public static var componentIds = new Map<String, Int>();
     public static var componentNames = new Array<String>();
-
 
     public static function createComponentContainerType(componentComplexType:ComplexType) {
         var componentTypeName = componentComplexType.followName();
@@ -37,7 +34,6 @@ class ComponentBuilder {
                 var componentContainerComplexType = TPath(componentContainerTypePath);
 
                 var def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
-
                     static var instance = new $componentContainerTypePath();
 
                     @:keep public static inline function inst():$componentContainerComplexType {
@@ -94,7 +90,6 @@ class ComponentBuilder {
         return componentContainerType;
     }
 
-
     public static function getComponentContainer(componentComplexType:ComplexType):ComplexType {
         return createComponentContainerType(componentComplexType).toComplexType();
     }
@@ -103,6 +98,5 @@ class ComponentBuilder {
         getComponentContainer(componentComplexType);
         return componentIds[componentComplexType.followName()];
     }
-
 }
 #end
