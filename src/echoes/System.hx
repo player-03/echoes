@@ -44,8 +44,8 @@ class System implements echoes.core.ISystem {
 		return activated;
 	}
 	
-	public function info(indent = '    ', level = 0):String {
-		var span = StringTools.rpad('', indent, indent.length * level);
+	public function info(indent = "    ", level = 0):String {
+		var span = StringTools.rpad("", indent, indent.length * level);
 		
 		#if echoes_profiling
 		return '$span$this : $__updateTime__ ms';
@@ -64,6 +64,6 @@ class System implements echoes.core.ISystem {
 	 */
 	public function ondeactivate() { }
 	
-	public function toString():String return 'System';
+	public function toString():String return "System";
 	
 }

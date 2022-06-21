@@ -26,7 +26,7 @@ class SystemList implements ISystem {
 	
 	var timestep:Timestep;
 	
-	public function new(name = 'list', ?timestep:Timestep) {
+	public function new(name = "list", ?timestep:Timestep) {
 		this.name = name;
 		this.timestep = timestep != null ? timestep : new Timestep();
 	}
@@ -70,8 +70,8 @@ class SystemList implements ISystem {
 		return activated;
 	}
 	
-	public function info(indent = '    ', level = 0):String {
-		var span = StringTools.rpad('', indent, indent.length * level);
+	public function info(indent = "    ", level = 0):String {
+		var span = StringTools.rpad("", indent, indent.length * level);
 		
 		var ret = '$span$name';
 		
@@ -112,6 +112,6 @@ class SystemList implements ISystem {
 		return systems.exists(s);
 	}
 	
-	public function toString():String return 'SystemList';
+	public function toString():String return "SystemList";
 	
 }

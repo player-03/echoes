@@ -22,12 +22,12 @@ class Report {
 					return array;
 				}
 				
-				var ret = 'ECHO BUILD REPORT :';
+				var ret = "ECHO BUILD REPORT :";
 				
 				ret += '\n    COMPONENTS [${componentNames.length}] :';
-				ret += '\n        ' + sortedlist(componentNames.mapi(function(i, k) return '$k #${ componentIds.get(k) }').array()).join('\n        ');
+				ret += "\n        " + sortedlist(componentNames.mapi(function(i, k) return '$k #${ componentIds.get(k) }').array()).join("\n        ");
 				ret += '\n    VIEWS [${viewNames.length}] :';
-				ret += '\n        ' + sortedlist(viewNames.mapi(function(i, k) return '$k #${ viewIds.get(k) }').array()).join('\n        ');
+				ret += "\n        " + sortedlist(viewNames.mapi(function(i, k) return '$k #${ viewIds.get(k) }').array()).join("\n        ");
 				trace('\n$ret');
 				
 			});

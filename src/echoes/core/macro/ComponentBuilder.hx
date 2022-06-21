@@ -19,7 +19,7 @@ class ComponentBuilder {
 	
 	public static function createComponentContainerType(componentComplexType:ComplexType) {
 		var componentTypeName = componentComplexType.followName();
-		var componentContainerTypeName = 'ContainerOf' + componentComplexType.typeName();
+		var componentContainerTypeName = "ContainerOf" + componentComplexType.typeName();
 		var componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
 		
 		if (componentContainerType == null) {
@@ -69,7 +69,7 @@ class ComponentBuilder {
 					}
 					
 					public inline function print(id:Int):String {
-						return $v{componentTypeName} + '=' + Std.string(storage.get(id));
+						return $v{componentTypeName} + "=" + Std.string(storage.get(id));
 					}
 				}
 				

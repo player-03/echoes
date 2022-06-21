@@ -111,7 +111,7 @@ class MacroTools {
 	}
 	
 	static function capitalize(s:String) {
-		return s.substr(0, 1).toUpperCase() + (s.length > 1 ? s.substr(1).toLowerCase() : '');
+		return s.substr(0, 1).toUpperCase() + (s.length > 1 ? s.substr(1).toLowerCase() : "");
 	}
 	
 	static function typeParamName(p:TypeParam, f:ComplexType->String):String {
@@ -134,29 +134,29 @@ class MacroTools {
 		return switch (followComplexType(ct)) {
 			case TFunction(args, ret): {
 			
-				(escape ? 'F' : '(') + 
-				args.map(typeName.bind(_, shortify, escape)).join(escape ? '_' : '->') + (escape ? '_R' : '->') + typeName(ret, shortify, escape) + 
-				(escape ? '' : ')');
+				(escape ? "F" : "(") + 
+				args.map(typeName.bind(_, shortify, escape)).join(escape ? "_" : "->") + (escape ? "_R" : "->") + typeName(ret, shortify, escape) + 
+				(escape ? "" : ")");
 				
 			}
 			case TParent(t): {
 			
-				(escape ? 'P' : '(') + typeName(t, shortify, escape) + (escape ? '' : ')');
+				(escape ? "P" : "(") + typeName(t, shortify, escape) + (escape ? "" : ")");
 				
 			}
 			case TPath(t): {
-				var ret = '';
+				var ret = "";
 				
 				// package
-				ret += shortify ? '' : (t.pack.length > 0 ? t.pack.map(capitalize).join('') : '');
+				ret += shortify ? "" : (t.pack.length > 0 ? t.pack.map(capitalize).join("") : "");
 				// class name
-				ret += shortify ? (t.sub != null ? t.sub : t.name) : (t.name + (t.sub != null ? t.sub : ''));
+				ret += shortify ? (t.sub != null ? t.sub : t.name) : (t.name + (t.sub != null ? t.sub : ""));
 				
 				// type params
 				if (t.params != null && t.params.length > 0) {
 				
 					var tpName = typeParamName.bind(_, typeName.bind(_, shortify, escape));
-					ret += (escape ? 'Of' : '<') + t.params.map(tpName).join(escape ? '_' : ',') + (escape ? '' : '>');
+					ret += (escape ? "Of" : "<") + t.params.map(tpName).join(escape ? "_" : ",") + (escape ? "" : ">");
 					
 				}
 				

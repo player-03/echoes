@@ -27,11 +27,11 @@ class ViewBuilder {
 	}
 	
 	public static function getViewName(components:Array<{ cls:ComplexType }>) {
-		var name:String = components.map(function(c) return c.cls).joinFullName('_');
+		var name:String = components.map(function(c) return c.cls).joinFullName("_");
 		if(name.length > 80) {
 			name = Md5.encode(name);
 		}
-		return 'ViewOf_' + name;
+		return "ViewOf_" + name;
 	}
 	
 	public static function build() {
@@ -89,7 +89,7 @@ class ViewBuilder {
 				
 				// signals
 				var signalTypeParamComplexType = TFunction([ macro:echoes.Entity ].concat(components.map(function(c) return c.cls)), macro:Void);
-				var signalTypePath = tpath(['echoes', 'utils'], 'Signal', [ TPType(signalTypeParamComplexType) ]);
+				var signalTypePath = tpath(["echoes", "utils"], "Signal", [ TPType(signalTypeParamComplexType) ]);
 				
 				// signal args for dispatch() call
 				var signalArgs = [ macro id ].concat(components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().get(id)));
@@ -145,7 +145,7 @@ class ViewBuilder {
 							f($a{ funcCallArgs });
 						}
 					}
-					def.fields.push(ffun([APublic, AInline], 'iter', [arg('f', funcComplexType)], macro:Void, macro $body, Context.currentPos()));
+					def.fields.push(ffun([APublic, AInline], "iter", [arg("f", funcComplexType)], macro:Void, macro $body, Context.currentPos()));
 				}
 				
 				// isMatched
@@ -153,14 +153,14 @@ class ViewBuilder {
 					var checks = components.map(function(c) return macro $i{ getComponentContainer(c.cls).followName() }.inst().exists(id));
 					var cond = checks.slice(1).fold(function(check1, check2) return macro $check1 && $check2, checks[0]);
 					var body = macro return $cond;
-					def.fields.push(ffun([AOverride], 'isMatched', [arg('id', macro:Int)], macro:Bool, body, Context.currentPos()));
+					def.fields.push(ffun([AOverride], "isMatched", [arg("id", macro:Int)], macro:Bool, body, Context.currentPos()));
 				}
 				
 				// toString
 				{
-					var componentNames = components.map(function(c) return c.cls.typeValidShortName()).join(', ');
+					var componentNames = components.map(function(c) return c.cls.typeValidShortName()).join(", ");
 					var body = macro return $v{ componentNames };
-					def.fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, body, Context.currentPos()));
+					def.fields.push(ffun([AOverride, APublic], "toString", null, macro:String, body, Context.currentPos()));
 				}
 				
 				Context.defineType(def);

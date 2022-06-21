@@ -1,4 +1,5 @@
 package echoes.utils;
+
 import echoes.utils.LinkedList.LinkedListIterator;
 #if macro
 import haxe.macro.Expr;

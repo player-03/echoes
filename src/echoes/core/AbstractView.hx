@@ -78,6 +78,6 @@ class AbstractView {
 	}
 	
 	public function toString():String {
-		return 'AbstractView';
+		return "AbstractView";
 	}
 }

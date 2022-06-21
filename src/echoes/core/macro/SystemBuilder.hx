@@ -18,13 +18,13 @@ using StringTools;
 using Lambda;
 
 class SystemBuilder {
-	static var SKIP_META = [ 'skip' ];
+	static var SKIP_META = [ "skip" ];
 	
-	static var PRINT_META = [ 'print' ];
+	static var PRINT_META = [ "print" ];
 	
-	static var AD_META = [ 'added', 'ad', 'a' ];
-	static var RM_META = [ 'removed', 'rm', 'r' ];
-	static var UPD_META = [ 'update', 'up', 'u' ];
+	static var AD_META = [ "added", "ad", "a" ];
+	static var RM_META = [ "removed", "rm", "r" ];
+	static var UPD_META = [ "update", "up", "u" ];
 	
 	public static var systemIndex = -1;
 	public static var systemIds = new Map<String, Int>();
@@ -54,12 +54,12 @@ class SystemBuilder {
 			switch (field.kind) {
 				case FFun(func): 
 					switch (field.name) {
-						case '__update__':
-							Context.error('Do not override the `__update__` function! Use `@update` meta instead! More info at README example', field.pos);
-						case '__activate__':
-							Context.error('Do not override the `__activate__` function! `onactivate` can be overrided instead!', field.pos);
-						case '__deactivate__':
-							Context.error('Do not override the `__deactivate__` function! `ondeactivate` can be overrided instead!', field.pos);
+						case "__update__":
+							Context.error("Do not override the `__update__` function! Use `@update` meta instead! More info at README example", field.pos);
+						case "__activate__":
+							Context.error("Do not override the `__activate__` function! `onactivate` can be overrided instead!", field.pos);
+						case "__deactivate__":
+							Context.error("Do not override the `__deactivate__` function! `ondeactivate` can be overrided instead!", field.pos);
 						default:
 					}
 				default:
@@ -174,7 +174,7 @@ class SystemBuilder {
 						
 						var viewClsName = getViewName(components);
 						var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
-						var viewArgs = [ arg('__entity__', macro:echoes.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
+						var viewArgs = [ arg("__entity__", macro:echoes.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
 						
 						{ name: funcName, args: funcCallArgs, view: view, viewargs: viewArgs, type: VIEW_ITER };
 						
@@ -197,8 +197,8 @@ class SystemBuilder {
 		}
 		
 		// define new() if not exists (just for comfort)
-		if (!fields.exists(function(f) return f.name == 'new')) {
-			fields.push(ffun([APublic], 'new', null, null, null, Context.currentPos()));
+		if (!fields.exists(function(f) return f.name == "new")) {
+			fields.push(ffun([APublic], "new", null, null, null, Context.currentPos()));
 		}
 		
 		var ufuncs = fields.filter(notSkipped).filter(containsMeta.bind(_, UPD_META)).map(procMetaFunc).filter(notNull);
@@ -325,15 +325,15 @@ class SystemBuilder {
 		
 		if (uexprs.length > 0) {
 		
-			fields.push(ffun([APublic, AOverride], '__update__', [arg('__dt__', macro:Float)], null, macro $b{ uexprs }, Context.currentPos()));
+			fields.push(ffun([APublic, AOverride], "__update__", [arg("__dt__", macro:Float)], null, macro $b{ uexprs }, Context.currentPos()));
 			
 		}
 		
-		fields.push(ffun([APublic, AOverride], '__activate__', [], null, macro { $aexpr; }, Context.currentPos()));
-		fields.push(ffun([APublic, AOverride], '__deactivate__', [], null, macro { $dexpr; }, Context.currentPos()));
+		fields.push(ffun([APublic, AOverride], "__activate__", [], null, macro { $aexpr; }, Context.currentPos()));
+		fields.push(ffun([APublic, AOverride], "__deactivate__", [], null, macro { $dexpr; }, Context.currentPos()));
 		
 		// toString
-		fields.push(ffun([AOverride, APublic], 'toString', null, macro:String, macro return $v{ ct.followName() }, Context.currentPos()));
+		fields.push(ffun([AOverride, APublic], "toString", null, macro:String, macro return $v{ ct.followName() }, Context.currentPos()));
 		
 		var clsType = Context.getLocalClass().get();
 		
