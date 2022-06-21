@@ -370,6 +370,6 @@ class SystemX extends echoes.System {
 }
 
 class SystemY extends echoes.System {
-	@u inline function update(y:Y) { }
-	@u inline function updatexy(x:X, y:Y, dt:Float) { }
+	@:u inline function update(y:Y) { }
+	@:u inline function updatexy(x:X, y:Y, dt:Float) { }
 }

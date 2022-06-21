@@ -102,19 +102,19 @@ class TypeViewSystem extends echoes.System {
 	
 	public var restReversed:View<VA, VB>;
 	
-	@u function ab(a:VA, b:VB) { }
+	@:u function ab(a:VA, b:VB) { }
 	
-	@u function ba(b:VB, a:VA) { }
+	@:u function ba(b:VB, a:VA) { }
 	
-	@u function cd(c:VB, d:VA) { }
+	@:u function cd(c:VB, d:VA) { }
 	
-	@u function fab(f:Float, a:VA, b:VB) { }
+	@:u function fab(f:Float, a:VA, b:VB) { }
 	
-	@u function eab(e:Entity, a:VA, b:VB) { }
+	@:u function eab(e:Entity, a:VA, b:VB) { }
 	
-	@u function iab(i:Int, a:VA, b:VB) { }
+	@:u function iab(i:Int, a:VA, b:VB) { }
 	
-	@u function feab(f:Float, e:Entity, a:VA, b:VB) { }
+	@:u function feab(f:Float, e:Entity, a:VA, b:VB) { }
 }
 
 class FuncViewSystem extends echoes.System {
@@ -122,11 +122,11 @@ class FuncViewSystem extends echoes.System {
 	
 	public var fvReversed:View<VA->VB, VA->VB->Void>;
 	
-	@u function abv_ab(abv:VA->VB->Void, ab:VA->VB) { }
+	@:u function abv_ab(abv:VA->VB->Void, ab:VA->VB) { }
 	
-	@u function ab_abv(ab:VA->VB, abv:VA->VB->Void) { }
+	@:u function ab_abv(ab:VA->VB, abv:VA->VB->Void) { }
 	
-	@u function dt_e_abv_ab(f:Float, e:Entity, abv:VA->VB->Void, ab:VA->VB) { }
+	@:u function dt_e_abv_ab(f:Float, e:Entity, abv:VA->VB->Void, ab:VA->VB) { }
 }
 
 class StandaloneTypeViewSystem extends echoes.System {

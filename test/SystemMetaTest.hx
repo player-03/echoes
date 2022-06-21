@@ -12,7 +12,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 				BuildResult.value = '';
 			});
 			
-			describe("When create System (meta @update)", {
+			describe("When create System (meta @:update)", {
 				var entities:Array<Entity>;
 				var s1 = new SystemUpdateMeta();
 				
@@ -100,7 +100,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 				});
 			});
 			
-			describe("When create System (meta @added/@removed)", {
+			describe("When create System (meta @:added/@:removed)", {
 				var entities:Array<Entity>;
 				var s1 = new SystemAddRemMeta();
 				
@@ -281,19 +281,19 @@ abstract CompC(String) {
 }
 
 class SystemUpdateMeta extends echoes.System {
-	@u function empty0() BuildResult.value += '[';
-	@u function _f____(f:Float) BuildResult.value += '$f';
-	@u function empty1() BuildResult.value += '_';
-	@u function ___a__(a:CompA) BuildResult.value += '$a';
-	@u function empty2() BuildResult.value += '_';
-	@u function _f_a_(f:Float, a:CompA) BuildResult.value += '${f}${a}';
-	@u function empty3() BuildResult.value += '_';
-	@u function _fe___(f:Float, e:Entity) BuildResult.value += '${f}e';
-	@u function empty4() BuildResult.value += '_';
-	@u function _fea__(f:Float, e:Entity, a:CompA) BuildResult.value += '${f}e${a}';
-	@u function _fe_b_(f:Float, e:Entity, b:CompB) BuildResult.value += '${f}e${b}';
-	@u function _feab_(f:Float, e:Entity, a:CompA, b:CompB) BuildResult.value += '${f}e${a}${b}';
-	@u function empty5() BuildResult.value += ']';
+	@:u function empty0() BuildResult.value += '[';
+	@:u function _f____(f:Float) BuildResult.value += '$f';
+	@:u function empty1() BuildResult.value += '_';
+	@:u function ___a__(a:CompA) BuildResult.value += '$a';
+	@:u function empty2() BuildResult.value += '_';
+	@:u function _f_a_(f:Float, a:CompA) BuildResult.value += '${f}${a}';
+	@:u function empty3() BuildResult.value += '_';
+	@:u function _fe___(f:Float, e:Entity) BuildResult.value += '${f}e';
+	@:u function empty4() BuildResult.value += '_';
+	@:u function _fea__(f:Float, e:Entity, a:CompA) BuildResult.value += '${f}e${a}';
+	@:u function _fe_b_(f:Float, e:Entity, b:CompB) BuildResult.value += '${f}e${b}';
+	@:u function _feab_(f:Float, e:Entity, a:CompA, b:CompB) BuildResult.value += '${f}e${a}${b}';
+	@:u function empty5() BuildResult.value += ']';
 	override function onactivate() {
 		BuildResult.value += '^';
 	}
@@ -303,17 +303,17 @@ class SystemUpdateMeta extends echoes.System {
 }
 
 class SystemAddRemMeta extends echoes.System {
-	@a function ad_a1(a:CompA) BuildResult.value += '+${a}';
-	@a function ad_a2(a:CompA) BuildResult.value += '>${a}';
-	@r function rm_a2(a:CompA) BuildResult.value += '<${a}';
-	@r function rm_a1(a:CompA) BuildResult.value += '-${a}';
-	@a function ad_ae(a:CompA, e:Entity) BuildResult.value += '+${a}e';
-	@r function rm_ae(a:CompA, e:Entity) BuildResult.value += '-${a}e';
+	@:a function ad_a1(a:CompA) BuildResult.value += '+${a}';
+	@:a function ad_a2(a:CompA) BuildResult.value += '>${a}';
+	@:r function rm_a2(a:CompA) BuildResult.value += '<${a}';
+	@:r function rm_a1(a:CompA) BuildResult.value += '-${a}';
+	@:a function ad_ae(a:CompA, e:Entity) BuildResult.value += '+${a}e';
+	@:r function rm_ae(a:CompA, e:Entity) BuildResult.value += '-${a}e';
 }
 
 class SystemAddRemMeta2 extends echoes.System {
-	@a function ad_a(a:CompA) BuildResult.value += '!';
-	@r function rm_a(a:CompA) BuildResult.value += '#';
+	@:a function ad_a(a:CompA) BuildResult.value += '!';
+	@:r function rm_a(a:CompA) BuildResult.value += '#';
 }
 
 typedef ViewCompA = View<CompA>;

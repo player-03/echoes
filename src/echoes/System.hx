@@ -3,8 +3,8 @@ package echoes;
 /**
  * You must extend this class to make your own system.
  * 
- * Functions with `@update` (or `@up`, or `@u`) meta are called for each entity that contains all the defined components.
- * So, a function like `@u function f(a:A, b:B, entity:Entity) { }` does two things: 
+ * Functions with `@:update` (or `@:up`, or `@:u`) meta are called for each entity that contains all the defined components.
+ * So, a function like `@:u function f(a:A, b:B, entity:Entity) { }` does two things: 
  * 
  * - Defines and initializes a `View<A, B>` (if the `View<A, B>` has not been previously defined)
  * - Creates a loop in the system update method
@@ -15,8 +15,8 @@ package echoes;
  *    }
  *    ```
  * 
- * Functions with `@added`, `@ad`, `@a` meta become callbacks that will be called on each entity to be assembled by the view.
- * Functions with `@removed`, `@rm`, `@r` does the same but when entity is removed.
+ * Functions with `@:added`, `@:ad`, `@:a` meta become callbacks that will be called on each entity to be assembled by the view.
+ * Functions with `@:removed`, `@:rm`, `@:r` does the same but when entity is removed.
  */
 #if !macro
 @:autoBuild(echoes.core.macro.SystemBuilder.build())

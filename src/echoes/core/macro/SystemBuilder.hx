@@ -33,10 +33,14 @@ class SystemBuilder {
 		return !containsMeta(field, SKIP_META);
 	}
 	
-	private static function containsMeta(field:Field, metas:Array<String>) {
+	/**
+	 * Whether the field has metadata matching _any_ of the given `searchTerms`.
+	 * @param searchTerms A list of metadata names, without colons.
+	 */
+	private static function containsMeta(field:Field, searchTerms:Array<String>) {
 		return field.meta
-			.exists(function(me) {
-				return metas.exists(function(name) return me.name == name);
+			.exists(function(meta) {
+				return searchTerms.exists(function(searchTerm) return meta.name == searchTerm || meta.name == ":" + searchTerm);
 			});
 	}
 	
@@ -55,7 +59,7 @@ class SystemBuilder {
 				case FFun(func): 
 					switch(field.name) {
 						case "__update__":
-							Context.error("Do not override the `__update__` function! Use `@update` meta instead! More info at README example", field.pos);
+							Context.error("Do not override the `__update__` function! Use `@:update` meta instead! More info at README example", field.pos);
 						case "__activate__":
 							Context.error("Do not override the `__activate__` function! `onactivate` can be overrided instead!", field.pos);
 						case "__deactivate__":
@@ -130,7 +134,7 @@ class SystemBuilder {
 					default:
 				}
 			} );
-			
+		
 		// find and init meta defined views
 		fields
 			.filter(notSkipped)
@@ -156,7 +160,7 @@ class SystemBuilder {
 					default:
 				}
 			} );
-			
+		
 		function procMetaFunc(field:Field) {
 			switch(field.kind) {
 				case FFun(func):

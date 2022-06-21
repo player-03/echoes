@@ -60,20 +60,20 @@ abstract Name(String) from String to String {
 }
 
 class Movement extends echoes.System {
-  // @update-functions will be called for every entity that contains all the defined components;
+  // @:update-functions will be called for every entity that contains all the defined components;
   // All args are interpreted as components, except Float (reserved for delta time) and Int/Entity;
-  @update function updateBody(pos:Position, vel:Velocity, dt:Float, entity:Entity) {
+  @:update function updateBody(pos:Position, vel:Velocity, dt:Float, entity:Entity) {
     pos.x += vel.x * dt;
     pos.y += vel.y * dt;
   }
-  // If @update-functions are defined without components, 
+  // If @:update-functions are defined without components, 
   // they are called only once per system's update;
-  @update function traceHello(dt:Float) {
+  @:update function traceHello(dt:Float) {
     trace('Hello!');
   }
-  // The execution order of @update-functions is the same as the definition order, 
+  // The execution order of @:update-functions is the same as the definition order, 
   // so you can perform some preparations before or after iterating over entities;
-  @update function traceWorld() {
+  @:update function traceWorld() {
     trace('World!');
   }
 }
@@ -84,7 +84,7 @@ class NamePrinter extends echoes.System {
   // for additional features such as counting and sorting entities;
   var named:View<Name>;
 
-  @update function sortAndPrint() {
+  @:update function sortAndPrint() {
     named.entities.sort((e1, e2) -> e1.get(Name) < e2.get(Name) ? -1 : 1);
     // using Lambda
     named.entities.iter(e -> trace(e.get(Name)));
@@ -93,23 +93,23 @@ class NamePrinter extends echoes.System {
 
 class Render extends echoes.System {
   var scene:DisplayObjectContainer;
-  // There are @a, @u and @r shortcuts for @added, @update and @removed metas;
-  // @added/@removed-functions are callbacks that are called when an entity is added/removed from the view;
-  @a function onEntityWithSpriteAndPositionAdded(spr:Sprite, pos:Position) {
+  // There are @:a, @:u and @:r shortcuts for @:added, @:update and @:removed metas;
+  // @:added/@:removed-functions are callbacks that are called when an entity is added/removed from the view;
+  @:a function onEntityWithSpriteAndPositionAdded(spr:Sprite, pos:Position) {
     scene.addChild(spr);
   }
   // Even if callback was triggered by destroying the entity, 
-  // @removed-function will be called before this happens, 
+  // @:removed-function will be called before this happens, 
   // so access to the component will be still exists;
-  @r function onEntityWithSpriteAndPositionRemoved(spr:Sprite, pos:Position, e:Entity) {
+  @:r function onEntityWithSpriteAndPositionRemoved(spr:Sprite, pos:Position, e:Entity) {
     scene.removeChild(spr); // spr is still not a null
     trace('Oh My God! They removed ${ e.exists(Name) ? e.get(Name) : "Unknown Sprite" }!');
   }
-  @u inline function updateSpritePosition(spr:Sprite, pos:Position) {
+  @:u inline function updateSpritePosition(spr:Sprite, pos:Position) {
     spr.x = pos.x;
     spr.y = pos.y;
   }
-  @u inline function afterSpritePositionsUpdated() {
+  @:u inline function afterSpritePositionsUpdated() {
     // rendering, etc
   }
 }

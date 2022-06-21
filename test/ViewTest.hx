@@ -543,7 +543,7 @@ class IteratingViewSystem extends echoes.System {
 	
 	public var f:Entity->A->V->Void = null;
 	
-	@u function update(id:Entity, a:A, v:V) {
+	@:u function update(id:Entity, a:A, v:V) {
 		if(f != null) {
 			f(id, a, v);
 		}
