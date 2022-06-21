@@ -340,7 +340,7 @@ class SystemBuilder {
 					}
 					trace(new Printer().printTypeDefinition(td));
 				default:
-					Context.warning("Fail @print", clsType.pos);
+					Context.warning("Fail @:print", clsType.pos);
 			}
 		}
 		
