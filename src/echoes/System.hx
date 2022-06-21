@@ -22,48 +22,48 @@ package echoes;
 @:autoBuild(echoes.core.macro.SystemBuilder.build())
 #end
 class System implements echoes.core.ISystem {
-    #if echoes_profiling
-    var __updateTime__ = .0;
-    #end
-
-    var activated = false;
-
-    @:noCompletion public function __activate__() {
-        onactivate();
-    }
-
-    @:noCompletion public function __deactivate__() {
-        ondeactivate();
-    }
-
-    @:noCompletion public function __update__(dt:Float) {
-        // macro
-    }
-
-    public function isActive():Bool {
-        return activated;
-    }
-
-    public function info(indent = '    ', level = 0):String {
-        var span = StringTools.rpad('', indent, indent.length * level);
-
-        #if echoes_profiling
-        return '$span$this : $__updateTime__ ms';
-        #else
-        return '$span$this';
-        #end
-    }
-
-    /**
-     * Calls when system is added to the workflow
-     */
-    public function onactivate() { }
-
-    /**
-     * Calls when system is removed from the workflow
-     */
-    public function ondeactivate() { }
-
-    public function toString():String return 'System';
-
+	#if echoes_profiling
+	var __updateTime__ = .0;
+	#end
+	
+	var activated = false;
+	
+	@:noCompletion public function __activate__() {
+		onactivate();
+	}
+	
+	@:noCompletion public function __deactivate__() {
+		ondeactivate();
+	}
+	
+	@:noCompletion public function __update__(dt:Float) {
+		// macro
+	}
+	
+	public function isActive():Bool {
+		return activated;
+	}
+	
+	public function info(indent = '    ', level = 0):String {
+		var span = StringTools.rpad('', indent, indent.length * level);
+		
+		#if echoes_profiling
+		return '$span$this : $__updateTime__ ms';
+		#else
+		return '$span$this';
+		#end
+	}
+	
+	/**
+	 * Calls when system is added to the workflow
+	 */
+	public function onactivate() { }
+	
+	/**
+	 * Calls when system is removed from the workflow
+	 */
+	public function ondeactivate() { }
+	
+	public function toString():String return 'System';
+	
 }

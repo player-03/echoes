@@ -24,21 +24,21 @@ package echoes.utils;
  */
 class Timestep {
 	var time:Time;
-
+	
 	var nextTimestep:Null<Timestep>;
-
+	
 	/**
 	 * While paused, time cannot be added to a `Timestep`.
 	 * If time was already added, iteration will continue
 	 * as normal.
 	 */
 	public var paused:Bool = false;
-
+	
 	public function new(?nextTimestep:Timestep) {
 		this.nextTimestep = nextTimestep;
 		time = nextTimestep != null ? nextTimestep.time : new Time();
 	}
-
+	
 	public function advance(time:Float):Void {
 		if(!paused) {
 			if(nextTimestep != null) {
@@ -48,7 +48,7 @@ class Timestep {
 			}
 		}
 	}
-
+	
 	public function hasNext():Bool {
 		if(nextTimestep != null) {
 			return nextTimestep.hasNext();
@@ -56,7 +56,7 @@ class Timestep {
 			return time.left > 0;
 		}
 	}
-
+	
 	public function next():Float {
 		if(nextTimestep != null) {
 			return nextTimestep.next();
@@ -70,7 +70,7 @@ class Timestep {
 
 private class Time {
 	public var left:Float = 0;
-
+	
 	public inline function new() {
 	}
 }
@@ -92,16 +92,16 @@ private class Time {
  */
 class FixedTimestep extends Timestep {
 	public var tickLength:Float;
-
+	
 	public function new(tickLength:Float, ?nextTimestep:Timestep) {
 		super(nextTimestep);
 		this.tickLength = tickLength;
 	}
-
+	
 	public override function hasNext():Bool {
 		return super.hasNext() && time.left >= tickLength;
 	}
-
+	
 	public override function next():Float {
 		if(tickLength > 0) {
 			time.left -= tickLength;
@@ -126,12 +126,12 @@ class FixedTimestep extends Timestep {
  */
 class CappedTimestep extends Timestep {
 	public var tickCap:Float;
-
+	
 	public function new(tickCap:Float, ?nextTimestep:Timestep) {
 		super(nextTimestep);
 		this.tickCap = tickCap;
 	}
-
+	
 	public override function advance(time:Float):Void {
 		super.advance(time);
 		if(this.time.left > tickCap) {
@@ -148,12 +148,12 @@ class CappedTimestep extends Timestep {
  */
 class ScaledTimestep extends Timestep {
 	public var scale:Float;
-
+	
 	public function new(scale:Float = 1, ?nextTimestep:Timestep) {
 		super(nextTimestep);
 		this.scale = scale;
 	}
-
+	
 	public override function advance(time:Float):Void {
 		super.advance(time * scale);
 	}
