@@ -536,7 +536,6 @@ class MatchingViewSystem extends echoes.System {
 	public var abcd:View<A, B, C, D>;
 	
 	public var av:View<A, V>;
-	
 }
 
 class IteratingViewSystem extends echoes.System {

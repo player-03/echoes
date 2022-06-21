@@ -15,7 +15,6 @@ class SystemTest extends buddy.BuddySuite {
 			});
 			
 			describe("When create Systems X and Y", {
-			
 				it("x should not be active", x.isActive().should.be(false));
 				it("y should not be active", y.isActive().should.be(false));
 				it("should have correct count of systems", Workflow.systems.length.should.be(0));

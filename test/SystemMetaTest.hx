@@ -7,7 +7,6 @@ import echoes.Entity;
 class SystemMetaTest extends buddy.BuddySuite {
 	public function new() {
 		describe("Test System Meta", {
-		
 			beforeEach({
 				Workflow.reset();
 				BuildResult.value = '';

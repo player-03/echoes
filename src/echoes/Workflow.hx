@@ -72,9 +72,7 @@ class Workflow {
 		#end
 		
 		for (s in systems) {
-		
 			s.__update__(dt);
-			
 		}
 		
 		#if echoes_profiling

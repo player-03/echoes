@@ -29,7 +29,6 @@ class Report {
 				ret += '\n    VIEWS [${viewNames.length}] :';
 				ret += "\n        " + sortedlist(viewNames.mapi(function(i, k) return '$k #${ viewIds.get(k) }').array()).join("\n        ");
 				trace('\n$ret');
-				
 			});
 			reportRegistered = true;
 		}

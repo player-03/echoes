@@ -94,9 +94,7 @@ class MacroTools {
 		var type = new Printer().printExpr(e);
 		
 		try {
-		
 			return followMono(type.getType()).toComplexType();
-			
 		} catch (err:String) {
 			throw 'Failed to parse `$type`. Try making a typedef, or use the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.';
 		}
@@ -115,14 +113,12 @@ class MacroTools {
 	}
 	
 	static function typeParamName(p:TypeParam, f:ComplexType->String):String {
-		return switch (p) {
-			case TPType(ct): {
-				f(ct);
-			}
-			case x: {
+		switch (p) {
+			case TPType(ct):
+				return f(ct);
+			case x:
 				error('Unexpected $x!', Context.currentPos());
-				null;
-			}
+				return null;
 		}
 	}
 	
@@ -131,20 +127,14 @@ class MacroTools {
 	}
 	
 	public static function typeName(ct:ComplexType, shortify = false, escape = true):String {
-		return switch (followComplexType(ct)) {
-			case TFunction(args, ret): {
-			
-				(escape ? "F" : "(") + 
-				args.map(typeName.bind(_, shortify, escape)).join(escape ? "_" : "->") + (escape ? "_R" : "->") + typeName(ret, shortify, escape) + 
-				(escape ? "" : ")");
-				
-			}
-			case TParent(t): {
-			
-				(escape ? "P" : "(") + typeName(t, shortify, escape) + (escape ? "" : ")");
-				
-			}
-			case TPath(t): {
+		switch (followComplexType(ct)) {
+			case TFunction(args, ret):
+				return (escape ? "F" : "(")
+					+ args.map(typeName.bind(_, shortify, escape)).join(escape ? "_" : "->") + (escape ? "_R" : "->") + typeName(ret, shortify, escape)
+					+ (escape ? "" : ")");
+			case TParent(t):
+				return (escape ? "P" : "(") + typeName(t, shortify, escape) + (escape ? "" : ")");
+			case TPath(t):
 				var ret = "";
 				
 				// package
@@ -154,18 +144,14 @@ class MacroTools {
 				
 				// type params
 				if (t.params != null && t.params.length > 0) {
-				
 					var tpName = typeParamName.bind(_, typeName.bind(_, shortify, escape));
 					ret += (escape ? "Of" : "<") + t.params.map(tpName).join(escape ? "_" : ",") + (escape ? "" : ">");
-					
 				}
 				
-				ret;
-			}
-			case x: {
+				return ret;
+			case x:
 				error('Unexpected $x!', Context.currentPos());
-				null;
-			}
+				return null;
 		}
 	}
 	

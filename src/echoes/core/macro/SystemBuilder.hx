@@ -112,11 +112,11 @@ class SystemBuilder {
 			.iter(function(field) {
 				switch (field.kind) {
 					// defined var only
-					case FVar(cls, _) if (cls != null): {
+					case FVar(cls, _) if (cls != null):
 						var complexType = cls.followComplexType();
 						switch (complexType) {
 							// tpath only
-							case TPath(_): {
+							case TPath(_):
 								var clsName = complexType.followName();
 								// if it is a view, it was built (and collected to cache) when followComplexType() was called
 								if (viewCache.exists(clsName)) {
@@ -125,10 +125,8 @@ class SystemBuilder {
 									
 									definedViews.push({ name: field.name, cls: complexType, components: viewCache.get(clsName).components });
 								}
-							}
 							default:
 						}
-					}
 					default:
 				}
 			} );
@@ -139,12 +137,10 @@ class SystemBuilder {
 			.filter(containsMeta.bind(_, UPD_META.concat(AD_META).concat(RM_META)))
 			.iter(function(field) {
 				switch (field.kind) {
-					case FFun(func): {
-					
+					case FFun(func):
 						var components = func.args.map(metaFuncArgToComponentDef).filter(notNull);
 						
 						if (components.length > 0) {
-						
 							var viewClsName = getViewName(components);
 							var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
 							
@@ -157,14 +153,13 @@ class SystemBuilder {
 								definedViews.push({ name: viewClsName.toLowerCase(), cls: viewComplexType, components: viewCache.get(viewClsName).components });
 							}
 						}
-					}
 					default:
 				}
 			} );
 			
 		function procMetaFunc(field:Field) {
-			return switch (field.kind) {
-				case FFun(func): {
+			switch (field.kind) {
+				case FFun(func):
 					var funcName = field.name;
 					var funcCallArgs = func.args.map(metaFuncArgToCallArg).filter(notNull);
 					var components = func.args.map(metaFuncArgToComponentDef).filter(notNull);
@@ -176,23 +171,20 @@ class SystemBuilder {
 						var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
 						var viewArgs = [ arg("__entity__", macro:echoes.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
 						
-						{ name: funcName, args: funcCallArgs, view: view, viewargs: viewArgs, type: VIEW_ITER };
-						
+						return { name: funcName, args: funcCallArgs, view: view, viewargs: viewArgs, type: VIEW_ITER };
 					} else {
-					
 						if (func.args.exists(metaFuncArgIsEntity)) {
 							// every entity iterate
 							Context.warning("Are you sure you want to iterate over all the entities? If not, you should add some components or remove the Entity / Int argument", field.pos);
 							
-							{ name: funcName, args: funcCallArgs, view: null, viewargs: null, type: ENTITY_ITER };
-							
+							return { name: funcName, args: funcCallArgs, view: null, viewargs: null, type: ENTITY_ITER };
 						} else {
 							// single call
-							{ name: funcName, args: funcCallArgs, view: null, viewargs: null, type: SINGLE_CALL };
+							return { name: funcName, args: funcCallArgs, view: null, viewargs: null, type: SINGLE_CALL };
 						}
 					}
-				}
-				default: null;
+				default:
+					return null;
 			}
 		}
 		
@@ -222,19 +214,16 @@ class SystemBuilder {
 			#end
 			.concat(
 				ufuncs.map(function(f) {
-					return switch (f.type) {
-						case SINGLE_CALL: {
-							macro $i{ f.name }($a{ f.args });
-						}
-						case VIEW_ITER: {
+					switch (f.type) {
+						case SINGLE_CALL:
+							return macro $i{ f.name }($a{ f.args });
+						case VIEW_ITER:
 							var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
-							macro $i{ f.view.name }.iter($fwrapper);
-						}
-						case ENTITY_ITER: {
-							macro for (__entity__ in echoes.Workflow.entities) {
+							return macro $i{ f.view.name }.iter($fwrapper);
+						case ENTITY_ITER:
+							return macro for (__entity__ in echoes.Workflow.entities) {
 								$i{ f.name }($a{ f.args });
-							}
-						}
+							};
 					}
 				})
 			)
@@ -324,9 +313,7 @@ class SystemBuilder {
 		};
 		
 		if (uexprs.length > 0) {
-		
 			fields.push(ffun([APublic, AOverride], "__update__", [arg("__dt__", macro:Float)], null, macro $b{ uexprs }, Context.currentPos()));
-			
 		}
 		
 		fields.push(ffun([APublic, AOverride], "__activate__", [], null, macro { $aexpr; }, Context.currentPos()));
@@ -339,7 +326,7 @@ class SystemBuilder {
 		
 		if (PRINT_META.exists(function(m) return clsType.meta.has(m))) {
 			switch (ct) {
-				case TPath(p): {
+				case TPath(p):
 					var td:TypeDefinition = {
 						pack: p.pack,
 						name: p.name,
@@ -348,10 +335,8 @@ class SystemBuilder {
 						fields: fields
 					}
 					trace(new Printer().printTypeDefinition(td));
-				}
-				default: {
+				default:
 					Context.warning("Fail @print", clsType.pos);
-				}
 			}
 		}
 		

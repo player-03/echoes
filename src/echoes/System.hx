@@ -65,5 +65,4 @@ class System implements echoes.core.ISystem {
 	public function ondeactivate() { }
 	
 	public function toString():String return "System";
-	
 }

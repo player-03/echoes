@@ -8,7 +8,6 @@ class ViewTypeTest extends buddy.BuddySuite {
 	public function new() {
 		buddy.BuddySuite.useDefaultTrace = true;
 		describe("Test View with Different Type Params", {
-		
 			beforeEach({
 				Workflow.reset();
 			});
@@ -82,7 +81,6 @@ class ViewTypeTest extends buddy.BuddySuite {
 					});
 				});
 			});
-			
 		});
 	}
 }
