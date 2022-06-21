@@ -123,8 +123,8 @@ class Workflow {
 		}
 	}
 	
-	public static function hasSystem(s:ISystem):Bool {
-		return systems.exists(s);
+	public static inline function hasSystem(s:ISystem):Bool {
+		return systems.has(s);
 	}
 	
 	// Entity

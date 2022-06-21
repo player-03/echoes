@@ -128,8 +128,8 @@ class ViewBuilder {
 					
 					private override function reset() {
 						super.reset();
-						onAdded.removeAll();
-						onRemoved.removeAll();
+						onAdded.clear();
+						onRemoved.clear();
 					}
 				}
 				

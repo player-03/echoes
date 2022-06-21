@@ -1,7 +1,6 @@
 package echoes;
 
 import echoes.core.ISystem;
-import echoes.utils.LinkedList;
 import echoes.utils.Timestep;
 
 /**
@@ -21,7 +20,7 @@ class SystemList implements ISystem {
 	
 	private var name:String;
 	
-	private var systems = new LinkedList<ISystem>();
+	private var systems = new List<ISystem>();
 	
 	private var activated = false;
 	

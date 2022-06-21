@@ -1,12 +1,11 @@
 package echoes.core;
 
 @:allow(echoes)
-@:forward(head, tail, length, iterator, sort)
-abstract RestrictedLinkedList<T>(echoes.utils.LinkedList<T>) to echoes.utils.LinkedList<T> {
-	inline function new() this = new echoes.utils.LinkedList<T>();
-	
-	inline function add(item:T) this.add(item);
-	inline function pop() return this.pop();
-	inline function remove(item:T) return this.remove(item);
-	inline function exists(item:T) return this.exists(item);
+@:forward(first, last, length, iterator, sort)
+@:forward.new
+abstract RestrictedLinkedList<T>(List<T>) {
+	private inline function add(item:T) this.add(item);
+	private inline function pop() return this.pop();
+	private inline function remove(item:T) return this.remove(item);
+	public inline function has(item:T) return Lambda.has(this, item);
 }

@@ -18,22 +18,22 @@ class ComponentBuilder {
 	public static var componentNames = new Array<String>();
 	
 	public static function createComponentContainerType(componentComplexType:ComplexType) {
-		componentTypeName = componentComplexType.followName();
-		componentContainerTypeName = "ContainerOf" + componentComplexType.typeName();
-		componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
+		var componentTypeName = componentComplexType.followName();
+		var componentContainerTypeName = "ContainerOf" + componentComplexType.typeName();
+		var componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
 		
 		if(componentContainerType == null) {
 			// first time call in current build
 			
-			index = ++componentIndex;
+			var index = ++componentIndex;
 			
 			try componentContainerType = Context.getType(componentContainerTypeName) catch(err:String) {
 				// type was not cached in previous build
 				
-				componentContainerTypePath = tpath([], componentContainerTypeName, []);
-				componentContainerComplexType = TPath(componentContainerTypePath);
+				var componentContainerTypePath = tpath([], componentContainerTypeName, []);
+				var componentContainerComplexType = TPath(componentContainerTypePath);
 				
-				def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
+				var def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
 					private static var instance = new $componentContainerTypePath();
 					
 					@:keep public static inline function inst():$componentContainerComplexType {
