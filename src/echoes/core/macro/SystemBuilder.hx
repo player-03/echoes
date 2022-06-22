@@ -1,6 +1,7 @@
 package echoes.core.macro;
 
 #if macro
+
 import echoes.core.macro.MacroTools.*;
 import echoes.core.macro.ViewBuilder.*;
 import echoes.core.macro.ComponentBuilder.*;
@@ -17,13 +18,13 @@ using StringTools;
 using Lambda;
 
 class SystemBuilder {
-	private static var SKIP_META = [ "skip" ];
+	private static var SKIP_META = "skip";
 	
 	private static var PRINT_META = "print";
 	
-	private static var AD_META = [ "added", "ad", "a" ];
-	private static var RM_META = [ "removed", "rm", "r" ];
-	private static var UPD_META = [ "update", "up", "u" ];
+	private static var ADD_META = "added";
+	private static var REMOVE_META = "removed";
+	private static var UPDATE_META = "updated";
 	
 	@:deprecated public static var systemIndex = -1;
 	@:deprecated public static var systemIds = new Map<String, Int>();
@@ -45,15 +46,38 @@ class SystemBuilder {
 	}
 	
 	/**
-	 * Whether the field has metadata matching _any_ of the given `searchTerms`.
-	 * @param searchTerms A list of metadata names, without colons.
+	 * Similar to `getMeta()`, but returns a boolean value indicating presence
+	 * or absence of metadata.
 	 */
-	private static function containsMeta(field:Field, searchTerms:Array<String>):Bool {
-		return field.meta.exists(meta ->
-			searchTerms.exists(searchTerm ->
-				meta.name == searchTerm || meta.name == ":" + searchTerm
-			)
-		);
+	private static inline function containsMeta(field:Field, searchTerm:String):Bool {
+		return getMeta(field, searchTerm) != null;
+	}
+	
+	/**
+	 * Finds the first metadata matching the `searchTerm`. Also checks several
+	 * similar search terms:
+	 * 
+	 * - `"echoes_" + searchTerm`
+	 * - `":" + searchTerm`
+	 * - `":echoes_" + searchTerm`
+	 * - All strings that can be formed by removing characters from the end of
+	 *   any of the above. (E.g., `":" + searchTerm.substr(0, 3)`.)
+	 * 
+	 * @param searchTerms One or more metadata names.
+	 */
+	private static function getMeta(field:Field, ...searchTerms:String):Null<MetadataEntry> {
+		return field.meta.find(function(meta:MetadataEntry):Bool {
+			var name:String = meta.name;
+			if(name.startsWith(":")) {
+				name = name.substr(1);
+			}
+			if(name.startsWith("echoes_")) {
+				name = name.substr("echoes_".length);
+			}
+			
+			return name.length > 0
+				&& searchTerms.toArray().exists(searchTerm -> searchTerm.startsWith(name));
+		});
 	}
 	
 	public static function build():Array<Field> {
@@ -101,11 +125,20 @@ class SystemBuilder {
 		
 		// find and init meta defined views
 		for(field in fields) {
-			if(skipped(field)
-				|| !containsMeta(field, UPD_META)
-				&& !containsMeta(field, AD_META)
-				&& !containsMeta(field, RM_META)) {
+			if(skipped(field)) {
 				continue;
+			}
+			
+			var meta:Null<MetadataEntry> = getMeta(field, ADD_META, UPDATE_META, REMOVE_META);
+			if(meta == null) {
+				continue;
+			}
+			
+			//Encourage users to include a colon in their metadata, making an
+			//exception for `@remove`, since `@:remove` has another meaning.
+			//(It's still fine to use it, but some users might not want to.)
+			if(!meta.name.startsWith(":") && meta.name != "remove") {
+				Context.warning('@${meta.name} is deprecated; use @:${meta.name} instead.', meta.pos);
 			}
 			
 			switch(field.kind) {
@@ -164,9 +197,9 @@ class SystemBuilder {
 			}
 		}
 		
-		var ufuncs:Array<MetaFunc> = fields.filter(notSkipped).filter(containsMeta.bind(_, UPD_META)).map(procMetaFunc).filter(notNull);
-		var afuncs:Array<MetaFunc> = fields.filter(notSkipped).filter(containsMeta.bind(_, AD_META)).map(procMetaFunc).filter(notNull);
-		var rfuncs:Array<MetaFunc> = fields.filter(notSkipped).filter(containsMeta.bind(_, RM_META)).map(procMetaFunc).filter(notNull);
+		var ufuncs:Array<MetaFunc> = fields.filter(notSkipped).filter(containsMeta.bind(_, UPDATE_META)).map(procMetaFunc).filter(notNull);
+		var afuncs:Array<MetaFunc> = fields.filter(notSkipped).filter(containsMeta.bind(_, ADD_META)).map(procMetaFunc).filter(notNull);
+		var rfuncs:Array<MetaFunc> = fields.filter(notSkipped).filter(containsMeta.bind(_, REMOVE_META)).map(procMetaFunc).filter(notNull);
 		
 		var listeners:Array<MetaFunc> = afuncs.concat(rfuncs);
 		
@@ -175,7 +208,7 @@ class SystemBuilder {
 		//same order.)
 		for(listener in listeners.concat(ufuncs)) {
 			if(listener.viewargs == null) {
-				Context.error("An @:added or @:removed listener must take at least one component argument.", listener.field.pos);
+				Context.error("An @:add or @:remove listener must take at least one component argument.", listener.field.pos);
 			}
 			
 			fields.push({
@@ -214,12 +247,12 @@ class SystemBuilder {
 					//Activate views.
 					$b{ definedViews.map(v -> macro ${ v.inst }.activate()) }
 					
-					//Add `@:added` and `@:removed` listeners.
+					//Add `@:add` and `@:remove` listeners.
 					$b{ afuncs.map(f -> macro ${ f.view.inst }.onAdded.add($i{ '__${f.name}_listener__' })) }
 					$b{ rfuncs.map(f -> macro ${ f.view.inst }.onRemoved.add($i{ '__${f.name}_listener__' })) }
 					
-					//Call all `@:added` listeners, in case entities were
-					//created while the system was inactive.
+					//Call all `@:add` listeners, in case entities were created
+					//while the system was inactive.
 					$b{ afuncs.map(f -> macro ${ f.view.inst }.iter($i{ '__${f.name}_listener__' })) }
 					
 					super.__activate__();
@@ -234,7 +267,7 @@ class SystemBuilder {
 					//Deactivate views.
 					$b{ definedViews.map(v -> macro ${ v.inst }.deactivate()) }
 					
-					//Remove `@:added` and `@:removed` listeners.
+					//Remove `@:add` and `@:remove` listeners.
 					$b{ afuncs.map(f -> macro ${ f.view.inst }.onAdded.remove($i{ '__${f.name}_listener__' })) }
 					$b{ rfuncs.map(f -> macro ${ f.view.inst }.onRemoved.remove($i{ '__${f.name}_listener__' })) }
 				}
