@@ -23,21 +23,23 @@ package echoes;
 #end
 class System implements echoes.core.ISystem {
 	#if echoes_profiling
-	private var __updateTime__ = .0;
+	private var __updateTime__:Float = 0;
 	#end
+	
+	private var __dt__:Float = 0;
 	
 	private var activated = false;
 	
-	@:noCompletion public function __activate__() {
+	@:noCompletion public function __activate__():Void {
 		onactivate();
 	}
 	
-	@:noCompletion public function __deactivate__() {
+	@:noCompletion public function __deactivate__():Void {
 		ondeactivate();
 	}
 	
-	@:noCompletion public function __update__(dt:Float) {
-		// macro
+	@:noCompletion public function __update__(dt:Float):Void {
+		__dt__ = dt;
 	}
 	
 	public function isActive():Bool {

@@ -1,6 +1,5 @@
 package echoes.core.macro;
 
-import haxe.Log;
 #if macro
 import echoes.core.macro.MacroTools.*;
 import echoes.core.macro.ViewBuilder.*;
@@ -8,7 +7,7 @@ import echoes.core.macro.ComponentBuilder.*;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
-import haxe.macro.Type.ClassField;
+import haxe.macro.Type;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.TypeTools;
@@ -20,171 +19,144 @@ using Lambda;
 class SystemBuilder {
 	private static var SKIP_META = [ "skip" ];
 	
-	private static var PRINT_META = [ "print" ];
+	private static var PRINT_META = "print";
 	
 	private static var AD_META = [ "added", "ad", "a" ];
 	private static var RM_META = [ "removed", "rm", "r" ];
 	private static var UPD_META = [ "update", "up", "u" ];
 	
-	public static var systemIndex = -1;
-	public static var systemIds = new Map<String, Int>();
+	@:deprecated public static var systemIndex = -1;
+	@:deprecated public static var systemIds = new Map<String, Int>();
 	
-	private static function notSkipped(field:Field) {
-		return !containsMeta(field, SKIP_META);
+	private static inline function notNull<T>(e:Null<T>):Bool {
+		return e != null;
+	}
+	private static inline function notSkipped(field:Field):Bool {
+		return !skipped(field);
+	}
+	private static inline function skipped(field:Field):Bool {
+		return containsMeta(field, SKIP_META);
+	}
+	private static inline function isEntity(a:FunctionArg):Bool {
+		return switch(a.type.followComplexType()) {
+			case macro:StdTypes.Int, macro:echoes.Entity : true;
+			default: false;
+		};
 	}
 	
 	/**
 	 * Whether the field has metadata matching _any_ of the given `searchTerms`.
 	 * @param searchTerms A list of metadata names, without colons.
 	 */
-	private static function containsMeta(field:Field, searchTerms:Array<String>) {
-		return field.meta
-			.exists(function(meta) {
-				return searchTerms.exists(function(searchTerm) return meta.name == searchTerm || meta.name == ":" + searchTerm);
-			});
+	private static function containsMeta(field:Field, searchTerms:Array<String>):Bool {
+		return field.meta.exists(meta ->
+			searchTerms.exists(searchTerm ->
+				meta.name == searchTerm || meta.name == ":" + searchTerm
+			)
+		);
 	}
 	
-	public static function build() {
-		var fields = Context.getBuildFields();
+	public static function build():Array<Field> {
+		var fields:Array<Field> = Context.getBuildFields();
 		
-		var ct = Context.getLocalType().toComplexType();
+		var clsType:ClassType = Context.getLocalClass().get();
+		if(clsType == null) {
+			Context.warning("SystemBuilder only acts on classes.", Context.currentPos());
+			return fields;
+		}
 		
-		var index = ++systemIndex;
+		systemIds[Context.getLocalType().toComplexType().followName()] = ++systemIndex;
 		
-		systemIds[ct.followName()] = index;
+		var definedViews = new Array<DefinedView>();
 		
-		// prevent wrong override
+		// find and init manually defined views
 		for(field in fields) {
+			if(skipped(field)) continue;
+			
 			switch(field.kind) {
-				case FFun(func): 
-					switch(field.name) {
-						case "__update__":
-							Context.error("Do not override the `__update__` function! Use `@:update` meta instead! More info at README example", field.pos);
-						case "__activate__":
-							Context.error("Do not override the `__activate__` function! `onactivate` can be overrided instead!", field.pos);
-						case "__deactivate__":
-							Context.error("Do not override the `__deactivate__` function! `ondeactivate` can be overrided instead!", field.pos);
+				// defined var only
+				case FVar(cls, _) if(cls != null):
+					var complexType = cls.followComplexType();
+					switch(complexType) {
+						// tpath only
+						case TPath(_):
+							var clsName = complexType.followName();
+							// if it is a view, it was built (and collected to cache) when followComplexType() was called
+							if(viewCache.exists(clsName)) {
+								// init
+								field.kind = FVar(complexType, macro $i{clsName}.inst());
+								
+								definedViews.push({
+									name: field.name,
+									inst: macro $i{ field.name }.inst(),
+									cls: complexType,
+									components: viewCache.get(clsName).components
+								});
+							}
 						default:
 					}
 				default:
 			}
 		}
 		
-		function notNull<T>(e:Null<T>) return e != null;
-		
-		// @meta f(a:T1, b:T2, deltatime:Float) --> a, b, __dt__
-		function metaFuncArgToCallArg(a:FunctionArg) {
-			return switch(a.type.followComplexType()) {
-				case macro:StdTypes.Float : macro __dt__;
-				case macro:StdTypes.Int : macro __entity__;
-				case macro:echoes.Entity : macro __entity__;
-				default: macro $i{ a.name };
-			}
-		}
-		
-		function metaFuncArgIsEntity(a:FunctionArg) {
-			return switch(a.type.followComplexType()) {
-				case macro:StdTypes.Int, macro:echoes.Entity : true;
-				default: false;
-			}
-		}
-		
-		function refComponentDefToFuncArg(c:ComplexType, args:Array<FunctionArg>) {
-			var copmonentClsName = c.followName();
-			var a = args.find(function(a) return a.type.followName() == copmonentClsName);
-			if(a != null) {
-				return arg(a.name, a.type);
-			} else {
-				return arg(c.typeName().toLowerCase(), c);
-			}
-		}
-		
-		function metaFuncArgToComponentDef(a:FunctionArg) {
-			return switch(a.type.followComplexType()) {
-				case macro:StdTypes.Float : null;
-				case macro:StdTypes.Int : null;
-				case macro:echoes.Entity : null;
-				default: a.type.followComplexType();
-			}
-		}
-		
-		var definedViews = new Array<{ name:String, cls:ComplexType, components:Array<ComplexType> }>();
-		
-		// find and init manually defined views
-		fields
-			.filter(notSkipped)
-			.iter(function(field) {
-				switch(field.kind) {
-					// defined var only
-					case FVar(cls, _) if(cls != null):
-						var complexType = cls.followComplexType();
-						switch(complexType) {
-							// tpath only
-							case TPath(_):
-								var clsName = complexType.followName();
-								// if it is a view, it was built (and collected to cache) when followComplexType() was called
-								if(viewCache.exists(clsName)) {
-									// init
-									field.kind = FVar(complexType, macro $i{clsName}.inst());
-									
-									definedViews.push({ name: field.name, cls: complexType, components: viewCache.get(clsName).components });
-								}
-							default:
-						}
-					default:
-				}
-			} );
-		
 		// find and init meta defined views
-		fields
-			.filter(notSkipped)
-			.filter(containsMeta.bind(_, UPD_META.concat(AD_META).concat(RM_META)))
-			.iter(function(field) {
-				switch(field.kind) {
-					case FFun(func):
-						var components = func.args.map(metaFuncArgToComponentDef).filter(notNull);
+		for(field in fields) {
+			if(skipped(field)
+				|| !containsMeta(field, UPD_META)
+				&& !containsMeta(field, AD_META)
+				&& !containsMeta(field, RM_META)) {
+				continue;
+			}
+			
+			switch(field.kind) {
+				case FFun(func):
+					var components:Array<ComplexType> = (func.args:FunctionArgs).toComponentTypes();
+					
+					if(components.length > 0) {
+						var viewClsName:String = getViewName(components);
+						var view = definedViews.find(v -> v.cls.followName() == viewClsName);
 						
-						if(components.length > 0) {
-							var viewClsName = getViewName(components);
-							var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
-							
-							if(view == null) {
-								var viewComplexType = getView(components);
-								
-								// instant define and init
-								fields.push(fvar([], [], viewClsName.toLowerCase(), viewComplexType, macro $i{viewClsName}.inst(), Context.currentPos()));
-								
-								definedViews.push({ name: viewClsName.toLowerCase(), cls: viewComplexType, components: viewCache.get(viewClsName).components });
-							}
+						if(view == null) {
+							definedViews.push({
+								name: viewClsName,
+								inst: macro $i{ viewClsName }.inst(),
+								cls: getView(components),
+								components: viewCache.get(viewClsName).components
+							});
 						}
-					default:
-				}
-			} );
+					}
+				default:
+			}
+		}
 		
-		function procMetaFunc(field:Field) {
+		/**
+		 * Gets data about a listener function, such as the view it represents
+		 * and the arguments it requires.
+		 */
+		function procMetaFunc(field:Field):MetaFunc {
 			switch(field.kind) {
 				case FFun(func):
 					var funcName = field.name;
-					var funcCallArgs = func.args.map(metaFuncArgToCallArg).filter(notNull);
-					var components = func.args.map(metaFuncArgToComponentDef).filter(notNull);
+					var funcCallArgs = (func.args:FunctionArgs).toCallArgs();
+					var components = (func.args:FunctionArgs).toComponentTypes();
 					
 					if(components.length > 0) {
 						// view iterate
 						
 						var viewClsName = getViewName(components);
-						var view = definedViews.find(function(v) return v.cls.followName() == viewClsName);
-						var viewArgs = [ arg("__entity__", macro:echoes.Entity) ].concat(view.components.map(refComponentDefToFuncArg.bind(_, func.args)));
+						var view = definedViews.find(v -> v.cls.followName() == viewClsName);
+						var viewArgs = [ arg("entity", macro:echoes.Entity) ].concat(view.components.toFunctionArgs(func.args));
 						
-						return { name: funcName, args: funcCallArgs, view: view, viewargs: viewArgs, type: VIEW_ITER };
+						return { name: funcName, args: funcCallArgs, view: view, viewargs: viewArgs, type: VIEW_ITER, field: field };
 					} else {
-						if(func.args.exists(metaFuncArgIsEntity)) {
+						if(func.args.exists(isEntity)) {
 							// every entity iterate
 							Context.warning("Are you sure you want to iterate over all the entities? If not, you should add some components or remove the Entity / Int argument", field.pos);
 							
-							return { name: funcName, args: funcCallArgs, view: null, viewargs: null, type: ENTITY_ITER };
+							return { name: funcName, args: funcCallArgs, view: null, viewargs: null, type: ENTITY_ITER, field: field };
 						} else {
 							// single call
-							return { name: funcName, args: funcCallArgs, view: null, viewargs: null, type: SINGLE_CALL };
+							return { name: funcName, args: funcCallArgs, view: null, viewargs: null, type: SINGLE_CALL, field: field };
 						}
 					}
 				default:
@@ -192,166 +164,198 @@ class SystemBuilder {
 			}
 		}
 		
-		// define new() if not exists (just for comfort)
-		if(!fields.exists(function(f) return f.name == "new")) {
-			fields.push(ffun([APublic], "new", null, null, null, Context.currentPos()));
-		}
+		var ufuncs:Array<MetaFunc> = fields.filter(notSkipped).filter(containsMeta.bind(_, UPD_META)).map(procMetaFunc).filter(notNull);
+		var afuncs:Array<MetaFunc> = fields.filter(notSkipped).filter(containsMeta.bind(_, AD_META)).map(procMetaFunc).filter(notNull);
+		var rfuncs:Array<MetaFunc> = fields.filter(notSkipped).filter(containsMeta.bind(_, RM_META)).map(procMetaFunc).filter(notNull);
 		
-		var ufuncs = fields.filter(notSkipped).filter(containsMeta.bind(_, UPD_META)).map(procMetaFunc).filter(notNull);
-		var afuncs = fields.filter(notSkipped).filter(containsMeta.bind(_, AD_META)).map(procMetaFunc).filter(notNull);
-		var rfuncs = fields.filter(notSkipped).filter(containsMeta.bind(_, RM_META)).map(procMetaFunc).filter(notNull);
+		var listeners:Array<MetaFunc> = afuncs.concat(rfuncs);
 		
-		var listeners = afuncs.concat(rfuncs);
-		
-		// define signal listener wrappers
-		listeners.iter(function(f) {
-			fields.push(fvar([], [], '__${f.name}_listener__', TFunction(f.viewargs.map(function(a) return a.type), macro:Void), null, Context.currentPos()));
-		});
-		
-		var uexprs = []
-			#if echoes_profiling
-			.concat(
-				[
-					macro var __timestamp__ = Date.now().getTime()
-				]
-			)
-			#end
-			.concat(
-				ufuncs.map(function(f) {
-					switch(f.type) {
-						case SINGLE_CALL:
-							return macro $i{ f.name }($a{ f.args });
-						case VIEW_ITER:
-							var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
-							return macro $i{ f.view.name }.iter($fwrapper);
-						case ENTITY_ITER:
-							return macro for(__entity__ in echoes.Workflow.entities) {
-								$i{ f.name }($a{ f.args });
-							};
-					}
-				})
-			)
-			#if echoes_profiling
-			.concat(
-				[
-					macro this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__)
-				]
-			)
-			#end;
-			
-		var aexpr = macro if(!activated) $b{
-			[].concat(
-				[
-					macro activated = true
-				]
-			)
-			.concat(
-				// init signal listener wrappers
-				listeners.map(function(f) {
-					var fwrapper = { expr: EFunction(null, { args: f.viewargs, ret: macro:Void, expr: macro $i{ f.name }($a{ f.args }) }), pos: Context.currentPos()};
-					return macro $i{'__${f.name}_listener__'} = $fwrapper;
-				})
-			)
-			.concat(
-				// activate views
-				definedViews.map(function(v) {
-					return macro $i{ v.name }.activate();
-				})
-			)
-			.concat(
-				// add added-listeners
-				afuncs.map(function(f) {
-					return macro $i{ f.view.name }.onAdded.add($i{ '__${f.name}_listener__' });
-				})
-			)
-			.concat(
-				// add removed-listeners
-				rfuncs.map(function(f) {
-					return macro $i{ f.view.name }.onRemoved.add($i{ '__${f.name}_listener__' });
-				})
-			)
-			.concat(
-				// call added-listeners
-				afuncs.map(function(f) {
-					return macro $i{ f.view.name }.iter($i{ '__${f.name}_listener__' });
-				})
-			)
-			.concat(
-				[
-					macro onactivate()
-				]
-			)
-		};
-		
-		var dexpr = macro if(activated) $b{
-			[].concat(
-				[
-					macro activated = false,
-					macro ondeactivate()
-				]
-			)
-			.concat(
-				// deactivate views
-				definedViews.map(function(v) {
-					return macro $i{ v.name }.deactivate();
-				})
-			)
-			.concat(
-				// remove added-listeners
-				afuncs.map(function(f) {
-					return macro $i{ f.view.name }.onAdded.remove($i{ '__${f.name}_listener__' });
-				})
-			)
-			.concat(
-				// remove removed-listeners
-				rfuncs.map(function(f) {
-					return macro $i{ f.view.name }.onRemoved.remove($i{ '__${f.name}_listener__' });
-				})
-			)
-			.concat(
-				// null signal wrappers 
-				listeners.map(function(f) {
-					return macro $i{'__${f.name}_listener__'} = null;
-				})
-			)
-		};
-		
-		if(uexprs.length > 0) {
-			fields.push(ffun([APublic, AOverride], "__update__", [arg("__dt__", macro:Float)], null, macro $b{ uexprs }, Context.currentPos()));
-		}
-		
-		fields.push(ffun([APublic, AOverride], "__activate__", [], null, macro { $aexpr; }, Context.currentPos()));
-		fields.push(ffun([APublic, AOverride], "__deactivate__", [], null, macro { $dexpr; }, Context.currentPos()));
-		
-		// toString
-		fields.push(ffun([AOverride, APublic], "toString", null, macro:String, macro return $v{ ct.followName() }, Context.currentPos()));
-		
-		var clsType = Context.getLocalClass().get();
-		
-		if(PRINT_META.exists(function(m) return clsType.meta.has(m))) {
-			switch(ct) {
-				case TPath(p):
-					var td:TypeDefinition = {
-						pack: p.pack,
-						name: p.name,
-						pos: clsType.pos,
-						kind: TDClass(tpath("echoes", "System")),
-						fields: fields
-					}
-					trace(new Printer().printTypeDefinition(td));
-				default:
-					Context.warning("Fail @:print", clsType.pos);
+		//Define functions to bridge the gap between the `View`'s events and the
+		//listeners. (The difference being that arguments might not be in the
+		//same order.)
+		for(listener in listeners.concat(ufuncs)) {
+			if(listener.viewargs == null) {
+				Context.error("An @:added or @:removed listener must take at least one component argument.", listener.field.pos);
 			}
+			
+			fields.push({
+				name: '__${listener.name}_listener__',
+				kind: FFun({
+					args: listener.viewargs,
+					ret: macro:Void,
+					expr: macro $i{ listener.name }($a{ listener.args })
+				}),
+				pos: Context.currentPos()
+			});
+		};
+		
+		//Add a couple convenience fields if they aren't already there.
+		var optionalFields:TypeDefinition = macro class OptionalFields {
+			public inline function new() {}
+			
+			public override function toString():String {
+				return $v{ clsType.name };
+			}
+		};
+		for(optionalField in optionalFields.fields) {
+			if(!fields.exists(field -> field.name == optionalField.name)) {
+				fields.push(optionalField);
+			}
+		}
+		
+		//Add some lifecycle functions no matter what.
+		var requiredFields:TypeDefinition = macro class RequiredFields {
+			@:noCompletion public override function __activate__():Void {
+				if(!activated) {
+					activated = true;
+					
+					__dt__ = 0;
+					
+					//Activate views.
+					$b{ definedViews.map(v -> macro ${ v.inst }.activate()) }
+					
+					//Add `@:added` and `@:removed` listeners.
+					$b{ afuncs.map(f -> macro ${ f.view.inst }.onAdded.add($i{ '__${f.name}_listener__' })) }
+					$b{ rfuncs.map(f -> macro ${ f.view.inst }.onRemoved.add($i{ '__${f.name}_listener__' })) }
+					
+					//Call all `@:added` listeners, in case entities were
+					//created while the system was inactive.
+					$b{ afuncs.map(f -> macro ${ f.view.inst }.iter($i{ '__${f.name}_listener__' })) }
+					
+					super.__activate__();
+				};
+			}
+			
+			@:noCompletion public override function __deactivate__():Void {
+				if(activated) {
+					activated = false;
+					super.__deactivate__();
+					
+					//Deactivate views.
+					$b{ definedViews.map(v -> macro ${ v.inst }.deactivate()) }
+					
+					//Remove `@:added` and `@:removed` listeners.
+					$b{ afuncs.map(f -> macro ${ f.view.inst }.onAdded.remove($i{ '__${f.name}_listener__' })) }
+					$b{ rfuncs.map(f -> macro ${ f.view.inst }.onRemoved.remove($i{ '__${f.name}_listener__' })) }
+				}
+			}
+			
+			@:noCompletion public override function __update__(dt:Float):Void {
+				#if echoes_profiling
+				var __timestamp__ = Date.now().getTime();
+				#end
+				
+				__dt__ = dt;
+				
+				$b{
+					ufuncs.map(f ->
+						switch(f.type) {
+							case SINGLE_CALL:
+								macro $i{ f.name }($a{ f.args });
+							case VIEW_ITER:
+								macro ${ f.view.inst }.iter($i{ '__${f.name}_listener__' });
+							case ENTITY_ITER:
+								macro for(entity in echoes.Workflow.entities)
+									$i{ f.name }($a{ f.args });
+						}
+					)
+				}
+				
+				#if echoes_profiling
+				this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__);
+				#end
+			}
+		};
+		//Put the required fields first so that Haxe will highlight the user's
+		//fields in case of a conflict.
+		fields = requiredFields.fields.concat(fields);
+		
+		if(clsType.meta.has(PRINT_META)) {
+			Sys.println(new Printer().printTypeDefinition({
+				pack: clsType.pack,
+				name: clsType.name,
+				pos: clsType.pos,
+				kind: TDClass({ pack: ["echoes"], name: "System" }),
+				fields: fields,
+				meta: clsType.meta.get()
+			}));
 		}
 		
 		return fields;
 	}
 }
 
+typedef MetaFunc = {
+	name:String,
+	args:Array<Expr>,
+	view:Null<DefinedView>,
+	viewargs:Array<FunctionArg>,
+	type:MetaFuncType,
+	field:Field
+};
+
 @:enum abstract MetaFuncType(Int) {
 	var SINGLE_CALL = 1;
 	var VIEW_ITER = 2;
 	var ENTITY_ITER = 3;
+}
+
+typedef DefinedView = {
+	/**
+	 * The view's class name. (Not lowercase anymore.)
+	 */
+	name:String,
+	/**
+	 * The view's singleton instance.
+	 */
+	inst:Expr,
+	cls:ComplexType,
+	components:ComponentTypes
+};
+
+@:forward
+abstract FunctionArgs(Array<FunctionArg>) from Array<FunctionArg> to Array<FunctionArg> {
+	@:to public function toComponentTypes():Array<ComplexType> {
+		var types:Array<ComplexType> = [];
+		for(arg in this) {
+			switch(arg.type.followComplexType()) {
+				case macro:StdTypes.Float, macro:StdTypes.Int, macro:echoes.Entity:
+				default:
+					types.push(arg.type.followComplexType());
+			}
+		}
+		return types;
+	}
+	
+	@:to public function toCallArgs():CallArgs {
+		return [for(arg in this) {
+			switch(arg.type.followComplexType()) {
+				case macro:StdTypes.Float : macro __dt__;
+				case macro:StdTypes.Int : macro entity;
+				case macro:echoes.Entity : macro entity;
+				default: macro $i{ arg.name };
+			}
+		}];
+	}
+}
+
+@:forward
+abstract ComponentTypes(Array<ComplexType>) from Array<ComplexType> to Array<ComplexType> {
+	public function toFunctionArgs(args:Array<FunctionArg>):FunctionArgs {
+		return [for(type in this) {
+			var componentClsName = type.followName();
+			var a = args.find(a -> a.type.followName() == componentClsName);
+			if(a != null) {
+				arg(a.name, a.type);
+			} else {
+				arg(type.typeName().toLowerCase(), type);
+			}
+		}];
+	}
+}
+
+@:forward
+abstract CallArgs(Array<Expr>) from Array<Expr> to Array<Expr> {
 }
 
 #end
