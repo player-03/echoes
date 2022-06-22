@@ -113,15 +113,13 @@ class ViewBuilder {
 				private function new() {
 					@:privateAccess echoes.Workflow.definedViews.push(this);
 					
-					//Complicated syntax explanation: we're assembling an array
-					//of expressions, then unrolling that array to produce a
-					//variable number of lines of code.
+					//Add this to each corresponding list of views. For
+					//instance, in a `View<Hue, Saturation>`, this would produce
+					//`ViewsOfComponentHue.inst().addRelatedView(this);`
+					//`ViewsOfComponentSaturation.inst().addRelatedView(this);`
 					$b{
 						[for(c in components) {
 							var viewsOfComponentName:String = getViewsOfComponent(c).followName();
-							
-							//Only the line beginning `macro` is added to the
-							//array, and thus to the runtime code.
 							macro @:privateAccess $i{ viewsOfComponentName }.inst().addRelatedView(this);
 						}]
 					}
@@ -148,18 +146,20 @@ class ViewBuilder {
 				}
 				
 				private override function isMatched(id:Int):Bool {
+					//Hard-code an `exists()` call for each component type. For
+					//instance, in a `View<Hue, Saturation>`, this would produce
+					//`return HueContainer.inst().get(entity) && SaturationContainer.inst().get(entity);`
 					return ${{
-						//Create an `exists()` call for each component type.
 						var checks:Array<Expr> = components.map(c -> macro $i{ getComponentContainer(c).followName() }.inst().exists(id));
-						
-						//Combine them into a single variable-length expression.
 						checks.fold((a, b) -> macro $a && $b, checks.shift());
 					}};
 				}
 				
 				public override function toString():String {
+					//Return a hard-coded string. For instance, in a
+					//`View<Hue, Saturation>`, this would produce
+					//`return "Hue, Saturation";`
 					return $v{
-						//Construct a variable-length string.
 						components.map(c -> c.typeValidShortName()).join(", ")
 					};
 				}
