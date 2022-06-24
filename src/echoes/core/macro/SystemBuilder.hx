@@ -54,16 +54,24 @@ class SystemBuilder {
 	}
 	
 	/**
-	 * Finds the first metadata matching the `searchTerm`. Also checks several
-	 * similar search terms:
+	 * Finds the first metadata entry that matches a search term, or comes
+	 * close. For the purpose of matching, leading colons are ignored, as is the
+	 * prefix "echoes_" if the entry begins with that. Additionally, characters
+	 * may be omitted from the end, as long as at least one character from the
+	 * search term is found.
 	 * 
-	 * - `"echoes_" + searchTerm`
-	 * - `":" + searchTerm`
-	 * - `":echoes_" + searchTerm`
-	 * - All strings that can be formed by removing characters from the end of
-	 *   any of the above. (E.g., `":" + searchTerm.substr(0, 3)`.)
+	 * For example, the following entry names are considered eqivalent:
 	 * 
-	 * @param searchTerms One or more metadata names.
+	 * - "updated"
+	 * - "upd"
+	 * - ":update"
+	 * - ":u"
+	 * - "echoes_update"
+	 * - "echoes_u"
+	 * - ":echoes_updated"
+	 * 
+	 * @param searchTerms One or more metadata names, consisting of lowercase
+	 * letters (no colon, no "echoes_").
 	 */
 	private static function getMeta(field:Field, ...searchTerms:String):Null<MetadataEntry> {
 		return field.meta.find(function(meta:MetadataEntry):Bool {
