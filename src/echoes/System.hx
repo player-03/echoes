@@ -61,10 +61,10 @@ package echoes;
 #end
 class System implements echoes.core.ISystem {
 	#if echoes_profiling
-	private var __updateTime__:Float = 0;
+	@:noCompletion private var __updateTime__:Float = 0;
 	#end
 	
-	private var __dt__:Float = 0;
+	@:noCompletion private var __dt__:Float = 0;
 	
 	private var activated = false;
 	
