@@ -77,6 +77,10 @@ class MacroTools {
 		}
 	}
 	
+	/**
+	 * Adds package information and finds the type underlying `Unknown<0>` and
+	 * `Null<T>`, making it easier to examine the type.
+	 */
 	public static function followComplexType(ct:ComplexType) {
 		return followMono(ct.toType()).toComplexType();
 	}

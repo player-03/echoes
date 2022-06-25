@@ -217,8 +217,8 @@ class SystemBuilder {
 	name:String,
 	args:Array<FunctionArg>,
 	pos:Position,
-	?componentTypes:Array<ComplexType>,
-	?optionalComponentTypes:Array<ComplexType>,
+	?components:Array<ComplexType>,
+	?optionalComponents:Array<ComplexType>,
 	?viewName:String,
 	?wrapperFunction:Field
 };
@@ -234,40 +234,48 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 		}
 	}
 	
-	public var componentTypes(get, never):Array<ComplexType>;
-	private function get_componentTypes():Array<ComplexType> {
-		if(this.componentTypes == null) {
-			this.componentTypes = [];
+	public var components(get, never):Array<ComplexType>;
+	private function get_components():Array<ComplexType> {
+		if(this.components == null) {
+			this.components = [];
+			
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
+					//Float is reserved for delta time; Int and Entity are both
+					//reserved for the entity.
 					case macro:StdTypes.Float, macro:StdTypes.Int, macro:echoes.Entity:
 					default:
-						if(!arg.opt) {
-							this.componentTypes.push(arg.type.followComplexType());
+						//There are two ways to mark an argument as optional.
+						if(!arg.opt && arg.value == null) {
+							this.components.push(arg.type.followComplexType());
 						}
 				}
 			}
 		}
 		
-		return this.componentTypes;
+		return this.components;
 	}
 	
-	public var optionalComponentTypes(get, never):Array<ComplexType>;
-	private function get_optionalComponentTypes():Array<ComplexType> {
-		if(this.optionalComponentTypes == null) {
-			this.optionalComponentTypes = [];
+	public var optionalComponents(get, never):Array<ComplexType>;
+	private function get_optionalComponents():Array<ComplexType> {
+		if(this.optionalComponents == null) {
+			this.optionalComponents = [];
+			
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
+					//Float is reserved for delta time; Int and Entity are both
+					//reserved for the entity.
 					case macro:StdTypes.Float, macro:StdTypes.Int, macro:echoes.Entity:
 					default:
-						if(arg.opt) {
-							this.optionalComponentTypes.push(arg.type.followComplexType());
+						//There are two ways to mark an argument as optional.
+						if(arg.opt || arg.value != null) {
+							this.optionalComponents.push(arg.type.followComplexType());
 						}
 				}
 			}
 		}
 		
-		return this.optionalComponentTypes;
+		return this.optionalComponents;
 	}
 	
 	public var view(get, never):Expr;
@@ -276,9 +284,14 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	}
 	
 	public var viewName(get, never):String;
-	private inline function get_viewName():String {
+	private function get_viewName():String {
 		if(this.viewName == null) {
-			this.viewName = getViewName(componentTypes);
+			this.viewName = getViewName(components);
+			
+			//Make sure the view can be looked up by name.
+			if(!viewCache.exists(this.viewName)) {
+				getView(components);
+			}
 		}
 		return this.viewName;
 	}
@@ -300,12 +313,8 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	public var wrapperFunction(get, never):Field;
 	private function get_wrapperFunction():Field {
 		if(this.wrapperFunction == null) {
-			if(componentTypes.length == 0) {
+			if(components.length == 0) {
 				return null;
-			}
-			
-			if(!viewCache.exists(viewName)) {
-				getView(componentTypes);
 			}
 			
 			//The arguments used in the wrapper function signature.
@@ -314,7 +323,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 				[{ name: "entity", type: macro:echoes.Entity }]
 				//The remaining arguments must also be in the view's order.
 				.concat(viewCache.get(viewName).components
-					//Make sure to use the same names as the listener function uses.
+					//Make sure to use the same names as the listener function.
 					.map(type -> {
 						name: this.args.find(arg -> arg.type.followName() == type.followName()).name,
 						type: type
@@ -325,21 +334,12 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 				}
 			}
 			
-			var expr:Expr = call();
-			/* if(optionalComponents.length > 0) {
-				expr = macro {
-					//TODO
-					
-					$expr;
-				};
-			} */
-			
 			this.wrapperFunction = {
 				name: wrapperName,
 				kind: FFun({
 					args: args,
 					ret: macro:Void,
-					expr: expr
+					expr: call()
 				}),
 				pos: Context.currentPos()
 			};
@@ -349,25 +349,29 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	}
 	
 	/**
-	 * Calls this listener.
+	 * Calls this listener. The returned expression will refer to `__dt__`,
+	 * `entity`, and any required components, so it's important to ensure all of
+	 * these values are available in the current context.
 	 */
-	public function call():Expr {
-		//The trick when calling this listener is to refer to variables that
-		//exist in the current context. Mostly, we'll try to reuse the wrapper
-		//function's arguments, though sometimes the listener needs to be called
-		//from outside a wrapper function.
+	private function call():Expr {
 		var args:Array<Expr> = [for(arg in this.args) {
 			switch(arg.type.followComplexType()) {
 				case macro:StdTypes.Float:
 					//Defined as a private variable of `System`.
 					macro __dt__;
 				case macro:StdTypes.Int, macro:echoes.Entity:
-					//Defined in `updateCall()` and `makeWrapperFunction()`.
+					//Defined as a wrapper function's first argument, and also
+					//defined in `callDuringUpdate()`.
 					macro entity;
 				default:
-					//Defined in `makeWrapperFunction()`; this sort of listener
-					//should only be called by its wrapper.
-					macro $i{ arg.name };
+					if(arg.opt || arg.value != null) {
+						//Look up the optional component's value. (May be null
+						//and that's fine.)
+						EntityTools.get(macro entity, arg.type.followComplexType());
+					} else {
+						//Defined as one of the wrapper function's arguments.
+						macro $i{ arg.name };
+					}
 			}
 		}];
 		
@@ -378,7 +382,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	 * Calls this listener one or more times as part of an `@:update` step.
 	 */
 	public function callDuringUpdate():Expr {
-		if(componentTypes.length > 0) {
+		if(components.length > 0) {
 			//Iterate over a `View`'s entities.
 			return macro $i{ viewName }.inst().iter($wrapper);
 		} else {
