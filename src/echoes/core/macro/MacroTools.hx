@@ -162,8 +162,8 @@ class MacroTools {
 		return (a < b) ? -1 : (a > b) ? 1 : 0;
 	}
 	
-	public static function joinFullName(types:Array<ComplexType>, sep:String) {
-		var typeNames = types.map(typeName.bind(_, false, true));
+	public static function joinFullName(types:Array<ComplexType>, sep:String, shortify:Bool = false) {
+		var typeNames = types.map(typeName.bind(_, shortify, true));
 		typeNames.sort(compareStrings);
 		return typeNames.join(sep);
 	}

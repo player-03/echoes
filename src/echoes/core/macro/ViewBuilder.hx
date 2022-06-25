@@ -1,6 +1,7 @@
 package echoes.core.macro;
 
 #if macro
+
 import echoes.core.macro.MacroTools.*;
 import echoes.core.macro.ComponentBuilder.*;
 import echoes.core.macro.ViewsOfComponentBuilder.*;
@@ -26,13 +27,36 @@ class ViewBuilder {
 		return createViewType(components).toComplexType();
 	}
 	
+	/**
+	 * Returns the name of the `View` class corresponding to the given
+	 * components. Will return the same name regardless of component order.
+	 * 
+	 * Note: C++ compilation requires generating a .cpp file for each Haxe
+	 * class, including views. To avoid Windows's file length limit, view names
+	 * will be limited to 80 characters in C++. To adjust this limit, use
+	 * `-Dechoes_max_name_length=[number]`.
+	 */
 	public static function getViewName(components:Array<ComplexType>):String {
-		var name:String = components.joinFullName("_");
-		if(name.length > 80) {
-			return "View_" + Md5.encode(name);
-		} else {
-			return "ViewOf_" + name;
+		//Use the fully-qualified component names to generate a unique hash.
+		var md5:String = "_" + Md5.encode(components.joinFullName("_")).substr(0, 5);
+		
+		//Use the unqualified component names for the final result, as they're
+		//easier to read. Include part of the hash to avoid collisions.
+		var name:String = "ViewOf_" + components.joinFullName("_", true) + md5;
+		
+		if(Context.defined("cpp")) {
+			var maxLength:Null<Int> = null;
+			if(Context.defined("echoes_max_name_length")) {
+				maxLength = Std.parseInt(Context.definedValue("echoes_max_name_length"));
+			}
+			if(maxLength == null) maxLength = 80;
+			
+			if(name.length > maxLength) {
+				return name.substr(0, maxLength - md5.length) + md5;
+			}
 		}
+		
+		return name;
 	}
 	
 	public static function build():Type {
