@@ -40,13 +40,13 @@ class EntityTools {
 				
 				return t.followMono().toComplexType();
 			});
-			
+		
 		var addComponentsToContainersExprs = [for(i in 0...components.length) {
 				var c = components[i];
 				var containerName = types[i].getComponentContainer().followName();
 				macro @:privateAccess $i{ containerName }.inst().add(__entity__, $c);
 			}];
-			
+		
 		var addEntityToRelatedViewsExprs = types
 			.map(function(ct) {
 				return ct.getViewsOfComponent().followName();
@@ -54,8 +54,8 @@ class EntityTools {
 			.map(function(viewsOfComponentClassName) {
 				return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().addIfMatched(__entity__);
 			});
-			
-		return macro #if(haxe_ver >= 4) inline #end
+		
+		return macro inline
 			( function(__entity__:echoes.Entity) {
 				$b{addComponentsToContainersExprs}
 				
@@ -83,7 +83,7 @@ class EntityTools {
 			.map(function(componentContainerClassName) {
 				return macro @:privateAccess $i{ componentContainerClassName }.inst().remove(__entity__);
 			});
-			
+		
 		var removeEntityFromRelatedViewsExprs = types
 			.map(function(ct) {
 				return ct.getViewsOfComponent().followName();
@@ -91,8 +91,8 @@ class EntityTools {
 			.map(function(viewsOfComponentClassName) {
 				return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().removeIfExists(__entity__);
 			});
-			
-		return macro #if(haxe_ver >= 4) inline #end 
+		
+		return macro inline
 			( function(__entity__:echoes.Entity) {
 				if(__entity__.isActive()) $b{ removeEntityFromRelatedViewsExprs }
 				
@@ -111,9 +111,7 @@ class EntityTools {
 	public static function get<T>(self:Expr, complexType:ComplexType):ExprOf<T> {
 		var containerName = complexType.getComponentContainer().followName();
 		
-		var ret = macro $i{ containerName }.inst().get($self);
-		
-		return ret;
+		return macro $i{ containerName }.inst().get($self);
 	}
 	
 	/**
@@ -123,9 +121,7 @@ class EntityTools {
 	public static function exists(self:Expr, complexType:ComplexType):ExprOf<Bool> {
 		var containerName = complexType.getComponentContainer().followName();
 		
-		var ret = macro $i{ containerName }.inst().exists($self);
-		
-		return ret;
+		return macro $i{ containerName }.inst().exists($self);
 	}
 }
 #end

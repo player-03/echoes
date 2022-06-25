@@ -1,6 +1,7 @@
 package echoes.core.macro;
 
 #if macro
+
 import haxe.macro.Expr;
 import haxe.macro.Expr.Access;
 import haxe.macro.Expr.ComplexType;
@@ -101,11 +102,7 @@ class MacroTools {
 	}
 	
 	private static function error(msg:String, pos:Position) {
-		#if(haxe_ver < 4) 
-		throw msg;
-		#else
 		Context.error(msg, pos);
-		#end
 	}
 	
 	private static function capitalize(s:String) {
@@ -167,4 +164,5 @@ class MacroTools {
 		return typeNames.join(sep);
 	}
 }
+
 #end
