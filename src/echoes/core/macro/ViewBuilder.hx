@@ -110,7 +110,7 @@ class ViewBuilder {
 				public var onAdded(default, null) = new echoes.utils.Signal<$callbackType>();
 				public var onRemoved(default, null) = new echoes.utils.Signal<$callbackType>();
 				
-				public function new() {
+				private function new() {
 					@:privateAccess echoes.Workflow.definedViews.push(this);
 					
 					//Add this to each corresponding list of views. For
