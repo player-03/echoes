@@ -17,54 +17,47 @@ class ViewsOfComponentBuilder {
 		var viewsOfComponentType = viewsOfComponentTypeCache.get(viewsOfComponentTypeName);
 		
 		if(viewsOfComponentType == null) {
-			// first time call in current build
+			var viewsOfComponentTypePath = tpath([], viewsOfComponentTypeName, []);
+			var viewsOfComponentComplexType = TPath(viewsOfComponentTypePath);
 			
-			try viewsOfComponentType = Context.getType(viewsOfComponentTypeName) catch(err:String) {
-				// type was not cached in previous build
+			var def = macro class $viewsOfComponentTypeName {
+				private static var instance = new $viewsOfComponentTypePath();
 				
-				var viewsOfComponentTypePath = tpath([], viewsOfComponentTypeName, []);
-				var viewsOfComponentComplexType = TPath(viewsOfComponentTypePath);
+				@:keep public static inline function inst():$viewsOfComponentComplexType {
+					return instance;
+				}
 				
-				var def = macro class $viewsOfComponentTypeName {
-					private static var instance = new $viewsOfComponentTypePath();
-					
-					@:keep public static inline function inst():$viewsOfComponentComplexType {
-						return instance;
-					}
-					
-					// instance
-					
-					private var views = new Array<echoes.core.AbstractView>();
-					
-					private function new() { }
-					
-					public inline function addRelatedView(v:echoes.core.AbstractView) {
-						views.push(v);
-					}
-					
-					public inline function addIfMatched(id:Int) {
-						for(v in views) {
-							if(v.isActive()) {
-								@:privateAccess v.addIfMatched(id);
-							}
-						}
-					}
-					
-					public inline function removeIfExists(id:Int) {
-						for(v in views) {
-							if(v.isActive()) {
-								@:privateAccess v.removeIfExists(id);
-							}
+				// instance
+				
+				private var views = new Array<echoes.core.AbstractView>();
+				
+				private function new() { }
+				
+				public inline function addRelatedView(v:echoes.core.AbstractView) {
+					views.push(v);
+				}
+				
+				public inline function addIfMatched(id:Int) {
+					for(v in views) {
+						if(v.isActive()) {
+							@:privateAccess v.addIfMatched(id);
 						}
 					}
 				}
 				
-				Context.defineType(def);
-				
-				viewsOfComponentType = viewsOfComponentComplexType.toType();
+				public inline function removeIfExists(id:Int) {
+					for(v in views) {
+						if(v.isActive()) {
+							@:privateAccess v.removeIfExists(id);
+						}
+					}
+				}
 			}
 			
-			// caching current build
+			Context.defineType(def);
+			
+			viewsOfComponentType = viewsOfComponentComplexType.toType();
+			
 			viewsOfComponentTypeCache.set(viewsOfComponentTypeName, viewsOfComponentType);
 		}
 		

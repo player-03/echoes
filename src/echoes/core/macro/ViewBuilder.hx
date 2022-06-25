@@ -100,105 +100,93 @@ class ViewBuilder {
 			return viewType;
 		}
 		
-		// first time call in current build
+		var viewTypePath:TypePath = { pack: [], name: viewClsName };
 		
-		var index = ++viewIndex;
+		/**
+		 * For instance, in a `View<Hue, Saturation>`, this would be
+		 * `macro:(Entity, Hue, Saturation) -> Void`.
+		 */
+		var callbackType:ComplexType = TFunction([macro:echoes.Entity].concat(components), macro:Void);
 		
-		try {
-			viewType = Context.getType(viewClsName);
-		} catch(err:String) {
-			// type was not cached in previous build
-			// TODO: How safe is it to cache this way?
+		/**
+		 * For instance, in a `View<Hue, Saturation>`, this would be
+		 * `[macro entity, macro HueContainer.inst().get(entity), macro SaturationContainer.inst().get(entity)]`.
+		 */
+		var callbackArgs:Array<Expr> = [macro entity].concat(components.map(c -> macro $i{ getComponentContainer(c).followName() }.inst().get(entity)));
+		
+		var def:TypeDefinition = macro class $viewClsName extends echoes.core.AbstractView {
+			private static var instance = new $viewTypePath();
 			
-			var viewTypePath:TypePath = { pack: [], name: viewClsName };
+			@:keep public static inline function inst() {
+				return instance;
+			}
 			
-			/**
-			 * For instance, in a `View<Hue, Saturation>`, this would be
-			 * `macro:(Entity, Hue, Saturation) -> Void`.
-			 */
-			var callbackType:ComplexType = TFunction([macro:echoes.Entity].concat(components), macro:Void);
+			public var onAdded(default, null) = new echoes.utils.Signal<$callbackType>();
+			public var onRemoved(default, null) = new echoes.utils.Signal<$callbackType>();
 			
-			/**
-			 * For instance, in a `View<Hue, Saturation>`, this would be
-			 * `[macro entity, macro HueContainer.inst().get(entity), macro SaturationContainer.inst().get(entity)]`.
-			 */
-			var callbackArgs:Array<Expr> = [macro entity].concat(components.map(c -> macro $i{ getComponentContainer(c).followName() }.inst().get(entity)));
-			
-			var def:TypeDefinition = macro class $viewClsName extends echoes.core.AbstractView {
-				private static var instance = new $viewTypePath();
+			private function new() {
+				@:privateAccess echoes.Workflow.definedViews.push(this);
 				
-				@:keep public static inline function inst() {
-					return instance;
-				}
-				
-				public var onAdded(default, null) = new echoes.utils.Signal<$callbackType>();
-				public var onRemoved(default, null) = new echoes.utils.Signal<$callbackType>();
-				
-				private function new() {
-					@:privateAccess echoes.Workflow.definedViews.push(this);
-					
-					//Add this to each corresponding list of views. For
-					//instance, in a `View<Hue, Saturation>`, this would produce
-					//`ViewsOfComponentHue.inst().addRelatedView(this);`
-					//`ViewsOfComponentSaturation.inst().addRelatedView(this);`
-					$b{
-						[for(c in components) {
-							var viewsOfComponentName:String = getViewsOfComponent(c).followName();
-							macro @:privateAccess $i{ viewsOfComponentName }.inst().addRelatedView(this);
-						}]
-					}
-				}
-				
-				private override function dispatchAddedCallback(entity:echoes.Entity):Void {
-					onAdded.dispatch($a{ callbackArgs });
-				}
-				
-				private override function dispatchRemovedCallback(entity:echoes.Entity):Void {
-					onRemoved.dispatch($a{ callbackArgs });
-				}
-				
-				private override function reset():Void {
-					super.reset();
-					onAdded.clear();
-					onRemoved.clear();
-				}
-				
-				public inline function iter(callback:$callbackType):Void {
-					for(entity in entities) {
-						callback($a{ callbackArgs });
-					}
-				}
-				
-				private override function isMatched(id:Int):Bool {
-					//Hard-code an `exists()` call for each component type. For
-					//instance, in a `View<Hue, Saturation>`, this would produce
-					//`return HueContainer.inst().get(entity) && SaturationContainer.inst().get(entity);`
-					return ${{
-						var checks:Array<Expr> = components.map(c -> macro $i{ getComponentContainer(c).followName() }.inst().exists(id));
-						checks.fold((a, b) -> macro $a && $b, checks.shift());
-					}};
-				}
-				
-				public override function toString():String {
-					//Return a hard-coded string. For instance, in a
-					//`View<Hue, Saturation>`, this would produce
-					//`return "Hue, Saturation";`
-					return $v{
-						components.map(c -> c.typeValidShortName()).join(", ")
-					};
+				//Add this to each corresponding list of views. For
+				//instance, in a `View<Hue, Saturation>`, this would produce
+				//`ViewsOfComponentHue.inst().addRelatedView(this);`
+				//`ViewsOfComponentSaturation.inst().addRelatedView(this);`
+				$b{
+					[for(c in components) {
+						var viewsOfComponentName:String = getViewsOfComponent(c).followName();
+						macro @:privateAccess $i{ viewsOfComponentName }.inst().addRelatedView(this);
+					}]
 				}
 			}
 			
-			Context.defineType(def);
+			private override function dispatchAddedCallback(entity:echoes.Entity):Void {
+				onAdded.dispatch($a{ callbackArgs });
+			}
 			
-			viewType = TPath(viewTypePath).toType();
+			private override function dispatchRemovedCallback(entity:echoes.Entity):Void {
+				onRemoved.dispatch($a{ callbackArgs });
+			}
+			
+			private override function reset():Void {
+				super.reset();
+				onAdded.clear();
+				onRemoved.clear();
+			}
+			
+			public inline function iter(callback:$callbackType):Void {
+				for(entity in entities) {
+					callback($a{ callbackArgs });
+				}
+			}
+			
+			private override function isMatched(id:Int):Bool {
+				//Hard-code an `exists()` call for each component type. For
+				//instance, in a `View<Hue, Saturation>`, this would produce
+				//`return HueContainer.inst().get(entity) && SaturationContainer.inst().get(entity);`
+				return ${{
+					var checks:Array<Expr> = components.map(c -> macro $i{ getComponentContainer(c).followName() }.inst().exists(id));
+					checks.fold((a, b) -> macro $a && $b, checks.shift());
+				}};
+			}
+			
+			public override function toString():String {
+				//Return a hard-coded string. For instance, in a
+				//`View<Hue, Saturation>`, this would produce
+				//`return "Hue, Saturation";`
+				return $v{
+					components.map(c -> c.typeValidShortName()).join(", ")
+				};
+			}
 		}
 		
-		// caching current build
-		viewTypeCache.set(viewClsName, viewType);
-		viewCache.set(viewClsName, { cls: viewType.toComplexType(), components: components });
+		Context.defineType(def);
 		
-		viewIds[viewClsName] = index;
+		viewType = TPath(viewTypePath).toType();
+		
+		viewTypeCache.set(viewClsName, viewType);
+		viewCache.set(viewClsName, { cls: TPath(viewTypePath), components: components });
+		
+		viewIds[viewClsName] = ++viewIndex;
 		viewNames.push(viewClsName);
 		
 		return viewType;

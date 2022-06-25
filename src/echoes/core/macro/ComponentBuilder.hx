@@ -25,62 +25,56 @@ class ComponentBuilder {
 		if(componentContainerType == null) {
 			// first time call in current build
 			
-			var index = ++componentIndex;
+			var componentContainerTypePath = tpath([], componentContainerTypeName, []);
+			var componentContainerComplexType = TPath(componentContainerTypePath);
 			
-			try componentContainerType = Context.getType(componentContainerTypeName) catch(err:String) {
-				// type was not cached in previous build
+			var def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
+				private static var instance = new $componentContainerTypePath();
 				
-				var componentContainerTypePath = tpath([], componentContainerTypeName, []);
-				var componentContainerComplexType = TPath(componentContainerTypePath);
-				
-				var def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
-					private static var instance = new $componentContainerTypePath();
-					
-					@:keep public static inline function inst():$componentContainerComplexType {
-						return instance;
-					}
-					
-					// instance
-					
-					private var storage = new echoes.core.Storage<$componentComplexType>();
-					
-					private function new() {
-						@:privateAccess echoes.Workflow.definedContainers.push(this);
-					}
-					
-					public inline function get(id:Int):$componentComplexType {
-						return storage.get(id);
-					}
-					
-					public inline function exists(id:Int):Bool {
-						return storage.exists(id);
-					}
-					
-					public inline function add(id:Int, c:$componentComplexType) {
-						storage.add(id, c);
-					}
-					
-					public inline function remove(id:Int) {
-						storage.remove(id);
-					}
-					
-					public inline function reset() {
-						storage.reset();
-					}
-					
-					public inline function print(id:Int):String {
-						return $v{componentTypeName} + "=" + Std.string(storage.get(id));
-					}
+				@:keep public static inline function inst():$componentContainerComplexType {
+					return instance;
 				}
 				
-				Context.defineType(def);
+				// instance
 				
-				componentContainerType = componentContainerComplexType.toType();
+				private var storage = new echoes.core.Storage<$componentComplexType>();
+				
+				private function new() {
+					@:privateAccess echoes.Workflow.definedContainers.push(this);
+				}
+				
+				public inline function get(id:Int):$componentComplexType {
+					return storage.get(id);
+				}
+				
+				public inline function exists(id:Int):Bool {
+					return storage.exists(id);
+				}
+				
+				public inline function add(id:Int, c:$componentComplexType) {
+					storage.add(id, c);
+				}
+				
+				public inline function remove(id:Int) {
+					storage.remove(id);
+				}
+				
+				public inline function reset() {
+					storage.reset();
+				}
+				
+				public inline function print(id:Int):String {
+					return $v{componentTypeName} + "=" + Std.string(storage.get(id));
+				}
 			}
+			
+			Context.defineType(def);
+			
+			componentContainerType = componentContainerComplexType.toType();
 			
 			// caching current build
 			componentContainerTypeCache.set(componentContainerTypeName, componentContainerType);
-			componentIds[componentTypeName] = index;
+			componentIds[componentTypeName] = ++componentIndex;
 			componentNames.push(componentTypeName);
 		}
 		
