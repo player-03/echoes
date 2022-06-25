@@ -1,6 +1,4 @@
-# Echo
-[![TravisCI Build Status](https://travis-ci.org/deepcake/echo.svg?branch=master)](https://travis-ci.org/deepcake/echo)
-
+# Echoes
 Super lightweight Entity Component System framework for Haxe.
 Initially created to learn the power of macros.
 Focused to be simple and fast.
@@ -116,7 +114,7 @@ class Render extends echoes.System {
 ```
 
 ### Live
-[Tiger on the Meadow!](https://deepcake.github.io/tiger_on_the_meadow/bin/) ([source](https://github.com/deepcake/tiger_on_the_meadow)) - small example of using Echo framework
+[Tiger on the Meadow!](https://deepcake.github.io/tiger_on_the_meadow/bin/) ([source](https://github.com/deepcake/tiger_on_the_meadow)) - small example of using Echoes framework
 
 ### Also
 There is also exists a few additional compiler flags:
@@ -128,5 +126,5 @@ There is also exists a few additional compiler flags:
 ## Install
 
 ```bash
-haxelib git echoes https://github.com/deepcake/echo.git
+haxelib git echoes https://github.com/player-03/echoes.git
 ```

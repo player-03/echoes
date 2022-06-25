@@ -22,7 +22,7 @@ class Report {
 					return array;
 				}
 				
-				var ret = "ECHO BUILD REPORT :";
+				var ret = "ECHOES BUILD REPORT :";
 				
 				ret += '\n    COMPONENTS [${componentNames.length}] :';
 				ret += "\n        " + sortedlist(componentNames.mapi(function(i, k) return '$k #${ componentIds.get(k) }').array()).join("\n        ");
