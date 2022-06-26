@@ -3,6 +3,7 @@ package echoes.core.macro;
 #if macro
 
 import haxe.macro.Context;
+import haxe.macro.Type;
 
 /**
  * Use `-Dechoes_report` to print all generated components and views, in the
@@ -22,7 +23,7 @@ class Report {
 		#if echoes_report
 		
 		if(!reportRegistered) {
-			Context.onGenerate(function(types) {
+			Context.onGenerate(function(types:Array<Type>):Void {
 				if(Context.definedValue("echoes_report") == "sorted") {
 					componentNames.sort(MacroTools.compareStrings);
 					viewNames.sort(MacroTools.compareStrings);

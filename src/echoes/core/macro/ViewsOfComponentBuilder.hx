@@ -1,14 +1,16 @@
 package echoes.core.macro;
 
 #if macro
+
 import echoes.core.macro.MacroTools.*;
 import haxe.macro.Expr.ComplexType;
 using echoes.core.macro.MacroTools;
 using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
+using haxe.macro.Type;
 
 class ViewsOfComponentBuilder {
-	private static var viewsOfComponentTypeCache = new Map<String, haxe.macro.Type>();
+	private static var viewsOfComponentTypeCache = new Map<String, Type>();
 	
 	public static function createViewsOfComponentType(componentComplexType:ComplexType):haxe.macro.Type {
 		var componentTypeName = componentComplexType.followName();
@@ -67,4 +69,5 @@ class ViewsOfComponentBuilder {
 		return createViewsOfComponentType(componentComplexType).toComplexType();
 	}
 }
+
 #end

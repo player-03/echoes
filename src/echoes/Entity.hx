@@ -3,6 +3,7 @@ package echoes;
 #if macro
 import echoes.core.macro.EntityTools;
 import haxe.macro.Expr;
+
 using echoes.core.macro.ComponentBuilder;
 using echoes.core.macro.ViewsOfComponentBuilder;
 using echoes.core.macro.MacroTools;

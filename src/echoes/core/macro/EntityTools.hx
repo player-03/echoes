@@ -1,7 +1,9 @@
 package echoes.core.macro;
 
 #if macro
+
 import haxe.macro.Expr;
+
 using echoes.core.macro.ComponentBuilder;
 using echoes.core.macro.ViewsOfComponentBuilder;
 using echoes.core.macro.MacroTools;
@@ -124,4 +126,5 @@ class EntityTools {
 		return macro $i{ containerName }.inst().exists($self);
 	}
 }
+
 #end

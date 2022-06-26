@@ -1,15 +1,18 @@
 package echoes.core.macro;
 
 #if macro
+
 import echoes.core.macro.MacroTools.*;
 import haxe.macro.Expr.ComplexType;
+
 using echoes.core.macro.MacroTools;
 using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
+using haxe.macro.Type;
 using Lambda;
 
 class ComponentBuilder {
-	private static var componentContainerTypeCache = new Map<String, haxe.macro.Type>();
+	private static var componentContainerTypeCache = new Map<String, Type>();
 	
 	public static function createComponentContainerType(componentComplexType:ComplexType) {
 		var componentTypeName = componentComplexType.followName();
@@ -77,4 +80,5 @@ class ComponentBuilder {
 		return createComponentContainerType(componentComplexType).toComplexType();
 	}
 }
+
 #end
