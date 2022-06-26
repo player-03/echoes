@@ -2,16 +2,20 @@ package echoes.core.macro;
 
 #if macro
 
-import echoes.core.macro.MacroTools.*;
-import echoes.core.macro.ViewBuilder.*;
-import echoes.core.macro.ComponentBuilder.*;
 import haxe.macro.Context;
 
-using Lambda;
-
-@:final
-@:dce
+/**
+ * Use `-Dechoes_report` to print all generated components and views, in the
+ * order they were processed. Use `-Dechoes_report=sorted` instead to view them
+ * in alphabetical order.
+ */
 class Report {
+	@:allow(echoes.core.macro.ComponentBuilder)
+	private static var componentNames:Array<String> = [];
+	
+	@:allow(echoes.core.macro.ViewBuilder)
+	private static var viewNames:Array<String> = [];
+	
 	private static var reportRegistered = false;
 	
 	public static function gen():Void {
@@ -19,19 +23,16 @@ class Report {
 		
 		if(!reportRegistered) {
 			Context.onGenerate(function(types) {
-				function sortedlist(array:Array<String>) {
-					array.sort(compareStrings);
-					return array;
+				if(Context.definedValue("echoes_report") == "sorted") {
+					componentNames.sort(MacroTools.compareStrings);
+					viewNames.sort(MacroTools.compareStrings);
 				}
 				
-				var ret:StringBuf = new StringBuf();
-				ret.add("ECHOES BUILD REPORT:");
-				
-				ret.add('\n    COMPONENTS [${componentNames.length}]:');
-				ret.add("\n        " + sortedlist(componentNames.mapi(function(i, k) return '$k #${ componentIds.get(k) }').array()).join("\n        "));
-				ret.add('\n    VIEWS [${viewNames.length}]:');
-				ret.add("\n        " + sortedlist(viewNames.mapi(function(i, k) return '$k #${ viewIds.get(k) }').array()).join("\n        "));
-				Sys.println(ret.toString());
+				Sys.println("ECHOES BUILD REPORT:\n"
+					+ '    COMPONENTS [${componentNames.length}]:\n'
+					+ "        " + componentNames.join("\n        ") + "\n"
+					+ '    VIEWS [${viewNames.length}]:\n'
+					+ "        " + viewNames.join("\n        "));
 			});
 			reportRegistered = true;
 		}

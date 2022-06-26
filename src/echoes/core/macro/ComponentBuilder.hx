@@ -9,12 +9,7 @@ using haxe.macro.ComplexTypeTools;
 using Lambda;
 
 class ComponentBuilder {
-	private static var componentIndex = -1;
-	
 	private static var componentContainerTypeCache = new Map<String, haxe.macro.Type>();
-	
-	public static var componentIds = new Map<String, Int>();
-	public static var componentNames = new Array<String>();
 	
 	public static function createComponentContainerType(componentComplexType:ComplexType) {
 		var componentTypeName = componentComplexType.followName();
@@ -71,9 +66,8 @@ class ComponentBuilder {
 		componentContainerType = componentContainerComplexType.toType();
 		
 		componentContainerTypeCache.set(componentContainerTypeName, componentContainerType);
-		componentIds[componentTypeName] = ++componentIndex;
-		componentNames.push(componentTypeName);
 		
+		Report.componentNames.push(componentTypeName);
 		Report.gen();
 		
 		return componentContainerType;
@@ -81,11 +75,6 @@ class ComponentBuilder {
 	
 	public static function getComponentContainer(componentComplexType:ComplexType):ComplexType {
 		return createComponentContainerType(componentComplexType).toComplexType();
-	}
-	
-	public static function getComponentId(componentComplexType:ComplexType):Int {
-		getComponentContainer(componentComplexType);
-		return componentIds[componentComplexType.followName()];
 	}
 }
 #end

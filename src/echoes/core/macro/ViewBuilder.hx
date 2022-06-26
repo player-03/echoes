@@ -15,11 +15,7 @@ using haxe.macro.Context;
 using Lambda;
 
 class ViewBuilder {
-	private static var viewIndex = -1;
 	private static var viewTypeCache:Map<String, Type> = new Map();
-	
-	public static var viewIds = new Map<String, Int>();
-	public static var viewNames = new Array<String>();
 	
 	public static var viewCache = new Map<String, { cls:ComplexType, components:Array<ComplexType> }>();
 	
@@ -186,8 +182,7 @@ class ViewBuilder {
 		viewTypeCache.set(viewClsName, viewType);
 		viewCache.set(viewClsName, { cls: TPath(viewTypePath), components: components });
 		
-		viewIds[viewClsName] = ++viewIndex;
-		viewNames.push(viewClsName);
+		Report.viewNames.push(viewClsName);
 		
 		return viewType;
 	}
