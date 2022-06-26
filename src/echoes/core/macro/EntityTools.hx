@@ -3,6 +3,7 @@ package echoes.core.macro;
 #if macro
 
 import haxe.macro.Expr;
+import haxe.macro.Type;
 
 using echoes.core.macro.ComponentBuilder;
 using echoes.core.macro.ViewsOfComponentBuilder;
@@ -15,7 +16,7 @@ using Lambda;
  * Entity manipulation functions. Mostly equivalent to the macros found in
  * `Entity`, except these are designed to be called by macros. The biggest
  * difference is that these take `ComplexType` instead of `ExprOf<Class<Any>>`,
- * because this way is more convenient for macros.
+ * because that's more convenient for macros.
  */
 class EntityTools {
 	/**
@@ -25,46 +26,31 @@ class EntityTools {
 	 * @return The entity.
 	 */
 	public static function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echoes.Entity> {
-		if(components.length == 0) {
-			Context.error("Nothing to add; required one or more components", Context.currentPos());
-		}
-		
-		var types = components
-			.map(function(c) {
-				var t = switch(c.expr) {
+		return macro {
+			var entity:echoes.Entity = $self;
+			
+			$b{ [for(component in components) {
+				var type:Type = switch(component.expr) {
+					//Haxe (at least, some versions of it) will interpret
+					//`new TypedefType()` as being the underlying type, but
+					//Echoes wants to respect typedefs.
 					case ENew(tp, _):
 						TPath(tp).toType();
-					case EParenthesis({ expr: ECheckType(_, t) }):
+					//Haxe can overcomplicate type check expressions. There's no
+					//need to parse the inner expression when the user already
+					//told us what type to use.
+					case ECheckType(_, t) | EParenthesis({ expr: ECheckType(_, t) }):
 						t.toType();
 					default:
-						c.typeof();
-				}
+						component.typeof();
+				};
 				
-				return t.followMono().toComplexType();
-			});
-		
-		var addComponentsToContainersExprs = [for(i in 0...components.length) {
-				var c = components[i];
-				var containerName = types[i].getComponentContainer().followName();
-				macro @:privateAccess $i{ containerName }.inst().add(__entity__, $c);
-			}];
-		
-		var addEntityToRelatedViewsExprs = types
-			.map(function(ct) {
-				return ct.getViewsOfComponent().followName();
-			})
-			.map(function(viewsOfComponentClassName) {
-				return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().addIfMatched(__entity__);
-			});
-		
-		return macro inline
-			( function(__entity__:echoes.Entity) {
-				$b{addComponentsToContainersExprs}
-				
-				if(__entity__.isActive()) $b{ addEntityToRelatedViewsExprs }
-				
-				return __entity__;
-			} )($self);
+				var containerName:String = type.followMono().toComplexType().getComponentContainer().followName();
+				macro @:privateAccess $i{ containerName }.inst().add(entity, $component);
+			}] }
+			
+			entity;
+		};
 	}
 	
 	/**
@@ -74,34 +60,16 @@ class EntityTools {
 	 * @return The entity.
 	 */
 	public static function remove(self:Expr, types:Array<ComplexType>):ExprOf<echoes.Entity> {
-		if(types.length == 0) {
-			Context.error("Nothing to remove; required one or more component types", Context.currentPos());
-		}
-		
-		var removeComponentsFromContainersExprs = types
-			.map(function(ct) {
-				return ct.getComponentContainer().followName();
-			})
-			.map(function(componentContainerClassName) {
-				return macro @:privateAccess $i{ componentContainerClassName }.inst().remove(__entity__);
-			});
-		
-		var removeEntityFromRelatedViewsExprs = types
-			.map(function(ct) {
-				return ct.getViewsOfComponent().followName();
-			})
-			.map(function(viewsOfComponentClassName) {
-				return macro @:privateAccess $i{ viewsOfComponentClassName }.inst().removeIfExists(__entity__);
-			});
-		
-		return macro inline
-			( function(__entity__:echoes.Entity) {
-				if(__entity__.isActive()) $b{ removeEntityFromRelatedViewsExprs }
-				
-				$b{ removeComponentsFromContainersExprs }
-				
-				return __entity__;
-			} )($self);
+		return macro {
+			var entity:echoes.Entity = $self;
+			
+			$b{ [for(type in types) {
+				var containerName:String = type.getComponentContainer().followName();
+				macro @:privateAccess $i{ containerName }.inst().remove(entity);
+			}] }
+			
+			entity;
+		};
 	}
 	
 	/**
@@ -111,7 +79,7 @@ class EntityTools {
 	 * @return The component, or `null` if the entity doesn't have it.
 	 */
 	public static function get<T>(self:Expr, complexType:ComplexType):ExprOf<T> {
-		var containerName = complexType.getComponentContainer().followName();
+		var containerName:String = complexType.getComponentContainer().followName();
 		
 		return macro $i{ containerName }.inst().get($self);
 	}
@@ -121,7 +89,7 @@ class EntityTools {
 	 * @param type The type to check for.
 	 */
 	public static function exists(self:Expr, complexType:ComplexType):ExprOf<Bool> {
-		var containerName = complexType.getComponentContainer().followName();
+		var containerName:String = complexType.getComponentContainer().followName();
 		
 		return macro $i{ containerName }.inst().exists($self);
 	}

@@ -3,7 +3,7 @@ package echoes.core.macro;
 #if macro
 
 import echoes.core.macro.MacroTools.*;
-import haxe.macro.Expr.ComplexType;
+import haxe.macro.Expr;
 
 using echoes.core.macro.MacroTools;
 using haxe.macro.Context;
@@ -15,16 +15,21 @@ class ComponentBuilder {
 	private static var componentContainerTypeCache = new Map<String, Type>();
 	
 	public static function createComponentContainerType(componentComplexType:ComplexType) {
-		var componentTypeName = componentComplexType.followName();
-		var componentContainerTypeName = "ContainerOf" + componentComplexType.typeName();
-		var componentContainerType = componentContainerTypeCache.get(componentContainerTypeName);
+		var componentTypeName:String = componentComplexType.followName();
+		var componentContainerTypeName:String = "ContainerOf" + componentComplexType.typeName();
+		var componentContainerType:Type = componentContainerTypeCache.get(componentContainerTypeName);
 		
 		if(componentContainerType != null) {
 			return componentContainerType;
 		}
 		
-		var componentContainerTypePath = tpath([], componentContainerTypeName, []);
-		var componentContainerComplexType = TPath(componentContainerTypePath);
+		var componentContainerTypePath:TypePath = {
+			pack: [],
+			name: componentContainerTypeName
+		};
+		var componentContainerComplexType:ComplexType = TPath(componentContainerTypePath);
+		
+		var viewsOfComponent:String = ViewsOfComponentBuilder.getViewsOfComponent(componentComplexType).followName();
 		
 		var def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
 			private static var instance = new $componentContainerTypePath();
@@ -43,20 +48,24 @@ class ComponentBuilder {
 				return storage.get(id);
 			}
 			
-			public inline function exists(id:Int):Bool {
-				return storage.exists(id);
+			public inline function exists(entity:echoes.Entity):Bool {
+				return storage.exists(entity);
 			}
 			
-			public inline function add(id:Int, c:$componentComplexType) {
-				storage.add(id, c);
+			public inline function add(entity:echoes.Entity, c:$componentComplexType):Void {
+				storage.set(entity, c);
+				
+				if(entity.isActive()) @:privateAccess $i{ viewsOfComponent }.inst().addIfMatched(entity);
 			}
 			
-			public inline function remove(id:Int) {
-				storage.remove(id);
+			public inline function remove(entity:echoes.Entity):Void {
+				if(entity.isActive()) @:privateAccess $i{ viewsOfComponent }.inst().removeIfExists(entity);
+				
+				storage.remove(entity);
 			}
 			
-			public inline function reset() {
-				storage.reset();
+			public inline function reset():Void {
+				storage.clear();
 			}
 			
 			public inline function print(id:Int):String {
