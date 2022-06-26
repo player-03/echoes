@@ -8,7 +8,6 @@ using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
 
 class ViewsOfComponentBuilder {
-	// viewsOfComponentTypeName / viewsOfComponentType
 	private static var viewsOfComponentTypeCache = new Map<String, haxe.macro.Type>();
 	
 	public static function createViewsOfComponentType(componentComplexType:ComplexType):haxe.macro.Type {
@@ -16,50 +15,50 @@ class ViewsOfComponentBuilder {
 		var viewsOfComponentTypeName = "ViewsOfComponent" + componentComplexType.typeName();
 		var viewsOfComponentType = viewsOfComponentTypeCache.get(viewsOfComponentTypeName);
 		
-		if(viewsOfComponentType == null) {
-			var viewsOfComponentTypePath = tpath([], viewsOfComponentTypeName, []);
-			var viewsOfComponentComplexType = TPath(viewsOfComponentTypePath);
+		if(viewsOfComponentType != null) {
+			return viewsOfComponentType;
+		}
+		
+		var viewsOfComponentTypePath = tpath([], viewsOfComponentTypeName, []);
+		var viewsOfComponentComplexType = TPath(viewsOfComponentTypePath);
+		
+		var def = macro class $viewsOfComponentTypeName {
+			private static var instance = new $viewsOfComponentTypePath();
 			
-			var def = macro class $viewsOfComponentTypeName {
-				private static var instance = new $viewsOfComponentTypePath();
-				
-				@:keep public static inline function inst():$viewsOfComponentComplexType {
-					return instance;
-				}
-				
-				// instance
-				
-				private var views = new Array<echoes.core.AbstractView>();
-				
-				private function new() { }
-				
-				public inline function addRelatedView(v:echoes.core.AbstractView) {
-					views.push(v);
-				}
-				
-				public inline function addIfMatched(id:Int) {
-					for(v in views) {
-						if(v.isActive()) {
-							@:privateAccess v.addIfMatched(id);
-						}
-					}
-				}
-				
-				public inline function removeIfExists(id:Int) {
-					for(v in views) {
-						if(v.isActive()) {
-							@:privateAccess v.removeIfExists(id);
-						}
+			@:keep public static inline function inst():$viewsOfComponentComplexType {
+				return instance;
+			}
+			
+			private var views = new Array<echoes.core.AbstractView>();
+			
+			private function new() { }
+			
+			public inline function addRelatedView(v:echoes.core.AbstractView) {
+				views.push(v);
+			}
+			
+			public inline function addIfMatched(id:Int) {
+				for(v in views) {
+					if(v.isActive()) {
+						@:privateAccess v.addIfMatched(id);
 					}
 				}
 			}
 			
-			Context.defineType(def);
-			
-			viewsOfComponentType = viewsOfComponentComplexType.toType();
-			
-			viewsOfComponentTypeCache.set(viewsOfComponentTypeName, viewsOfComponentType);
+			public inline function removeIfExists(id:Int) {
+				for(v in views) {
+					if(v.isActive()) {
+						@:privateAccess v.removeIfExists(id);
+					}
+				}
+			}
 		}
+		
+		Context.defineType(def);
+		
+		viewsOfComponentType = viewsOfComponentComplexType.toType();
+		
+		viewsOfComponentTypeCache.set(viewsOfComponentTypeName, viewsOfComponentType);
 		
 		return viewsOfComponentType;
 	}
