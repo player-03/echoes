@@ -24,11 +24,8 @@ class AbstractView {
 	
 	public function deactivate():Void {
 		activations--;
-		if(activations == 0) {
-			Workflow.views.remove(this);
-			while(entities.length > 0) {
-				removeIfExists(entities.pop());
-			}
+		if(activations <= 0) {
+			reset();
 		}
 	}
 	
@@ -44,16 +41,16 @@ class AbstractView {
 	 * Returns whether the entity has all of the view's required components.
 	 */
 	private function isMatched(entity:Entity):Bool {
-		// macro generated
+		//Overridden by `ViewBuilder`.
 		return false;
 	}
 	
 	private function dispatchAddedCallback(entity:Entity):Void {
-		// macro generated
+		//Overridden by `ViewBuilder`.
 	}
 	
 	private function dispatchRemovedCallback(entity:Entity):Void {
-		// macro generated
+		//Overridden by `ViewBuilder`.
 	}
 	
 	@:allow(echoes.Workflow) function addIfMatched(entity:Entity):Void {
@@ -80,7 +77,7 @@ class AbstractView {
 		while(entities.length > 0) {
 			removeIfExists(entities.pop());
 		}
-		collected.splice(0, collected.length);
+		collected.resize(0);
 	}
 	
 	public function toString():String {
