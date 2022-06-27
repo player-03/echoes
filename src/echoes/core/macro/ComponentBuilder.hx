@@ -46,11 +46,6 @@ class ComponentBuilder {
 			 */
 			private var relatedViews:Array<echoes.core.AbstractView> = [];
 			
-			/**
-			 * IDs for entities with ongoing @:add or @:remove events.
-			 */
-			private var ongoingEvents:Array<echoes.Entity> = [];
-			
 			private function new() {
 				@:privateAccess echoes.Workflow.definedContainers.push(this);
 			}
@@ -67,20 +62,13 @@ class ComponentBuilder {
 				storage.set(entity, c);
 				
 				if(entity.isActive()) {
-					if(ongoingEvents.indexOf(entity) >= 0) {
-						ongoingEvents.remove(entity);
-						throw "Can't add a " + $v{componentTypeName} + " component in the middle of its own @:remove event.";
-					}
-					
-					ongoingEvents.push(entity);
-					
 					for(view in relatedViews) {
-						if(view.isActive()) {
-							@:privateAccess view.addIfMatched(entity);
+						@:privateAccess view.addIfMatched(entity);
+						
+						if(!storage.exists(entity)) {
+							return;
 						}
 					}
-					
-					ongoingEvents.remove(entity);
 				}
 			}
 			
@@ -89,20 +77,13 @@ class ComponentBuilder {
 				storage.remove(entity);
 				
 				if(entity.isActive()) {
-					if(ongoingEvents.indexOf(entity) >= 0) {
-						ongoingEvents.remove(entity);
-						throw "Can't remove a " + $v{componentTypeName} + " component in the middle of its own @:add event.";
-					}
-					
-					ongoingEvents.push(entity);
-					
-					for(v in relatedViews) {
-						if(v.isActive()) {
-							@:privateAccess v.removeIfExists(entity, this, removedComponent);
+					for(view in relatedViews) {
+						@:privateAccess view.removeIfExists(entity, this, removedComponent);
+						
+						if(storage.exists(entity)) {
+							return;
 						}
 					}
-					
-					ongoingEvents.remove(entity);
 				}
 			}
 			
@@ -112,6 +93,10 @@ class ComponentBuilder {
 			
 			public inline function addRelatedView(v:echoes.core.AbstractView):Void {
 				relatedViews.push(v);
+			}
+			
+			public inline function removeRelatedView(v:echoes.core.AbstractView):Void {
+				relatedViews.remove(v);
 			}
 			
 			public inline function print(id:Int):String {

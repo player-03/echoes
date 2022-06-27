@@ -127,9 +127,13 @@ class ViewBuilder {
 			
 			private function new() {
 				@:privateAccess echoes.Workflow.definedViews.push(this);
+			}
+			
+			public override function activate():Void {
+				super.activate();
 				
 				//$b{} - Insert expressions from an `Array<Expr>`, in order.
-				$b{
+				if(activations == 1) $b{
 					//Each expression adds this `View` to a related list.
 					[for(c in components) {
 						var componentContainer:String = getComponentContainer(c).followName();
@@ -162,6 +166,15 @@ class ViewBuilder {
 				super.reset();
 				onAdded.clear();
 				onRemoved.clear();
+				
+				//$b{} - Insert expressions from an `Array<Expr>`, in order.
+				$b{
+					//Each expression removes this `View` from a related list.
+					[for(c in components) {
+						var componentContainer:String = getComponentContainer(c).followName();
+						macro @:privateAccess $i{ componentContainer }.inst().removeRelatedView(this);
+					}]
+				}
 			}
 			
 			public inline function iter(callback:$callbackType):Void {
