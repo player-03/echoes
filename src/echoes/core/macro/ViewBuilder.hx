@@ -4,7 +4,6 @@ package echoes.core.macro;
 
 import echoes.core.macro.MacroTools.*;
 import echoes.core.macro.ComponentBuilder.*;
-import echoes.core.macro.ViewsOfComponentBuilder.*;
 import haxe.crypto.Md5;
 import haxe.macro.Expr;
 import haxe.macro.Type;
@@ -130,14 +129,10 @@ class ViewBuilder {
 				
 				//$b{} - Insert expressions from an `Array<Expr>`, in order.
 				$b{
-					//Each expression adds this `View` to a `ViewsOfComponent`
-					//list. For instance, in a `View<Hue, Saturation>`, the
-					//expressions would be
-					//`ViewsOfComponentHue.inst().addRelatedView(this)` and
-					//`ViewsOfComponentSaturation.inst().addRelatedView(this)`.
+					//Each expression adds this `View` to a related list.
 					[for(c in components) {
-						var viewsOfComponentName:String = getViewsOfComponent(c).followName();
-						macro @:privateAccess $i{ viewsOfComponentName }.inst().addRelatedView(this);
+						var componentContainer:String = getComponentContainer(c).followName();
+						macro @:privateAccess $i{ componentContainer }.inst().addRelatedView(this);
 					}]
 				}
 			}

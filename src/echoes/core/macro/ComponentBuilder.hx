@@ -29,8 +29,6 @@ class ComponentBuilder {
 		};
 		var componentContainerComplexType:ComplexType = TPath(componentContainerTypePath);
 		
-		var viewsOfComponent:String = ViewsOfComponentBuilder.getViewsOfComponent(componentComplexType).followName();
-		
 		var def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
 			private static var instance = new $componentContainerTypePath();
 			
@@ -38,7 +36,20 @@ class ComponentBuilder {
 				return instance;
 			}
 			
-			private var storage = new echoes.core.Storage<$componentComplexType>();
+			/**
+			 * All components of this type.
+			 */
+			private var storage:echoes.core.Storage<$componentComplexType> = new echoes.core.Storage();
+			
+			/**
+			 * All views that involve this type of component.
+			 */
+			private var relatedViews:Array<echoes.core.AbstractView> = [];
+			
+			/**
+			 * IDs for entities with ongoing @:add or @:remove events.
+			 */
+			private var ongoingEvents:Array<echoes.Entity> = [];
 			
 			private function new() {
 				@:privateAccess echoes.Workflow.definedContainers.push(this);
@@ -52,23 +63,55 @@ class ComponentBuilder {
 				return storage.exists(entity);
 			}
 			
-			public inline function add(entity:echoes.Entity, c:$componentComplexType):Void {
+			public function add(entity:echoes.Entity, c:$componentComplexType):Void {
 				storage.set(entity, c);
 				
-				if(entity.isActive())
-					@:privateAccess $i{ viewsOfComponent }.inst().addIfMatched(entity);
+				if(entity.isActive()) {
+					if(ongoingEvents.indexOf(entity) >= 0) {
+						ongoingEvents.remove(entity);
+						throw "Can't add a " + $v{componentTypeName} + " component in the middle of its own @:remove event.";
+					}
+					
+					ongoingEvents.push(entity);
+					
+					for(view in relatedViews) {
+						if(view.isActive()) {
+							@:privateAccess view.addIfMatched(entity);
+						}
+					}
+					
+					ongoingEvents.remove(entity);
+				}
 			}
 			
-			public inline function remove(entity:echoes.Entity):Void {
+			public function remove(entity:echoes.Entity):Void {
 				var removedComponent:$componentComplexType = storage.get(entity);
 				storage.remove(entity);
 				
-				if(entity.isActive())
-					@:privateAccess $i{ viewsOfComponent }.inst().removeIfExists(entity, this, removedComponent);
+				if(entity.isActive()) {
+					if(ongoingEvents.indexOf(entity) >= 0) {
+						ongoingEvents.remove(entity);
+						throw "Can't remove a " + $v{componentTypeName} + " component in the middle of its own @:add event.";
+					}
+					
+					ongoingEvents.push(entity);
+					
+					for(v in relatedViews) {
+						if(v.isActive()) {
+							@:privateAccess v.removeIfExists(entity, this, removedComponent);
+						}
+					}
+					
+					ongoingEvents.remove(entity);
+				}
 			}
 			
 			public inline function reset():Void {
 				storage.clear();
+			}
+			
+			public inline function addRelatedView(v:echoes.core.AbstractView):Void {
+				relatedViews.push(v);
 			}
 			
 			public inline function print(id:Int):String {
