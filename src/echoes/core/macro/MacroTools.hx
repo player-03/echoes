@@ -3,155 +3,88 @@ package echoes.core.macro;
 #if macro
 
 import haxe.macro.Expr;
-import haxe.macro.Expr.Access;
-import haxe.macro.Expr.ComplexType;
-import haxe.macro.Expr.Field;
-import haxe.macro.Expr.FunctionArg;
-import haxe.macro.Expr.TypePath;
-import haxe.macro.Expr.Position;
 import haxe.macro.Printer;
 import haxe.macro.Type;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
-using Lambda;
 
 @:dce
 class MacroTools {
-	public static function ffun(?meta:Metadata, ?access:Array<Access>, name:String, ?args:Array<FunctionArg>, ?ret:ComplexType, ?body:Expr, pos:Position):Field {
-		return {
-			meta: meta != null ? meta : [],
-			name: name,
-			access: access != null ? access : [],
-			kind: FFun({
-				args: args != null ? args : [],
-				expr: body != null ? body : macro { },
-				ret: ret
-			}),
-			pos: pos
-		};
-	}
-	
-	public static function fvar(?meta:Metadata, ?access:Array<Access>, name:String, ?type:ComplexType, ?expr:Expr, pos:Position):Field {
-		return {
-			meta: meta != null ? meta : [],
-			name: name,
-			access: access != null ? access : [],
-			kind: FVar(type, expr),
-			pos: pos
-		};
-	}
-	
-	public static function arg(name:String, type:ComplexType):FunctionArg {
-		return {
-			name: name,
-			type: type
-		};
-	}
-	
-	public static function meta(name:String, ?params:Array<Expr>, pos:Position):MetadataEntry {
-		return {
-			name: name,
-			params: params != null ? params : [],
-			pos: pos
-		}
-	}
-	
-	public static function tpath(?pack:Array<String>, name:String, ?params:Array<TypeParam>, ?sub:String):TypePath {
-		return {
-			pack: pack != null ? pack : [],
-			name: name,
-			params: params != null ? params : [],
-			sub: sub
-		}
-	}
-	
-	public static function followMono(t:Type) {
-		return switch(t) {
-			case TMono(_.get() => tt):
-				followMono(tt);
-			case TAbstract(_.get() => {name:"Null"}, [tt]):
-				followMono(tt);
+	/**
+	 * Finds the type underlying an `Unknown<0>` and/or `Null<T>`; otherwise
+	 * returns `type` as-is.
+	 */
+	public static function followMono(type:Type):Type {
+		return switch(type) {
+			case TMono(_.get() => innerType):
+				followMono(innerType);
+			case TAbstract(_.get() => { name:"Null" }, [innerType]):
+				followMono(innerType);
 			default:
-				t;
-		}
+				type;
+		};
 	}
 	
 	/**
-	 * Adds package information and finds the type underlying `Unknown<0>` and
-	 * `Null<T>`, making it easier to examine the type.
+	 * Adds package information and finds the type underlying an `Unknown<0>`
+	 * and/or `Null<T>`, making it easier to examine the type.
 	 */
-	public static function followComplexType(ct:ComplexType) {
-		return followMono(ct.toType()).toComplexType();
+	public static function followComplexType(type:ComplexType):ComplexType {
+		return followMono(type.toType()).toComplexType();
 	}
 	
-	public static function followName(ct:ComplexType):String {
-		return new Printer().printComplexType(followComplexType(ct));
+	public static function followName(type:ComplexType):String {
+		return new Printer().printComplexType(followComplexType(type));
 	}
 	
-	public static function parseComplexType(e:Expr):ComplexType {
+	public static function parseClassExpr(e:Expr):ComplexType {
 		switch(e.expr) {
-			case EParenthesis({expr:ECheckType(_, ct)}):
-				return followComplexType(ct);
+			case EParenthesis({ expr:ECheckType(_, type) }):
+				return type;
+			case EConst(CIdent(typeString)):
+				try {
+					return followMono(typeString.getType()).toComplexType();
+				} catch(err:String) {}
 			default:
 		}
 		
-		var type = new Printer().printExpr(e);
-		
-		try {
-			return followMono(type.getType()).toComplexType();
-		} catch(err:String) {
-			throw 'Failed to parse `$type`. Try making a typedef, or use the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.';
-		}
+		throw 'Failed to parse `${new Printer().printExpr(e)}`. Try making a typedef, or use the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.';
 	}
 	
-	private static function error(msg:String, pos:Position) {
-		Context.error(msg, pos);
-	}
-	
-	private static function capitalize(s:String) {
-		return s.substr(0, 1).toUpperCase() + (s.length > 1 ? s.substr(1).toLowerCase() : "");
-	}
-	
-	private static function typeParamName(p:TypeParam, f:ComplexType->String):String {
-		switch(p) {
-			case TPType(ct):
-				return f(ct);
-			case x:
-				error('Unexpected $x!', Context.currentPos());
-				return null;
-		}
-	}
-	
-	public static function typeValidShortName(ct:ComplexType):String {
-		return typeName(ct, true, false);
-	}
-	
-	public static function typeName(ct:ComplexType, shortify = false, escape = true):String {
-		switch(followComplexType(ct)) {
+	public static function typeName(type:ComplexType, ?qualify = true):String {
+		switch(followComplexType(type)) {
 			case TFunction(args, ret):
-				return (escape ? "F" : "(")
-					+ args.map(typeName.bind(_, shortify, escape)).join(escape ? "_" : "->") + (escape ? "_R" : "->") + typeName(ret, shortify, escape)
-					+ (escape ? "" : ")");
+				return "F"
+					+ [for(arg in args) typeName(arg, qualify)].join("_")
+					+ "_R"
+					+ typeName(ret, qualify);
 			case TParent(t):
-				return (escape ? "P" : "(") + typeName(t, shortify, escape) + (escape ? "" : ")");
+				return "P" + typeName(t, qualify);
 			case TPath(t):
-				var ret = "";
-				
-				// package
-				ret += shortify ? "" : (t.pack.length > 0 ? t.pack.map(capitalize).join("") : "");
-				// class name
-				ret += shortify ? (t.sub != null ? t.sub : t.name) : (t.name + (t.sub != null ? t.sub : ""));
-				
-				// type params
-				if(t.params != null && t.params.length > 0) {
-					var tpName = typeParamName.bind(_, typeName.bind(_, shortify, escape));
-					ret += (escape ? "Of" : "<") + t.params.map(tpName).join(escape ? "_" : ",") + (escape ? "" : ">");
+				var name:String;
+				if(qualify) {
+					name = t.pack.join("") + (t.name + (t.sub != null ? t.sub : ""));
+				} else {
+					name = t.sub != null ? t.sub : t.name;
 				}
 				
-				return ret;
+				if(t.params != null && t.params.length > 0) {
+					name += "Of"
+						+ [for(param in t.params)
+							switch(param) {
+								case TPType(type):
+									typeName(type, qualify);
+								case x:
+									Context.error('Unexpected $x!', Context.currentPos());
+									null;
+							}
+						].join("_");
+				}
+				
+				return name;
 			case x:
-				error('Unexpected $x!', Context.currentPos());
+				Context.error('Unexpected $x!', Context.currentPos());
 				return null;
 		}
 	}
@@ -162,8 +95,8 @@ class MacroTools {
 		return (a < b) ? -1 : (a > b) ? 1 : 0;
 	}
 	
-	public static function joinFullName(types:Array<ComplexType>, sep:String, shortify:Bool = false) {
-		var typeNames = types.map(typeName.bind(_, shortify, true));
+	public static function joinNames(types:Array<ComplexType>, sep:String, ?qualify:Bool = true):String {
+		var typeNames:Array<String> = [for(type in types) typeName(type, qualify)];
 		typeNames.sort(compareStrings);
 		return typeNames.join(sep);
 	}

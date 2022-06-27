@@ -3,6 +3,7 @@ package echoes;
 #if macro
 import echoes.core.macro.EntityTools;
 import haxe.macro.Expr;
+import haxe.macro.Printer;
 
 using echoes.core.macro.ComponentBuilder;
 using echoes.core.macro.MacroTools;
@@ -108,7 +109,7 @@ abstract Entity(Int) from Int to Int {
 	 * @return This entity.
 	 */
 	public macro function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echoes.Entity> {
-		return EntityTools.remove(self, [for(type in types) type.parseComplexType()]);
+		return EntityTools.remove(self, [for(type in types) type.parseClassExpr()]);
 	}
 	
 	/**
@@ -118,7 +119,7 @@ abstract Entity(Int) from Int to Int {
 	 * @return The component, or `null` if the entity doesn't have it.
 	 */
 	public macro function get<T>(self:Expr, type:ExprOf<Class<T>>):ExprOf<T> {
-		return EntityTools.get(self, type.parseComplexType());
+		return EntityTools.get(self, type.parseClassExpr());
 	}
 	
 	/**
@@ -126,7 +127,7 @@ abstract Entity(Int) from Int to Int {
 	 * @param type The type to check for.
 	 */
 	public macro function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-		return EntityTools.exists(self, type.parseComplexType());
+		return EntityTools.exists(self, type.parseClassExpr());
 	}
 }
 

@@ -6,6 +6,7 @@ import echoes.core.macro.MacroTools.*;
 import echoes.core.macro.ComponentBuilder.*;
 import haxe.crypto.Md5;
 import haxe.macro.Expr;
+import haxe.macro.Printer;
 import haxe.macro.Type;
 
 using echoes.core.macro.MacroTools;
@@ -33,11 +34,11 @@ class ViewBuilder {
 	 */
 	public static function getViewName(components:Array<ComplexType>):String {
 		//Use the fully-qualified component names to generate a unique hash.
-		var md5:String = "_" + Md5.encode(components.joinFullName("_")).substr(0, 5);
+		var md5:String = "_" + Md5.encode(components.joinNames("_")).substr(0, 5);
 		
 		//Use the unqualified component names for the final result, as they're
 		//easier to read. Include part of the hash to avoid collisions.
-		var name:String = "ViewOf_" + components.joinFullName("_", true) + md5;
+		var name:String = "ViewOf_" + components.joinNames("_", false) + md5;
 		
 		if(Context.defined("cpp")) {
 			var maxLength:Null<Int> = null;
@@ -188,7 +189,7 @@ class ViewBuilder {
 				//names. For instance, in a `View<Hue, Saturation>`, the string
 				//would be `"Hue, Saturation"`.
 				return $v{
-					components.map(c -> c.typeValidShortName()).join(", ")
+					components.map(new Printer().printComplexType).join(", ")
 				};
 			}
 		}
