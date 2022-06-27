@@ -32,7 +32,11 @@ class ViewsOfComponentBuilder {
 			}
 			
 			private var views:Array<echoes.core.AbstractView> = [];
-			private var entitiesBeingRemoved:Array<Int> = [];
+			
+			/**
+			 * IDs for entities with ongoing @:add or @:remove events.
+			 */
+			private var ongoingEvents:Array<echoes.Entity> = [];
 			
 			private function new() { }
 			
@@ -41,20 +45,29 @@ class ViewsOfComponentBuilder {
 			}
 			
 			public inline function addIfMatched(entity:echoes.Entity):Void {
-				if(entitiesBeingRemoved.indexOf(entity) >= 0) {
-					entitiesBeingRemoved.remove(entity);
-					throw "Not allowed to add an entity during its own @:remove event.";
+				if(ongoingEvents.indexOf(entity) >= 0) {
+					ongoingEvents.remove(entity);
+					throw "Can't add a " + $v{componentTypeName} + " component in the middle of its own @:remove event.";
 				}
+				
+				ongoingEvents.push(entity);
 				
 				for(v in views) {
 					if(v.isActive()) {
 						@:privateAccess v.addIfMatched(entity);
 					}
 				}
+				
+				ongoingEvents.remove(entity);
 			}
 			
 			public inline function removeIfExists(entity:echoes.Entity, removedComponentStorage:echoes.core.ICleanableComponentContainer, removedComponent:Any):Void {
-				entitiesBeingRemoved.push(entity);
+				if(ongoingEvents.indexOf(entity) >= 0) {
+					ongoingEvents.remove(entity);
+					throw "Can't remove a " + $v{componentTypeName} + " component in the middle of its own @:add event.";
+				}
+				
+				ongoingEvents.push(entity);
 				
 				for(v in views) {
 					if(v.isActive()) {
@@ -62,7 +75,7 @@ class ViewsOfComponentBuilder {
 					}
 				}
 				
-				entitiesBeingRemoved.remove(entity);
+				ongoingEvents.remove(entity);
 			}
 		}
 		
