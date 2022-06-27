@@ -31,28 +31,38 @@ class ViewsOfComponentBuilder {
 				return instance;
 			}
 			
-			private var views = new Array<echoes.core.AbstractView>();
+			private var views:Array<echoes.core.AbstractView> = [];
+			private var entitiesBeingRemoved:Array<Int> = [];
 			
 			private function new() { }
 			
-			public inline function addRelatedView(v:echoes.core.AbstractView) {
+			public inline function addRelatedView(v:echoes.core.AbstractView):Void {
 				views.push(v);
 			}
 			
-			public inline function addIfMatched(id:Int) {
+			public inline function addIfMatched(entity:echoes.Entity):Void {
+				if(entitiesBeingRemoved.indexOf(entity) >= 0) {
+					entitiesBeingRemoved.remove(entity);
+					throw "Not allowed to add an entity during its own @:remove event.";
+				}
+				
 				for(v in views) {
 					if(v.isActive()) {
-						@:privateAccess v.addIfMatched(id);
+						@:privateAccess v.addIfMatched(entity);
 					}
 				}
 			}
 			
-			public inline function removeIfExists(id:Int) {
+			public inline function removeIfExists(entity:echoes.Entity, removedComponentStorage:echoes.core.ICleanableComponentContainer, removedComponent:Any):Void {
+				entitiesBeingRemoved.push(entity);
+				
 				for(v in views) {
 					if(v.isActive()) {
-						@:privateAccess v.removeIfExists(id);
+						@:privateAccess v.removeIfExists(entity, removedComponentStorage, removedComponent);
 					}
 				}
+				
+				entitiesBeingRemoved.remove(entity);
 			}
 		}
 		

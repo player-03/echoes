@@ -99,16 +99,21 @@ class ViewBuilder {
 		var viewTypePath:TypePath = { pack: [], name: viewClsName };
 		
 		/**
-		 * For instance, in a `View<Hue, Saturation>`, this would be
-		 * `macro:(Entity, Hue, Saturation) -> Void`.
+		 * The function signature of the view's event dispatchers and associated
+		 * event listeners. For instance, in a `View<Hue, Saturation>`, this
+		 * would be `macro:(Entity, Hue, Saturation) -> Void`.
 		 */
 		var callbackType:ComplexType = TFunction([macro:echoes.Entity].concat(components), macro:Void);
 		
 		/**
-		 * For instance, in a `View<Hue, Saturation>`, this would be
+		 * The arguments required to dispatch an event. For instance, in a
+		 * `View<Hue, Saturation>`, this would be
 		 * `[macro entity, macro HueContainer.inst().get(entity), macro SaturationContainer.inst().get(entity)]`.
 		 */
-		var callbackArgs:Array<Expr> = [macro entity].concat(components.map(c -> macro $i{ getComponentContainer(c).followName() }.inst().get(entity)));
+		var callbackArgs:Array<Expr> = [macro entity]
+			.concat([for(component in components)
+				macro $i{ getComponentContainer(component).followName() }.inst().get(entity)
+			]);
 		
 		var def:TypeDefinition = macro class $viewClsName extends echoes.core.AbstractView {
 			private static var instance = new $viewTypePath();
@@ -123,11 +128,13 @@ class ViewBuilder {
 			private function new() {
 				@:privateAccess echoes.Workflow.definedViews.push(this);
 				
-				//Add this to each corresponding list of views. For
-				//instance, in a `View<Hue, Saturation>`, this would produce
-				//`ViewsOfComponentHue.inst().addRelatedView(this);`
-				//`ViewsOfComponentSaturation.inst().addRelatedView(this);`
+				//$b{} - Insert expressions from an `Array<Expr>`, in order.
 				$b{
+					//Each expression adds this `View` to a `ViewsOfComponent`
+					//list. For instance, in a `View<Hue, Saturation>`, the
+					//expressions would be
+					//`ViewsOfComponentHue.inst().addRelatedView(this)` and
+					//`ViewsOfComponentSaturation.inst().addRelatedView(this)`.
 					[for(c in components) {
 						var viewsOfComponentName:String = getViewsOfComponent(c).followName();
 						macro @:privateAccess $i{ viewsOfComponentName }.inst().addRelatedView(this);
@@ -136,11 +143,23 @@ class ViewBuilder {
 			}
 			
 			private override function dispatchAddedCallback(entity:echoes.Entity):Void {
+				//$a{} - Insert function arguments from an `Array<Expr>`.
 				onAdded.dispatch($a{ callbackArgs });
 			}
 			
-			private override function dispatchRemovedCallback(entity:echoes.Entity):Void {
-				onRemoved.dispatch($a{ callbackArgs });
+			private override function dispatchRemovedCallback(entity:echoes.Entity, ?removedComponentStorage:echoes.core.ICleanableComponentContainer, ?removedComponent:Any):Void {
+				onRemoved.dispatch(
+					//$a{} - Insert function arguments from an `Array<Expr>`.
+					//Start with `entity` because that's always required.
+					$a{ [macro entity].concat(
+						//Each subsequent expression should look up a component.
+						//However, if `removedComponent` was specified, we want
+						//to use that in place of one of the components.
+						[for(component in components) macro {
+							var inst = $i{ getComponentContainer(component).followName() }.inst();
+							inst == removedComponentStorage ? removedComponent : inst.get(entity);
+						}]
+					) });
 			}
 			
 			private override function reset():Void {
@@ -151,24 +170,28 @@ class ViewBuilder {
 			
 			public inline function iter(callback:$callbackType):Void {
 				for(entity in entities) {
+					//$a{} - Insert function arguments from an `Array<Expr>`.
 					callback($a{ callbackArgs });
 				}
 			}
 			
 			private override function isMatched(id:Int):Bool {
-				//Hard-code an `exists()` call for each component type. For
-				//instance, in a `View<Hue, Saturation>`, this would produce
-				//`return HueContainer.inst().get(entity) && SaturationContainer.inst().get(entity);`
+				//Insert a single long expression.
 				return ${{
+					//The expression consists of several `exists()` checks. For
+					//instance, in a `View<Hue, Saturation>`, the two checks
+					//would be `HueContainer.inst().exists(entity)` and
+					//`SaturationContainer.inst().exists(entity)`.
 					var checks:Array<Expr> = components.map(c -> macro $i{ getComponentContainer(c).followName() }.inst().exists(id));
+					//The checks are joined by `&&` operators.
 					checks.fold((a, b) -> macro $a && $b, checks.shift());
 				}};
 			}
 			
 			public override function toString():String {
-				//Return a hard-coded string. For instance, in a
-				//`View<Hue, Saturation>`, this would produce
-				//`return "Hue, Saturation";`
+				//Insert the value of a string formed by joining the component
+				//names. For instance, in a `View<Hue, Saturation>`, the string
+				//would be `"Hue, Saturation"`.
 				return $v{
 					components.map(c -> c.typeValidShortName()).join(", ")
 				};

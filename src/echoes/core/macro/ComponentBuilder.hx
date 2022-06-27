@@ -55,13 +55,16 @@ class ComponentBuilder {
 			public inline function add(entity:echoes.Entity, c:$componentComplexType):Void {
 				storage.set(entity, c);
 				
-				if(entity.isActive()) @:privateAccess $i{ viewsOfComponent }.inst().addIfMatched(entity);
+				if(entity.isActive())
+					@:privateAccess $i{ viewsOfComponent }.inst().addIfMatched(entity);
 			}
 			
 			public inline function remove(entity:echoes.Entity):Void {
-				if(entity.isActive()) @:privateAccess $i{ viewsOfComponent }.inst().removeIfExists(entity);
-				
+				var removedComponent:$componentComplexType = storage.get(entity);
 				storage.remove(entity);
+				
+				if(entity.isActive())
+					@:privateAccess $i{ viewsOfComponent }.inst().removeIfExists(entity, this, removedComponent);
 			}
 			
 			public inline function reset():Void {

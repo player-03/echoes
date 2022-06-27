@@ -49,13 +49,13 @@ class AbstractView {
 		//Overridden by `ViewBuilder`.
 	}
 	
-	private function dispatchRemovedCallback(entity:Entity):Void {
+	private function dispatchRemovedCallback(entity:Entity, ?removedComponentStorage:ICleanableComponentContainer, ?removedComponent:Any):Void {
 		//Overridden by `ViewBuilder`.
 	}
 	
 	@:allow(echoes.Workflow) function addIfMatched(entity:Entity):Void {
-		if(isMatched(entity)) {
-			if(collected[entity] != true) {
+		if(collected[entity] != true) {
+			if(isMatched(entity)) {
 				collected[entity] = true;
 				entities.add(entity);
 				dispatchAddedCallback(entity);
@@ -63,15 +63,15 @@ class AbstractView {
 		}
 	}
 	
-	@:allow(echoes.Workflow) function removeIfExists(entity:Entity):Void {
+	@:allow(echoes.Workflow) function removeIfExists(entity:Entity, ?removedComponentStorage:ICleanableComponentContainer, ?removedComponent:Any):Void {
 		if(collected[entity] == true) {
 			collected[entity] = false;
 			entities.remove(entity);
-			dispatchRemovedCallback(entity);
+			dispatchRemovedCallback(entity, removedComponentStorage, removedComponent);
 		}
 	}
 	
-	@:allow(echoes.Workflow) function reset() {
+	@:allow(echoes.Workflow) function reset():Void {
 		activations = 0;
 		Workflow.views.remove(this);
 		while(entities.length > 0) {
