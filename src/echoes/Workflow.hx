@@ -35,8 +35,10 @@ class Workflow {
 	public static var systems(default, null) = new RestrictedLinkedList<ISystem>();
 	
 	#if echoes_profiling
-	private static var updateTime = .0;
+	private static var lastUpdateLength:Int = 0;
 	#end
+	
+	private static var lastUpdate:Float = 0;
 	
 	/**
 	 * Returns the workflow statistics:
@@ -57,7 +59,7 @@ class Workflow {
 		var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idPool.length} ]'; // TODO version or something
 		
 		#if echoes_profiling
-		ret += ' : $updateTime ms'; // total
+		ret += ' : $lastUpdateLength ms'; // total
 		for(s in systems) {
 			ret += '\n${ s.info('    ', 1) }';
 		}
@@ -69,17 +71,20 @@ class Workflow {
 		return ret;
 	}
 	
-	public static function update(dt:Float) {
-		#if echoes_profiling
-		var timestamp = Date.now().getTime();
-		#end
+	/**
+	 * Updates all active systems.
+	 */
+	public static function update():Void {
+		var startTime:Float = haxe.Timer.stamp();
+		var dt:Float = startTime - lastUpdate;
+		lastUpdate = startTime;
 		
 		for(s in systems) {
 			s.__update__(dt);
 		}
 		
 		#if echoes_profiling
-		updateTime = Std.int(Date.now().getTime() - timestamp);
+		lastUpdateLength = Std.int((haxe.Timer.stamp() - startTime) * 1000);
 		#end
 	}
 	
