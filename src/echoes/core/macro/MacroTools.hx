@@ -12,14 +12,19 @@ using haxe.macro.Context;
 @:dce
 class MacroTools {
 	/**
-	 * Finds the type underlying an `Unknown<0>` and/or `Null<T>`; otherwise
-	 * returns `type` as-is.
+	 * Acts like `Context.follow()`, but doesn't follow abstracts and typedefs
+	 * unless they're marked `@:useUnderlyingType`. Normally, it only follows
+	 * monomorphs and `Null<T>` types.
 	 */
 	public static function followMono(type:Type):Type {
 		return switch(type) {
 			case TMono(_.get() => innerType):
 				followMono(innerType);
 			case TAbstract(_.get() => { name:"Null" }, [innerType]):
+				followMono(innerType);
+			case TAbstract(_.get() => { type: innerType, meta: meta }, _)
+				| TType(_.get() => { type: innerType, meta: meta }, _)
+				if(meta.has(":useUnderlyingType")):
 				followMono(innerType);
 			default:
 				type;
@@ -41,7 +46,7 @@ class MacroTools {
 	public static function parseClassExpr(e:Expr):ComplexType {
 		switch(e.expr) {
 			case EParenthesis({ expr:ECheckType(_, type) }):
-				return type;
+				return followComplexType(type);
 			case EConst(CIdent(typeString)):
 				try {
 					return followMono(typeString.getType()).toComplexType();
