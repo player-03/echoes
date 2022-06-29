@@ -84,13 +84,13 @@ class System implements echoes.core.ISystem {
 		return activated;
 	}
 	
-	public function info(indent = "    ", level = 0):String {
-		var span = StringTools.rpad("", indent, indent.length * level);
+	public function info(?indent = "    ", ?level = 0):String {
+		indent = StringTools.rpad("", indent, indent.length * level);
 		
 		#if echoes_profiling
-		return '$span$this : $__updateTime__ ms';
+		return '$indent$this : $__updateTime__ ms';
 		#else
-		return '$span$this';
+		return '$indent$this';
 		#end
 	}
 	

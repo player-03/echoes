@@ -4,65 +4,66 @@ import echoes.core.ISystem;
 import echoes.utils.Timestep;
 
 /**
- * List of Systems. Can be used for better update control:
+ * A group of systems, to help with organization.
  * 
  * ```haxe
- * var physics = new SystemList();
+ * var physics:SystemList = new SystemList("Physics");
  * physics.add(new MovementSystem());
- * physics.add(new CollisionResolveSystem());
+ * physics.add(new CollisionSystem());
  * Workflow.add(physics);
  * ```
  */
+@:allow(echoes)
 class SystemList implements ISystem {
 	#if echoes_profiling
-	private var __updateTime__ = .0;
+	private var lastUpdateLength:Int = 0;
 	#end
 	
 	private var name:String;
 	
-	private var systems = new List<ISystem>();
+	private var systems:Array<ISystem> = [];
 	
-	private var activated = false;
+	private var activated:Bool = false;
 	
 	private var timestep:Timestep;
 	
-	public function new(name = "list", ?timestep:Timestep) {
+	public function new(?name = "SystemList", ?timestep:Timestep) {
 		this.name = name;
 		this.timestep = timestep != null ? timestep : new Timestep();
 	}
 	
-	@:noCompletion @:final public function __activate__() {
+	@:noCompletion public function __activate__():Void {
 		if(!activated) {
 			activated = true;
-			for(s in systems) {
-				s.__activate__();
+			for(system in systems) {
+				system.__activate__();
 			}
 		}
 	}
 	
-	@:noCompletion @:final public function __deactivate__() {
+	@:noCompletion public function __deactivate__():Void {
 		if(activated) {
 			activated = false;
-			for(s in systems) {
-				s.__deactivate__();
+			for(system in systems) {
+				system.__deactivate__();
 			}
 		}
 	}
 	
-	@:noCompletion @:final public function __update__(dt:Float) {
+	@:noCompletion public function __update__(dt:Float):Void {
 		#if echoes_profiling
-		var __timestamp__ = Date.now().getTime();
+		var startTime:Float = haxe.Timer.stamp();
 		#end
 		
 		timestep.advance(dt);
 		for(step in timestep) {
-			for(s in systems) {
-				s.__update__(step);
+			for(system in systems) {
+				system.__update__(step);
 			}
 		}
 		
 		#if echoes_profiling
-		__updateTime__ = Std.int(Date.now().getTime() - __timestamp__);
+		lastUpdateLength = Std.int((haxe.Timer.stamp() - startTime) * 1000);
 		#end
 	}
 	
@@ -70,47 +71,50 @@ class SystemList implements ISystem {
 		return activated;
 	}
 	
-	public function info(indent = "    ", level = 0):String {
-		var span = StringTools.rpad("", indent, indent.length * level);
+	public function info(?indent:String = "    ", ?level:Int = 0):String {
+		var result:StringBuf = new StringBuf();
+		for(i in 0...level) {
+			result.add(indent);
+		}
 		
-		var ret = '$span$name';
+		result.add(name);
 		
 		#if echoes_profiling
-		ret += ' : $__updateTime__ ms';
+		result.add(' : $lastUpdateLength ms');
 		#end
 		
-		if(systems.length > 0) {
-			for(s in systems) {
-				ret += '\n${ s.info(indent, level + 1) }';
+		for(system in systems) {
+			result.add('\n${ system.info(indent, level + 1) }');
+		}
+		
+		return result.toString();
+	}
+	
+	public function add(system:ISystem):SystemList {
+		if(!exists(system)) {
+			systems.push(system);
+			if(activated) {
+				system.__activate__();
 			}
 		}
 		
-		return ret;
-	}
-	
-	public function add(s:ISystem):SystemList {
-		if(!exists(s)) {
-			systems.add(s);
-			if(activated) {
-				s.__activate__();
-			}
-		}
 		return this;
 	}
 	
-	public function remove(s:ISystem):SystemList {
-		if(exists(s)) {
-			systems.remove(s);
+	public function remove(system:ISystem):SystemList {
+		if(exists(system)) {
+			systems.remove(system);
 			if(activated) {
-				s.__deactivate__();
+				system.__deactivate__();
 			}
 		}
+		
 		return this;
 	}
 	
-	public function exists(s:ISystem):Bool {
-		return systems.exists(s);
+	public function exists(system:ISystem):Bool {
+		return systems.contains(system);
 	}
 	
-	public function toString():String return "SystemList";
+	public function toString():String return name;
 }
