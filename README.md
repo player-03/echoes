@@ -1,129 +1,163 @@
 # Echoes
-Super lightweight Entity Component System framework for Haxe.
-Initially created to learn the power of macros.
-Focused to be simple and fast.
-Inspired by other haxe ECS frameworks, especially [EDGE](https://github.com/fponticelli/edge), [ECX](https://github.com/eliasku/ecx), [ESKIMO](https://github.com/PDeveloper/eskimo) and [Ash-Haxe](https://github.com/nadako/Ash-Haxe)
+A macro-based [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system) framework, focusing on ease of use.
+
+This framework was [designed and implemented by deepcake](https://github.com/deepcake/echo), and is now maintained by player-03.
 
 ## Overview
 
-* Component is an instance of `T:Any` class. For each class `T` will be generated a global component container, where instance of `T` is a value and `Entity` is a key.
-* `Entity` in that case is just an abstract over the `Int`, but with the ability to work with it as with a set of components like in other regular ECS frameworks.
-* `View<T1, T2, TN>` is a collection of entities containing all components of the required types `T1, T2, TN`. Views are placed in Systems.
-* `System` is a place for processing a certain set of data represented by views.
-* To organize systems in phases can be used the `SystemList`.
+- A component is an individual piece of data. It can be a string, a class, an abstract, or any other valid Haxe type.
+  - Usage: Components can be any type, but you need to make sure they're distinct. For instance, instead of storing a name as a plain `String`, define `typedef CharacterName = String` or `abstract CharacterName(String) {}`. Later, you'll be able to assign a unique meaning to `CharacterName`, separate from other strings.
+- An [entity](src/echoes/Entity.hx) is a collection of data. It fills a similar role to object instances in object-oriented programming, but functions differently. Its components aren't pre-defined the way an object's variables are; in fact, you can mix and match them at runtime.
+  - Usage: Create an entity with `new echoes.Entity()`. From here you can call `entity.add(new Component())` for all the components it needs.
+- A [system](src/echoes/System.hx) updates and modifies entities. Whereas in object-oriented programming, objects usually have instance methods to update themselves, here that job is reserved for systems.
+  - Systems use [views](src/echoes/View.hx) to filter entities. `View<A, B>` lists all entities with both the `A` component and the `B` component, which is convenient when a system wants to modify that specific data.
+  - For usage instructions, [see below](#sample-usage).
+- The [workflow](src/echoes/Workflow.hx) (singular) tracks all active entities and systems.
+  - Usage: Call `Workflow.addSystem()` to activate each of your systems. Alternatively, you can add your systems to a [`SystemList`](src/echoes/SystemList.hx), and add that to the workflow instead.
+  - At regular intervals (typically once per frame), call `Workflow.update()` to run the game.
 
-### Example
+### Sample usage
 
 ```haxe
+import echoes.Entity;
+import echoes.System;
 import echoes.SystemList;
 import echoes.Workflow;
-import echoes.Entity;
 
-class Example {
-  static function main() {
-    var physics = new SystemList()
-      .add(new Movement())
-      .add(new CollisionResolver());
-
-    Workflow.addSystem(physics);
-    Workflow.addSystem(new Render()); // or just add systems directly
-
-    var john = createRabbit(0, 0, 1, 1, 'John');
-    var jack = createRabbit(5, 5, 1, 1, 'Jack');
-
-    trace(jack.exists(Position)); // true
-    trace(jack.get(Position).x); // 5
-    jack.remove(Position); // oh no!
-    jack.add(new Position(1, 1)); // okay
-
-    // also somewhere should be Workflow.update call on every tick
-    Workflow.update(1.0);
+class EchoesExample {
+  public static function main():Void {
+    var physicsSystems:SystemList = new SystemList("Physics");
+    physicsSystems.add(new MovementSystem());
+    physicsSystems.add(new CollisionSystem());
+    
+    Workflow.addSystem(physicsSystems);
+    Workflow.addSystem(new Render());
+    
+    //Create three entities: two rabbits and one tree.
+    var john:Entity = createRabbit(0, 0, 2.5, 0, "John");
+    var jack:Entity = createRabbit(100, 0, -2.5, 0, "Jack");
+    createTree(60, 0);
+    
+    //You can manually access and modify components, if needed.
+    trace(jack.get(Position).x); //100
+    john.get(Velocity).x = 3.5;
+    trace(john.get(Velocity)); //{ x: 3.5, y: 0 }
+    
+    //Each component has a specific type. Even though `Name` is a typedef of
+    //`String`, Echoes considers them to be different.
+    trace(jack.get(String)); //null
+    trace(jack.get(Name)); //"Jack"
+    
+    //Update the workflow 60 times per second.
+    new Timer(Std.int(1000 / 60)).run = Workflow.update;
   }
-  static function createTree(x:Float, y:Float) {
+  
+  private static function createTree(x:Float, y:Float):Entity {
     return new Entity()
       .add(new Position(x, y))
-      .add(new Sprite('assets/tree.png'));
+      .add(new Bitmap(Assets.getBitmapData("assets/tree.png")));
   }
-  static function createRabbit(x:Float, y:Float, vx:Float, vy:Float, name:Name) {
-    var pos = new Position(x, y);
-    var vel = new Velocity(vx, vy);
-    var spr = new Sprite('assets/rabbit.png');
-    return new Entity().add(pos, vel, spr, name);
-  }
-}
-
-@:forward
-abstract Name(String) from String to String {
-  public function new(name:String) this = name;
-}
-
-class Movement extends echoes.System {
-  // @:update-functions will be called for every entity that contains all the defined components;
-  // All args are interpreted as components, except Float (reserved for delta time) and Int/Entity;
-  @:update function updateBody(pos:Position, vel:Velocity, dt:Float, entity:Entity) {
-    pos.x += vel.x * dt;
-    pos.y += vel.y * dt;
-  }
-  // If @:update-functions are defined without components, 
-  // they are called only once per system's update;
-  @:update function traceHello(dt:Float) {
-    trace('Hello!');
-  }
-  // The execution order of @:update-functions is the same as the definition order, 
-  // so you can perform some preparations before or after iterating over entities;
-  @:update function traceWorld() {
-    trace('World!');
+  
+  private static function createRabbit(x:Float, y:Float, vx:Float, vy:Float, name:Name):Entity {
+    var pos:Position = new Position(x, y);
+    var vel:Velocity = new Velocity(vx, vy);
+    var bmp:Bitmap = new Bitmap(Assets.getBitmapData("assets/rabbit.png"));
+    return new Entity().add(pos, vel, bmp, name);
   }
 }
 
-class NamePrinter extends echoes.System {
-  // All of necessary for meta-functions views will be defined and initialized under the hood, 
-  // but it is also possible to define the View manually (initialization is still not required) 
-  // for additional features such as counting and sorting entities;
-  var named:View<Name>;
+typedef Name = String;
 
-  @:update function sortAndPrint() {
-    named.entities.sort((e1, e2) -> e1.get(Name) < e2.get(Name) ? -1 : 1);
-    // using Lambda
-    named.entities.iter(e -> trace(e.get(Name)));
+class MovementSystem extends System {
+  private var timeElapsed:Float = 0;
+  
+  //@:update functions will be called once per frame per matching entity. Here,
+  //a "matching entity" is one with both a `Position` and a `Velocity`. (The
+  //`Float` argument is a special case, and is not treated as a component.)
+  @:update
+  private function updatePosition(position:Position, velocity:Velocity, time:Float):Void {
+      //Changing the entity's position a small amount each frame produces the
+      //appearance of smooth motion.
+      position.x += velocity.x * time;
+      position.y += velocity.y * time;
+  }
+  
+  //You can define a custom `View` instead of writing a function. You don't need
+  //to set it equal to anything; this will be done for you.
+  private var velocityView:View<Velocity>;
+  
+  //Functions without arguments, or with only a `Float` argument, will be called
+  //only once per update.
+  @:update private function countTime(time:Float):Void {
+    if(timeElapsed < 0) {
+      return;
+    }
+    
+    timeElapsed += time;
+    
+    if(timeElapsed >= 20) {
+      trace("Race over!");
+      
+      for(entity in velocityView.entities) {
+        //An entity in `velocityView` is guaranteed to have a `Velocity`.
+        var velocity:Velocity = entity.get(Velocity);
+        velocity.x = 0;
+        velocity.y = 0;
+      }
+    }
   }
 }
 
-class Render extends echoes.System {
-  var scene:DisplayObjectContainer;
-  // There are @:a, @:u and @:r shortcuts for @:added, @:update and @:removed metas;
-  // @:added/@:removed-functions are callbacks that are called when an entity is added/removed from the view;
-  @:a function onEntityWithSpriteAndPositionAdded(spr:Sprite, pos:Position) {
+class Render extends System {
+  private var scene:DisplayObjectContainer;
+  
+  //Constructors are allowed but not required.
+  public function new() {
+    scene = Lib.current;
+  }
+  
+  //@:add functions are called when an entity gains _all_ of the required
+  //components. In this case, there's just one.
+  @:add private function onBitmapAdded(bmp:Bitmap):Void {
     scene.addChild(spr);
   }
-  // Even if callback was triggered by destroying the entity, 
-  // @:removed-function will be called before this happens, 
-  // so access to the component will be still exists;
-  @:r function onEntityWithSpriteAndPositionRemoved(spr:Sprite, pos:Position, e:Entity) {
-    scene.removeChild(spr); // spr is still not a null
-    trace('Oh My God! They removed ${ e.exists(Name) ? e.get(Name) : "Unknown Sprite" }!');
+  
+  //@:remove functions are called when an entity that previously had every
+  //required component loses _any_ of them. Note that `Entity` is a special
+  //type (similar to `Float`), and never affects when a function will be called.
+  @:remove private function onBitmapRemoved(bmp:Bitmap, entity:Entity):Void {
+    //The listener can always access the removed value.
+    scene.removeChild(bmp);
+    
+    //Listeners can access other components, assuming those components exist.
+    if(entity.exists(Name)) {
+      trace('Oh my god! They removed ${ e.get(Name) }!');
+    }
   }
-  @:u inline function updateSpritePosition(spr:Sprite, pos:Position) {
-    spr.x = pos.x;
-    spr.y = pos.y;
+  
+  //You can shorten the meta tags if you like. @:u is equivalent to @:update.
+  @:u private function updateBitmapPosition(bmp:Bitmap, pos:Position):Void {
+    bmp.x = pos.x;
+    bmp.y = pos.y;
   }
-  @:u inline function afterSpritePositionsUpdated() {
-    // rendering, etc
+  
+  //A system's @:update functions will run in order. Since this one comes last,
+  //it will only run after all bitmap positions have been updated.
+  @:update private function finalize():Void {
+    //Render the scene, or otherwise finish up.
   }
 }
 ```
 
-### Live
-[Tiger on the Meadow!](https://deepcake.github.io/tiger_on_the_meadow/bin/) ([source](https://github.com/deepcake/tiger_on_the_meadow)) - small example of using Echoes framework
+### Compiler flags
+Echoes offers a few ways to customize compilation.
 
-### Also
-There is also exists a few additional compiler flags:
+- `-Dechoes_profiling` turns on time tracking. With this flag enabled, `Workflow.info()` will return a list of how much time was spent on each system during the most recent update.
+- `-Dechoes_report` lists all known components and views at the end of compilation.
+- `-Dechoes_array_container` causes Echoes to store data in `Array` format, rather than `IntMap` format. This is less efficient in most cases, but may help if your entities all use the same set of components.
+- `-Dechoes_max_name_length=[number]` adjusts the length of generated class names, which can help if you exceed your operating system's filename length limit.
 
-* `-D echoes_profiling` - collecting some more info in `Workflow.info()` method for debug purposes
-* `-D echoes_report` - traces a short report of built components and views
-* `-D echoes_array_container` - using `Array<T>` instead `IntMap<T>` for global component containers
-
-## Install
+## Installation
 
 ```bash
 haxelib git echoes https://github.com/player-03/echoes.git
