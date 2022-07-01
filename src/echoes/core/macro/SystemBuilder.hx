@@ -169,8 +169,8 @@ class SystemBuilder {
 					
 					$b{ [for(view in definedViews) macro $view.activate()] }
 					
-					$b{ addListeners.map(listener -> macro ${ listener.view }.onAdded.add(${ listener.wrapper })) }
-					$b{ removeListeners.map(listener -> macro ${ listener.view }.onRemoved.add(${ listener.wrapper })) }
+					$b{ addListeners.map(listener -> macro ${ listener.view }.onAdded.push(${ listener.wrapper })) }
+					$b{ removeListeners.map(listener -> macro ${ listener.view }.onRemoved.push(${ listener.wrapper })) }
 					
 					//If any entities already exist, call the `@:add` listeners.
 					$b{ addListeners.map(listener -> macro ${ listener.view }.iter(${ listener.wrapper })) }

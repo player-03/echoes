@@ -1,12 +1,15 @@
 package echoes.core;
 
 import echoes.Entity;
+import echoes.core.ReadOnlyData;
 
 class AbstractView {
+	private var _entities:List<Entity> = new List();
 	/**
 	 * List of entities in view.
 	 */
-	public var entities(default, null):RestrictedLinkedList<Entity> = new RestrictedLinkedList();
+	public var entities(get, never):ReadOnlyList<Entity>;
+	private inline function get_entities():ReadOnlyList<Entity> return _entities;
 	
 	private var collected:Array<Bool> = [];
 	
@@ -15,8 +18,8 @@ class AbstractView {
 	public function activate():Void {
 		activations++;
 		if(activations == 1) {
-			Workflow.views.add(this);
-			for(e in Workflow.entities) {
+			Workflow._activeViews.push(this);
+			for(e in Workflow.activeEntities) {
 				addIfMatched(e);
 			}
 		}
@@ -57,7 +60,7 @@ class AbstractView {
 		if(collected[entity] != true) {
 			if(isMatched(entity)) {
 				collected[entity] = true;
-				entities.add(entity);
+				_entities.add(entity);
 				dispatchAddedCallback(entity);
 			}
 		}
@@ -66,16 +69,16 @@ class AbstractView {
 	@:allow(echoes.Workflow) function removeIfExists(entity:Entity, ?removedComponentStorage:ICleanableComponentContainer, ?removedComponent:Any):Void {
 		if(collected[entity] == true) {
 			collected[entity] = false;
-			entities.remove(entity);
+			_entities.remove(entity);
 			dispatchRemovedCallback(entity, removedComponentStorage, removedComponent);
 		}
 	}
 	
 	@:allow(echoes.Workflow) function reset():Void {
 		activations = 0;
-		Workflow.views.remove(this);
+		Workflow._activeViews.remove(this);
 		while(entities.length > 0) {
-			removeIfExists(entities.pop());
+			removeIfExists(_entities.pop());
 		}
 		collected.resize(0);
 	}

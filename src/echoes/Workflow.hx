@@ -4,7 +4,7 @@ import echoes.Entity.Status;
 import echoes.core.AbstractView;
 import echoes.core.ICleanableComponentContainer;
 import echoes.core.ISystem;
-import echoes.core.RestrictedLinkedList;
+import echoes.core.ReadOnlyData;
 
 class Workflow {
 	@:allow(echoes.Entity) static inline var INVALID_ID = -1;
@@ -20,19 +20,18 @@ class Workflow {
 	// all of every defined view
 	private static var definedViews = new Array<AbstractView>();
 	
-	/**
-	 * All active entities.
-	 */
-	public static var entities(default, null) = new RestrictedLinkedList<Entity>();
-	/**
-	 * All active views.
-	 */
-	public static var views(default, null) = new RestrictedLinkedList<AbstractView>();
+	private static var _activeEntities:List<Entity> = new List();
+	public static var activeEntities(get, never):ReadOnlyList<Entity>;
+	private static inline function get_activeEntities():ReadOnlyList<Entity> return _activeEntities;
 	
-	/**
-	 * All systems that will be called when `update()` is called.
-	 */
-	public static var systems(default, null) = new RestrictedLinkedList<ISystem>();
+	@:allow(echoes.core.AbstractView)
+	private static var _activeViews:Array<AbstractView> = [];
+	public static var activeViews(get, never):ReadOnlyArray<AbstractView>;
+	private static inline function get_activeViews():ReadOnlyArray<AbstractView> return _activeViews;
+	
+	private static var _activeSystems:Array<ISystem> = [];
+	public static var activeSystems(get, never):ReadOnlyArray<ISystem>;
+	private static inline function get_activeSystems():ReadOnlyArray<ISystem> return _activeSystems;
 	
 	#if echoes_profiling
 	private static var lastUpdateLength:Int = 0;
@@ -56,14 +55,14 @@ class Workflow {
 	 * ```
 	 */
 	public static function info():String {
-		var ret = '# ( ${systems.length} ) { ${views.length} } [ ${entities.length} | ${idPool.length} ]'; // TODO version or something
+		var ret = '# ( ${activeSystems.length} ) { ${activeViews.length} } [ ${activeEntities.length} | ${idPool.length} ]'; // TODO version or something
 		
 		#if echoes_profiling
 		ret += ' : $lastUpdateLength ms'; // total
-		for(s in systems) {
+		for(s in activeSystems) {
 			ret += '\n${ s.info('    ', 1) }';
 		}
-		for(v in views) {
+		for(v in activeViews) {
 			ret += '\n    {$v} [${ v.entities.length }]';
 		}
 		#end
@@ -79,7 +78,7 @@ class Workflow {
 		var dt:Float = startTime - lastUpdate;
 		lastUpdate = startTime;
 		
-		for(s in systems) {
+		for(s in activeSystems) {
 			s.__update__(dt);
 		}
 		
@@ -93,10 +92,10 @@ class Workflow {
 	 * id sequence.
 	 */
 	public static function reset() {
-		for(e in entities) {
+		for(e in activeEntities) {
 			e.destroy();
 		}
-		for(s in systems) {
+		for(s in activeSystems) {
 			removeSystem(s);
 		}
 		for(v in definedViews) {
@@ -116,7 +115,7 @@ class Workflow {
 	
 	public static function addSystem(s:ISystem) {
 		if(!hasSystem(s)) {
-			systems.add(s);
+			_activeSystems.push(s);
 			s.__activate__();
 		}
 	}
@@ -124,12 +123,12 @@ class Workflow {
 	public static function removeSystem(s:ISystem) {
 		if(hasSystem(s)) {
 			s.__deactivate__();
-			systems.remove(s);
+			_activeSystems.remove(s);
 		}
 	}
 	
 	public static inline function hasSystem(s:ISystem):Bool {
-		return systems.has(s);
+		return activeSystems.contains(s);
 	}
 	
 	// Entity
@@ -143,7 +142,7 @@ class Workflow {
 		
 		if(immediate) {
 			statuses[id] = Active;
-			entities.add(id);
+			_activeEntities.add(id);
 		} else {
 			statuses[id] = Inactive;
 		}
@@ -154,7 +153,7 @@ class Workflow {
 		// Active or Inactive
 		if(status(id) < Cached) {
 			removeAllComponentsOf(id);
-			entities.remove(id);
+			_activeEntities.remove(id);
 			idPool.push(id);
 			statuses[id] = Cached;
 		}
@@ -163,15 +162,15 @@ class Workflow {
 	@:allow(echoes.Entity) static function add(id:Int) {
 		if(status(id) == Inactive) {
 			statuses[id] = Active;
-			entities.add(id);
-			for(v in views) v.addIfMatched(id);
+			_activeEntities.add(id);
+			for(v in activeViews) v.addIfMatched(id);
 		}
 	}
 	
 	@:allow(echoes.Entity) static function remove(id:Int) {
 		if(status(id) == Active) {
-			for(v in views) v.removeIfExists(id);
-			entities.remove(id);
+			for(v in activeViews) v.removeIfExists(id);
+			_activeEntities.remove(id);
 			statuses[id] = Inactive;
 		}
 	}
@@ -182,7 +181,7 @@ class Workflow {
 	
 	@:allow(echoes.Entity) static inline function removeAllComponentsOf(id:Int) {
 		if(status(id) == Active) {
-			for(v in views) {
+			for(v in activeViews) {
 				v.removeIfExists(id);
 			}
 		}
