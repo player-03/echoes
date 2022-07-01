@@ -14,11 +14,8 @@ package echoes.core;
 
 #elseif echoes_array_container
 
+@:forward.new
 abstract Storage<T>(Array<T>) {
-	public inline function new() {
-		this = new Array<T>();
-	}
-	
 	@:arrayAccess public inline function set(id:Int, c:T):Void {
 		this[id] = c;
 	}
@@ -28,7 +25,12 @@ abstract Storage<T>(Array<T>) {
 	}
 	
 	public inline function remove(id:Int):Bool {
-		this[id] = null;
+		if(exists(id)) {
+			this[id] = null;
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	public inline function exists(id:Int):Bool {
