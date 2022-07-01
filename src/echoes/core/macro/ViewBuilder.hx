@@ -55,35 +55,13 @@ class ViewBuilder {
 	}
 	
 	public static function build():Type {
-		return createViewType(parseComponents(Context.getLocalType()));
-	}
-	
-	private static function parseComponents(type:Type):Array<ComplexType> {
-		return switch(type) {
-			case TInst(_, params = [x = TType(_, _) | TAnonymous(_) | TFun(_, _)]) if(params.length == 1):
-				parseComponents(x);
-				
-			case TType(_.get() => { type: x }, []):
-				parseComponents(x);
-				
-			case TAnonymous(_.get() => p):
-				p.fields
-					.map(f -> return f.type.followMono().toComplexType());
-				
-			case TFun(args, ret):
-				args
-					.map(a -> return a.t.followMono().toComplexType())
-					.concat([ ret.followMono().toComplexType() ])
-					.filter(ct -> switch(ct) {
-						case (macro:StdTypes.Void): false;
-						default: true;
-					});
-				
-			case TInst(_, types):
-				types.map(t -> t.followMono().toComplexType());
-				
-			case x: 
-				Context.error('Unexpected Type Param: $x', Context.currentPos());
+		switch(Context.getLocalType()) {
+			case TInst(_, types) if(types != null && types.length > 0):
+				return createViewType([for(type in types)
+					type.followMono().toComplexType()]);
+			default:
+				Context.error("Expected one or more type parameters.", Context.currentPos());
+				return null;
 		}
 	}
 	
