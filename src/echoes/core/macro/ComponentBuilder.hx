@@ -2,14 +2,12 @@ package echoes.core.macro;
 
 #if macro
 
-import echoes.core.macro.MacroTools.*;
 import haxe.macro.Expr;
+import haxe.macro.Type;
 
 using echoes.core.macro.MacroTools;
 using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
-using haxe.macro.Type;
-using Lambda;
 
 class ComponentBuilder {
 	private static var componentContainerTypeCache = new Map<String, Type>();

@@ -2,13 +2,12 @@ package echoes.core.macro;
 
 #if macro
 
-import echoes.core.macro.MacroTools.*;
-import echoes.core.macro.ComponentBuilder.*;
 import haxe.crypto.Md5;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 import haxe.macro.Type;
 
+using echoes.core.macro.ComponentBuilder;
 using echoes.core.macro.MacroTools;
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
@@ -112,7 +111,7 @@ class ViewBuilder {
 		 */
 		var callbackArgs:Array<Expr> = [macro entity]
 			.concat([for(component in components)
-				macro $i{ getComponentContainer(component).followName() }.inst().get(entity)
+				macro $i{ component.getComponentContainer().followName() }.inst().get(entity)
 			]);
 		
 		var def:TypeDefinition = macro class $viewClsName extends echoes.core.AbstractView {
@@ -135,8 +134,8 @@ class ViewBuilder {
 				//$b{} - Insert expressions from an `Array<Expr>`, in order.
 				if(activations == 1) $b{
 					//Each expression adds this `View` to a related list.
-					[for(c in components) {
-						var componentContainer:String = getComponentContainer(c).followName();
+					[for(component in components) {
+						var componentContainer:String = component.getComponentContainer().followName();
 						macro @:privateAccess $i{ componentContainer }.inst().addRelatedView(this);
 					}]
 				}
@@ -156,7 +155,7 @@ class ViewBuilder {
 						//However, if `removedComponent` was specified, we want
 						//to use that in place of one of the components.
 						[for(component in components) macro {
-							var inst = $i{ getComponentContainer(component).followName() }.inst();
+							var inst = $i{ component.getComponentContainer().followName() }.inst();
 							inst == removedComponentStorage ? removedComponent : inst.get(entity);
 						}]
 					) });
@@ -170,8 +169,8 @@ class ViewBuilder {
 				//$b{} - Insert expressions from an `Array<Expr>`, in order.
 				$b{
 					//Each expression removes this `View` from a related list.
-					[for(c in components) {
-						var componentContainer:String = getComponentContainer(c).followName();
+					[for(component in components) {
+						var componentContainer:String = component.getComponentContainer().followName();
 						macro @:privateAccess $i{ componentContainer }.inst().removeRelatedView(this);
 					}]
 				}
@@ -191,7 +190,8 @@ class ViewBuilder {
 					//instance, in a `View<Hue, Saturation>`, the two checks
 					//would be `HueContainer.inst().exists(entity)` and
 					//`SaturationContainer.inst().exists(entity)`.
-					var checks:Array<Expr> = components.map(c -> macro $i{ getComponentContainer(c).followName() }.inst().exists(id));
+					var checks:Array<Expr> = [for(component in components)
+						macro $i{ component.getComponentContainer().followName() }.inst().exists(id)];
 					//The checks are joined by `&&` operators.
 					checks.fold((a, b) -> macro $a && $b, checks.shift());
 				}};

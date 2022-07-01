@@ -9,7 +9,6 @@ using echoes.core.macro.ComponentBuilder;
 using echoes.core.macro.MacroTools;
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
-using Lambda;
 
 /**
  * Entity manipulation functions. Mostly equivalent to the macros found in

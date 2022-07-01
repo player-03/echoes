@@ -2,17 +2,11 @@ package echoes.core.macro;
 
 #if macro
 
-import echoes.core.macro.MacroTools.*;
 import echoes.core.macro.ViewBuilder.*;
-import echoes.core.macro.ComponentBuilder.*;
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.macro.Printer;
 import haxe.macro.Type;
 
-using haxe.macro.ComplexTypeTools;
-using haxe.macro.TypeTools;
-using haxe.macro.Context;
 using echoes.core.macro.MacroTools;
 using StringTools;
 using Lambda;
