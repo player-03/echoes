@@ -1,7 +1,7 @@
 package echoes;
 
-import echoes.Entity.Status;
-import echoes.core.AbstractView;
+import echoes.Entity;
+import echoes.View;
 import echoes.core.ICleanableComponentContainer;
 import echoes.core.ISystem;
 import echoes.core.ReadOnlyData;
@@ -18,16 +18,16 @@ class Workflow {
 	// all of every defined component container
 	private static var definedContainers = new Array<ICleanableComponentContainer>();
 	// all of every defined view
-	private static var definedViews = new Array<AbstractView>();
+	private static var definedViews = new Array<ViewBase>();
 	
 	private static var _activeEntities:List<Entity> = new List();
 	public static var activeEntities(get, never):ReadOnlyList<Entity>;
 	private static inline function get_activeEntities():ReadOnlyList<Entity> return _activeEntities;
 	
-	@:allow(echoes.core.AbstractView)
-	private static var _activeViews:Array<AbstractView> = [];
-	public static var activeViews(get, never):ReadOnlyArray<AbstractView>;
-	private static inline function get_activeViews():ReadOnlyArray<AbstractView> return _activeViews;
+	@:allow(echoes.ViewBase)
+	private static var _activeViews:Array<ViewBase> = [];
+	public static var activeViews(get, never):ReadOnlyArray<ViewBase>;
+	private static inline function get_activeViews():ReadOnlyArray<ViewBase> return _activeViews;
 	
 	private static var _activeSystems:Array<ISystem> = [];
 	public static var activeSystems(get, never):ReadOnlyArray<ISystem>;

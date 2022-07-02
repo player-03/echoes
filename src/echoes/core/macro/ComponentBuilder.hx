@@ -42,7 +42,7 @@ class ComponentBuilder {
 			/**
 			 * All views that involve this type of component.
 			 */
-			private var relatedViews:Array<echoes.core.AbstractView> = [];
+			private var relatedViews:Array<echoes.View.ViewBase> = [];
 			
 			private function new() {
 				@:privateAccess echoes.Workflow.definedContainers.push(this);
@@ -89,11 +89,11 @@ class ComponentBuilder {
 				storage.clear();
 			}
 			
-			public inline function addRelatedView(v:echoes.core.AbstractView):Void {
+			public inline function addRelatedView(v:echoes.View.ViewBase):Void {
 				relatedViews.push(v);
 			}
 			
-			public inline function removeRelatedView(v:echoes.core.AbstractView):Void {
+			public inline function removeRelatedView(v:echoes.View.ViewBase):Void {
 				relatedViews.remove(v);
 			}
 			
