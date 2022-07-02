@@ -7,19 +7,10 @@ import echoes.core.ISystem;
 import echoes.core.ReadOnlyData;
 
 class Workflow {
-	@:allow(echoes.Entity) static inline var INVALID_ID = -1;
+	@:allow(echoes.Entity)
+	private static var componentStorage:Array<ICleanableComponentContainer> = [];
 	
-	private static var nextId = INVALID_ID + 1;
-	
-	private static var idPool = new Array<Int>();
-	
-	private static var statuses = new Array<Status>();
-	
-	// all of every defined component container
-	private static var definedContainers = new Array<ICleanableComponentContainer>();
-	// all of every defined view
-	private static var definedViews = new Array<ViewBase>();
-	
+	@:allow(echoes.Entity)
 	private static var _activeEntities:List<Entity> = new List();
 	public static var activeEntities(get, never):ReadOnlyList<Entity>;
 	private static inline function get_activeEntities():ReadOnlyList<Entity> return _activeEntities;
@@ -55,15 +46,15 @@ class Workflow {
 	 * ```
 	 */
 	public static function info():String {
-		var ret = '# ( ${activeSystems.length} ) { ${activeViews.length} } [ ${activeEntities.length} | ${idPool.length} ]'; // TODO version or something
+		var ret = '# ( ${activeSystems.length} ) { ${activeViews.length} } [ ${activeEntities.length} | ${Entity.idPool.length} ]'; // TODO version or something
 		
 		#if echoes_profiling
 		ret += ' : $lastUpdateLength ms'; // total
-		for(s in activeSystems) {
-			ret += '\n${ s.info('    ', 1) }';
+		for(system in activeSystems) {
+			ret += '\n${ system.info('    ', 1) }';
 		}
-		for(v in activeViews) {
-			ret += '\n    {$v} [${ v.entities.length }]';
+		for(view in activeViews) {
+			ret += '\n    {$view} [${ view.entities.length }]';
 		}
 		#end
 		
@@ -78,8 +69,8 @@ class Workflow {
 		var dt:Float = startTime - lastUpdate;
 		lastUpdate = startTime;
 		
-		for(s in activeSystems) {
-			s.__update__(dt);
+		for(system in activeSystems) {
+			system.__update__(dt);
 		}
 		
 		#if echoes_profiling
@@ -91,112 +82,47 @@ class Workflow {
 	 * Removes all views, systems and entities from the workflow, and resets the
 	 * id sequence.
 	 */
-	public static function reset() {
-		for(e in activeEntities) {
-			e.destroy();
-		}
-		for(s in activeSystems) {
-			removeSystem(s);
-		}
-		for(v in definedViews) {
-			v.reset();
-		}
-		for(c in definedContainers) {
-			c.reset();
+	public static function reset():Void {
+		for(entity in activeEntities) {
+			entity.destroy();
 		}
 		
-		idPool.splice(0, idPool.length);
-		statuses.splice(0, statuses.length);
-		
-		nextId = INVALID_ID + 1;
-	}
-	
-	// System
-	
-	public static function addSystem(s:ISystem) {
-		if(!hasSystem(s)) {
-			_activeSystems.push(s);
-			s.__activate__();
+		//Iterate backwards when removing items from arrays.
+		var i:Int = activeSystems.length;
+		while(--i >= 0) {
+			removeSystem(activeSystems[i]);
 		}
-	}
-	
-	public static function removeSystem(s:ISystem) {
-		if(hasSystem(s)) {
-			s.__deactivate__();
-			_activeSystems.remove(s);
+		i = activeViews.length;
+		while(--i >= 0) {
+			activeViews[i].reset();
 		}
-	}
-	
-	public static inline function hasSystem(s:ISystem):Bool {
-		return activeSystems.contains(s);
-	}
-	
-	// Entity
-	
-	@:allow(echoes.Entity) static function id(immediate:Bool):Int {
-		var id = idPool.pop();
-		
-		if(id == null) {
-			id = nextId++;
+		for(storage in componentStorage) {
+			storage.reset();
 		}
 		
-		if(immediate) {
-			statuses[id] = Active;
-			_activeEntities.add(id);
-		} else {
-			statuses[id] = Inactive;
-		}
-		return id;
+		Entity.idPool.resize(0);
+		Entity.statuses.resize(0);
+		
+		Entity.nextId = 0;
 	}
 	
-	@:allow(echoes.Entity) static function cache(id:Int) {
-		// Active or Inactive
-		if(status(id) < Cached) {
-			removeAllComponentsOf(id);
-			_activeEntities.remove(id);
-			idPool.push(id);
-			statuses[id] = Cached;
+	//System management
+	//=================
+	
+	public static function addSystem(system:ISystem):Void {
+		if(!hasSystem(system)) {
+			_activeSystems.push(system);
+			system.__activate__();
 		}
 	}
 	
-	@:allow(echoes.Entity) static function add(id:Int) {
-		if(status(id) == Inactive) {
-			statuses[id] = Active;
-			_activeEntities.add(id);
-			for(v in activeViews) v.addIfMatched(id);
+	public static function removeSystem(system:ISystem):Void {
+		if(_activeSystems.remove(system)) {
+			system.__deactivate__();
 		}
 	}
 	
-	@:allow(echoes.Entity) static function remove(id:Int) {
-		if(status(id) == Active) {
-			for(v in activeViews) v.removeIfExists(id);
-			_activeEntities.remove(id);
-			statuses[id] = Inactive;
-		}
-	}
-	
-	@:allow(echoes.Entity) static inline function status(id:Int):Status {
-		return statuses[id];
-	}
-	
-	@:allow(echoes.Entity) static inline function removeAllComponentsOf(id:Int) {
-		if(status(id) == Active) {
-			for(v in activeViews) {
-				v.removeIfExists(id);
-			}
-		}
-		for(c in definedContainers) {
-			c.remove(id);
-		}
-	}
-	
-	@:allow(echoes.Entity) static inline function printAllComponentsOf(id:Int):String {
-		var ret = '#$id:';
-		for(c in definedContainers) {
-			if(c.exists(id)) {
-				ret += '${ c.print(id) },';
-			}
-		}
-		return ret.substr(0, ret.length - 1);
+	public static inline function hasSystem(system:ISystem):Bool {
+		return activeSystems.contains(system);
 	}
 }

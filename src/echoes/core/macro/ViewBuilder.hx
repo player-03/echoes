@@ -109,9 +109,7 @@ class ViewBuilder {
 			public var onAdded(default, null) = new echoes.utils.Signal<$callbackType>();
 			public var onRemoved(default, null) = new echoes.utils.Signal<$callbackType>();
 			
-			private function new() {
-				@:privateAccess echoes.Workflow.definedViews.push(this);
-			}
+			private function new() { }
 			
 			public override function activate():Void {
 				super.activate();

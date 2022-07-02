@@ -8,4 +8,8 @@ abstract ReadOnlyList<T>(List<T>) from List<T> {
 
 @:forward(contains, iterator, length)
 @:forward.new
-abstract ReadOnlyArray<T>(Array<T>) from Array<T> {}
+abstract ReadOnlyArray<T>(Array<T>) from Array<T> {
+	@:arrayAccess private inline function get(index:Int):T {
+		return this[index];
+	}
+}

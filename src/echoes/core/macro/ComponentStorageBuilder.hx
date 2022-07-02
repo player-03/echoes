@@ -34,6 +34,9 @@ class ComponentStorageBuilder {
 				return instance;
 			}
 			
+			public var name(get, never):String;
+			private inline function get_name():String return $v{componentTypeName};
+			
 			/**
 			 * All components of this type.
 			 */
@@ -45,11 +48,15 @@ class ComponentStorageBuilder {
 			private var relatedViews:Array<echoes.View.ViewBase> = [];
 			
 			private function new() {
-				@:privateAccess echoes.Workflow.definedContainers.push(this);
+				@:privateAccess echoes.Workflow.componentStorage.push(this);
 			}
 			
 			public inline function get(id:Int):$componentComplexType {
 				return storage.get(id);
+			}
+			
+			public inline function getDynamic(id:Int):Dynamic {
+				return get(id);
 			}
 			
 			public inline function exists(entity:echoes.Entity):Bool {
@@ -95,10 +102,6 @@ class ComponentStorageBuilder {
 			
 			public inline function removeRelatedView(v:echoes.View.ViewBase):Void {
 				relatedViews.remove(v);
-			}
-			
-			public inline function print(id:Int):String {
-				return $v{componentTypeName} + "=" + Std.string(storage.get(id));
 			}
 		}
 		

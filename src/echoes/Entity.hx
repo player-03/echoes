@@ -18,62 +18,83 @@ using Lambda;
  * `Storage`. (Caution: don't use this integer as a unique id, as destroyed
  * entities will be cached and reused!)
  */
+@:allow(echoes.Workflow)
 abstract Entity(Int) from Int to Int {
-	public static inline var INVALID:Entity = Workflow.INVALID_ID;
+	public static inline var INVALID:Entity = -1;
+	private static var nextId:Int = 0;
+	private static var idPool:Array<Int> = [];
+	private static var statuses:Array<Status> = [];
 	
 	/**
-	 * @param immediate Immediately adds this entity to the workflow if `true`,
-	 * otherwise `activate()` call is required.
+	 * @param activate Whether to activate this entity immediately. Otherwise,
+	 * you'll have to call `activate()`.
 	 */
-	public inline function new(immediate = true) {
-		this = Workflow.id(immediate);
+	public inline function new(?activate:Bool = true) {
+		var id:Null<Int> = idPool.pop();
+		
+		this = id != null ? id : nextId++;
+		
+		if(activate) {
+			statuses[this] = Active;
+			Workflow._activeEntities.add(this);
+		} else {
+			statuses[this] = Inactive;
+		}
 	}
 	
 	/**
-	 * Adds this entity to the workflow, so it can be collected by views.
+	 * Adds this entity to the workflow, so it can be found in views and updated
+	 * by systems.
 	 */
-	public inline function activate() {
-		Workflow.add(this);
+	public function activate():Void {
+		if(status() == Inactive) {
+			statuses[this] = Active;
+			Workflow._activeEntities.add(this);
+			for(view in Workflow.activeViews) view.addIfMatched(this);
+		}
 	}
 	
 	/**
 	 * Removes this entity from the workflow (and also from all views), but
 	 * saves all associated components. Call `activate()` to add it again.
 	 */
-	public inline function deactivate() {
-		Workflow.remove(this);
+	public function deactivate():Void {
+		if(status() == Active) {
+			Workflow._activeEntities.remove(this);
+			statuses[this] = Inactive;
+			for(view in Workflow.activeViews) view.removeIfExists(this);
+		}
 	}
 	
-	/**
-	 * Returns `true` if this entity is added to the workflow, otherwise returns
-	 * `false`.
-	 */
 	public inline function isActive():Bool {
-		return Workflow.status(this) == Active;
+		return status() == Active;
+	}
+	
+	public inline function isDestroyed():Bool {
+		return status() == Destroyed;
 	}
 	
 	/**
-	 * Returns `true` if this entity has not been destroyed and therefore can be
-	 * used safely.
-	 */
-	public inline function isValid():Bool {
-		return Workflow.status(this) < Cached;
-	}
-	
-	/**
-	 * Returns the status of this entity: Active, Inactive, Cached or Invalid.
-	 * Method is used mostly for debug purposes.
+	 * Returns the status of this entity: Active, Inactive, or Destroyed.
 	 */
 	public inline function status():Status {
-		return Workflow.status(this);
+		return statuses[this];
 	}
 	
 	/**
 	 * Removes all of this entity's components, but does not deactivate or
 	 * destroy it.
 	 */
-	public inline function removeAll() {
-		Workflow.removeAllComponentsOf(this);
+	public function removeAll():Void {
+		if(status() == Active) {
+			for(view in Workflow.activeViews) {
+				view.removeIfExists(this);
+			}
+		}
+		
+		for(storage in Workflow.componentStorage) {
+			storage.remove(this);
+		}
 	}
 	
 	/**
@@ -81,15 +102,23 @@ abstract Entity(Int) from Int to Int {
 	 * for reuse. Do not call any of the entity's functions after this; their
 	 * behavior is unspecified.
 	 */
-	public inline function destroy() {
-		Workflow.cache(this);
+	public function destroy():Void {
+		if(!isDestroyed()) {
+			removeAll();
+			Workflow._activeEntities.remove(this);
+			idPool.push(this);
+			statuses[this] = Destroyed;
+		}
 	}
 	
-	/**
-	 * Returns the entity's id and components in string form.
-	 */
-	public inline function print():String {
-		return Workflow.printAllComponentsOf(this);
+	public function getComponents():Map<String, Dynamic> {
+		var components:Map<String, Dynamic> = new Map();
+		for(storage in Workflow.componentStorage) {
+			if(storage.exists(this)) {
+				components[storage.name] = storage.getDynamic(this);
+			}
+		}
+		return components;
 	}
 	
 	/**
@@ -132,10 +161,19 @@ abstract Entity(Int) from Int to Int {
 }
 
 @:enum abstract Status(Int) {
+	/**
+	 * Entity exists and has components, but will not be added to views or
+	 * updated by systems.
+	 */
 	var Inactive = 0;
+	/**
+	 * Entity will be added to views and updated by systems.
+	 */
 	var Active = 1;
-	var Cached = 2;
-	var Invalid = 3;
-	@:op(A > B) static function gt(a:Status, b:Status):Bool;
-	@:op(A < B) static function lt(a:Status, b:Status):Bool;
+	/**
+	 * Entity has no components and has been removed from all views. Its ID may
+	 * be reused later, but until then it is unsafe to call any functions beyond
+	 * `status()` and `isDestroyed()`.
+	 */
+	var Destroyed = 2;
 }
