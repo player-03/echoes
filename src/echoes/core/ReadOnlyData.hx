@@ -1,6 +1,6 @@
 package echoes.core;
 
-@:forward(first, iterator, last, length)
+@:forward(first, iterator, isEmpty, last, length)
 @:forward.new
 abstract ReadOnlyList<T>(List<T>) from List<T> {
 	public inline function has(item:T):Bool return Lambda.has(this, item);

@@ -17,8 +17,6 @@ class ViewBase {
 	public var entities(get, never):ReadOnlyList<Entity>;
 	private inline function get_entities():ReadOnlyList<Entity> return _entities;
 	
-	private var collected:Array<Bool> = [];
-	
 	private var activations:Int = 0;
 	
 	public function activate():Void {
@@ -63,19 +61,14 @@ class ViewBase {
 	}
 	
 	@:allow(echoes.Workflow) function addIfMatched(entity:Entity):Void {
-		if(collected[entity] != true) {
-			if(isMatched(entity)) {
-				collected[entity] = true;
-				_entities.add(entity);
-				dispatchAddedCallback(entity);
-			}
+		if(!entities.has(entity) && isMatched(entity)) {
+			_entities.add(entity);
+			dispatchAddedCallback(entity);
 		}
 	}
 	
 	@:allow(echoes.Workflow) function removeIfExists(entity:Entity, ?removedComponentStorage:ICleanableComponentContainer, ?removedComponent:Any):Void {
-		if(collected[entity] == true) {
-			collected[entity] = false;
-			_entities.remove(entity);
+		if(_entities.remove(entity)) {
 			dispatchRemovedCallback(entity, removedComponentStorage, removedComponent);
 		}
 	}
@@ -83,10 +76,9 @@ class ViewBase {
 	@:allow(echoes.Workflow) function reset():Void {
 		activations = 0;
 		Workflow._activeViews.remove(this);
-		while(entities.length > 0) {
-			removeIfExists(_entities.pop());
+		while(!entities.isEmpty()) {
+			removeIfExists(entities.first());
 		}
-		collected.resize(0);
 	}
 	
 	public function toString():String {
