@@ -96,11 +96,11 @@ class ViewBuilder {
 		/**
 		 * The arguments required to dispatch an event. For instance, in a
 		 * `View<Hue, Saturation>`, this would be
-		 * `[macro entity, macro HueContainer.inst().get(entity), macro SaturationContainer.inst().get(entity)]`.
+		 * `[macro entity, macro HueContainer.instance.get(entity), macro SaturationContainer.instance.get(entity)]`.
 		 */
 		var callbackArgs:Array<Expr> = [macro entity]
 			.concat([for(component in components)
-				macro $i{ component.getComponentContainer().followName() }.inst().get(entity)
+				macro $i{ component.getComponentContainer().followName() }.instance.get(entity)
 			]);
 		
 		var def:TypeDefinition = macro class $viewClassName extends echoes.View.ViewBase {
@@ -119,7 +119,7 @@ class ViewBuilder {
 					//Each expression adds this `View` to a related list.
 					[for(component in components) {
 						var componentContainer:String = component.getComponentContainer().followName();
-						macro @:privateAccess $i{ componentContainer }.inst().addRelatedView(this);
+						macro @:privateAccess $i{ componentContainer }.instance.addRelatedView(this);
 					}]
 				}
 			}
@@ -139,7 +139,7 @@ class ViewBuilder {
 						//but for the just-removed component, we need to use the
 						//value of `removedComponent` instead.
 						[for(component in components) macro {
-							var inst = $i{ component.getComponentContainer().followName() }.inst();
+							var inst = $i{ component.getComponentContainer().followName() }.instance;
 							inst == removedComponentStorage ? removedComponent : inst.get(entity);
 						}]
 					) }
@@ -156,7 +156,7 @@ class ViewBuilder {
 					//Each expression removes this `View` from a related list.
 					[for(component in components) {
 						var componentContainer:String = component.getComponentContainer().followName();
-						macro @:privateAccess $i{ componentContainer }.inst().removeRelatedView(this);
+						macro @:privateAccess $i{ componentContainer }.instance.removeRelatedView(this);
 					}]
 				}
 			}
@@ -173,10 +173,10 @@ class ViewBuilder {
 				return ${{
 					//The expression consists of several `exists()` checks. For
 					//instance, in a `View<Hue, Saturation>`, the two checks
-					//would be `HueContainer.inst().exists(entity)` and
-					//`SaturationContainer.inst().exists(entity)`.
+					//would be `HueContainer.instance.exists(entity)` and
+					//`SaturationContainer.instance.exists(entity)`.
 					var checks:Array<Expr> = [for(component in components)
-						macro $i{ component.getComponentContainer().followName() }.inst().exists(id)];
+						macro $i{ component.getComponentContainer().followName() }.instance.exists(id)];
 					//The checks are joined by `&&` operators.
 					checks.fold((a, b) -> macro $a && $b, checks.shift());
 				}};

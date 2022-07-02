@@ -54,18 +54,23 @@ class MacroTools {
 			default:
 		}
 		
-		throw 'Failed to parse `${new Printer().printExpr(e)}`. Try making a typedef, or use the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.';
+		throw 'Failed to parse `${ new Printer().printExpr(e) }`. Try making a typedef, or use the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.';
 	}
 	
-	public static function typeName(type:ComplexType, ?qualify = true):String {
+	/**
+	 * Converts `type` to a valid Haxe identifier.
+	 * @param qualify Whether to include package and module information. Setting
+	 * this to false makes the output more readable but less unique.
+	 */
+	public static function toIdentifier(type:ComplexType, ?qualify = true):String {
 		switch(followComplexType(type)) {
 			case TFunction(args, ret):
 				return "F"
-					+ [for(arg in args) typeName(arg, qualify)].join("_")
+					+ [for(arg in args) toIdentifier(arg, qualify)].join("_")
 					+ "_R"
-					+ typeName(ret, qualify);
+					+ toIdentifier(ret, qualify);
 			case TParent(t):
-				return "P" + typeName(t, qualify);
+				return "P" + toIdentifier(t, qualify);
 			case TPath(t):
 				var name:String;
 				if(qualify) {
@@ -79,7 +84,7 @@ class MacroTools {
 						+ [for(param in t.params)
 							switch(param) {
 								case TPType(type):
-									typeName(type, qualify);
+									toIdentifier(type, qualify);
 								case x:
 									Context.error('Unexpected $x!', Context.currentPos());
 									null;
@@ -101,7 +106,7 @@ class MacroTools {
 	}
 	
 	public static function joinNames(types:Array<ComplexType>, sep:String, ?qualify:Bool = true):String {
-		var typeNames:Array<String> = [for(type in types) typeName(type, qualify)];
+		var typeNames:Array<String> = [for(type in types) toIdentifier(type, qualify)];
 		typeNames.sort(compareStrings);
 		return typeNames.join(sep);
 	}

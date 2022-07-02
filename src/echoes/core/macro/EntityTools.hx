@@ -44,7 +44,7 @@ class EntityTools {
 				};
 				
 				var containerName:String = type.followMono().toComplexType().getComponentContainer().followName();
-				macro @:privateAccess $i{ containerName }.inst().add(entity, $component);
+				macro @:privateAccess $i{ containerName }.instance.add(entity, $component);
 			}] }
 			
 			entity;
@@ -63,7 +63,7 @@ class EntityTools {
 			
 			$b{ [for(type in types) {
 				var containerName:String = type.getComponentContainer().followName();
-				macro @:privateAccess $i{ containerName }.inst().remove(entity);
+				macro @:privateAccess $i{ containerName }.instance.remove(entity);
 			}] }
 			
 			entity;
@@ -79,7 +79,7 @@ class EntityTools {
 	public static function get<T>(self:Expr, complexType:ComplexType):ExprOf<T> {
 		var containerName:String = complexType.getComponentContainer().followName();
 		
-		return macro $i{ containerName }.inst().get($self);
+		return macro $i{ containerName }.instance.get($self);
 	}
 	
 	/**
@@ -89,7 +89,7 @@ class EntityTools {
 	public static function exists(self:Expr, complexType:ComplexType):ExprOf<Bool> {
 		var containerName:String = complexType.getComponentContainer().followName();
 		
-		return macro $i{ containerName }.inst().exists($self);
+		return macro $i{ containerName }.instance.exists($self);
 	}
 }
 

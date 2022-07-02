@@ -10,29 +10,25 @@ using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
 
 class ComponentStorageBuilder {
-	private static var componentContainerTypeCache = new Map<String, Type>();
+	private static var storageCache:Map<String, Type> = new Map();
 	
-	public static function createComponentContainerType(componentComplexType:ComplexType) {
+	public static function createComponentStorageType(componentComplexType:ComplexType):Type {
 		var componentTypeName:String = componentComplexType.followName();
-		var componentContainerTypeName:String = "ContainerOf" + componentComplexType.typeName();
-		var componentContainerType:Type = componentContainerTypeCache.get(componentContainerTypeName);
+		var storageTypeName:String = "ComponentStorage_" + componentComplexType.toIdentifier();
+		var storageType:Type = storageCache.get(storageTypeName);
 		
-		if(componentContainerType != null) {
-			return componentContainerType;
+		if(storageType != null) {
+			return storageType;
 		}
 		
-		var componentContainerTypePath:TypePath = {
+		var storageTypePath:TypePath = {
 			pack: [],
-			name: componentContainerTypeName
+			name: storageTypeName
 		};
-		var componentContainerComplexType:ComplexType = TPath(componentContainerTypePath);
+		var storageComplexType:ComplexType = TPath(storageTypePath);
 		
-		var def = macro class $componentContainerTypeName implements echoes.core.ICleanableComponentContainer {
-			private static var instance = new $componentContainerTypePath();
-			
-			@:keep public static inline function inst():$componentContainerComplexType {
-				return instance;
-			}
+		var def:TypeDefinition = macro class $storageTypeName implements echoes.core.ICleanableComponentContainer {
+			public static var instance(default, null):$storageComplexType = new $storageTypePath();
 			
 			public var name(get, never):String;
 			private inline function get_name():String return $v{componentTypeName};
@@ -63,13 +59,14 @@ class ComponentStorageBuilder {
 				return storage.exists(entity);
 			}
 			
-			public function add(entity:echoes.Entity, c:$componentComplexType):Void {
-				storage.set(entity, c);
+			public function add(entity:echoes.Entity, component:$componentComplexType):Void {
+				storage.set(entity, component);
 				
 				if(entity.isActive()) {
 					for(view in relatedViews) {
 						@:privateAccess view.addIfMatched(entity);
 						
+						//Stop dispatching events if a listener removed it.
 						if(!storage.exists(entity)) {
 							return;
 						}
@@ -85,6 +82,7 @@ class ComponentStorageBuilder {
 					for(view in relatedViews) {
 						@:privateAccess view.removeIfExists(entity, this, removedComponent);
 						
+						//Stop dispatching events if a listener added it back.
 						if(storage.exists(entity)) {
 							return;
 						}
@@ -107,18 +105,18 @@ class ComponentStorageBuilder {
 		
 		Context.defineType(def);
 		
-		componentContainerType = componentContainerComplexType.toType();
+		storageType = storageComplexType.toType();
 		
-		componentContainerTypeCache.set(componentContainerTypeName, componentContainerType);
+		storageCache.set(storageTypeName, storageType);
 		
 		Report.componentNames.push(componentTypeName);
 		Report.gen();
 		
-		return componentContainerType;
+		return storageType;
 	}
 	
 	public static function getComponentContainer(componentComplexType:ComplexType):ComplexType {
-		return createComponentContainerType(componentComplexType).toComplexType();
+		return createComponentStorageType(componentComplexType).toComplexType();
 	}
 }
 
