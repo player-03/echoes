@@ -2,36 +2,22 @@ package echoes.core.macro;
 
 #if macro
 
-import echoes.core.macro.ViewBuilder.*;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 
 using echoes.core.macro.MacroTools;
+using echoes.core.macro.ViewBuilder;
 using StringTools;
 using Lambda;
 
 class SystemBuilder {
-	private static var SKIP_META = "skip";
-	
 	private static var ADD_META = "added";
 	private static var REMOVE_META = "removed";
 	private static var UPDATE_META = "updated";
 	
 	private static inline function notNull<T>(e:Null<T>):Bool {
 		return e != null;
-	}
-	private static inline function notSkipped(field:Field):Bool {
-		return !skipped(field);
-	}
-	private static inline function skipped(field:Field):Bool {
-		return containsMeta(field, SKIP_META);
-	}
-	private static inline function isEntity(a:FunctionArg):Bool {
-		return switch(a.type.followComplexType()) {
-			case macro:StdTypes.Int, macro:echoes.Entity : true;
-			default: false;
-		};
 	}
 	
 	/**
@@ -90,53 +76,45 @@ class SystemBuilder {
 	public static function build():Array<Field> {
 		var fields:Array<Field> = Context.getBuildFields();
 		
-		var clsType:ClassType = Context.getLocalClass().get();
-		if(clsType == null) {
+		var classType:ClassType = Context.getLocalClass().get();
+		if(classType == null) {
 			Context.warning("SystemBuilder only acts on classes.", Context.currentPos());
 			return fields;
 		}
 		
-		var definedViews:Map<String, Expr> = new Map();
+		var viewNames:Array<String> = [];
 		
 		//Initialize variables of type `View`.
 		for(field in fields) {
-			if(skipped(field)) continue;
-			
 			switch(field.kind) {
 				case FVar(null, _):
-				case FVar(_.followComplexType() => complexType = TPath({ name: clsName }), null):
-					//If the variable is a view, `followComplexType()` will
-					//invoke `ViewBuilder`, placing the type in the cache.
-					if(viewCache.exists(clsName)) {
-						var view:Expr = macro $i{ clsName }.inst();
-						definedViews[clsName] = view;
-						
-						field.kind = FVar(complexType, view);
-					}
+				//If the variable is a view, `followComplexType()` will invoke
+				//`ViewBuilder`, defining the type for `isView()` to find.
+				case FVar(_.followComplexType() => complexType = TPath({ name: className }), _) if(className.isView()):
+					if(!viewNames.contains(className)) viewNames.push(className);
+					
+					field.kind = FVar(complexType, macro $i{ className }.instance);
 				default:
 			}
 		}
 		
 		//Locate marked functions.
-		var updateListeners:Array<ListenerFunction> = fields.filter(notSkipped).filter(containsMeta.bind(_, UPDATE_META)).map(ListenerFunction.fromField).filter(notNull);
-		var addListeners:Array<ListenerFunction> = fields.filter(notSkipped).filter(containsMeta.bind(_, ADD_META)).map(ListenerFunction.fromField).filter(notNull);
-		var removeListeners:Array<ListenerFunction> = fields.filter(notSkipped).filter(containsMeta.bind(_, REMOVE_META)).map(ListenerFunction.fromField).filter(notNull);
+		var updateListeners:Array<ListenerFunction> = fields.filter(containsMeta.bind(_, UPDATE_META)).map(ListenerFunction.fromField).filter(notNull);
+		var addListeners:Array<ListenerFunction> = fields.filter(containsMeta.bind(_, ADD_META)).map(ListenerFunction.fromField).filter(notNull);
+		var removeListeners:Array<ListenerFunction> = fields.filter(containsMeta.bind(_, REMOVE_META)).map(ListenerFunction.fromField).filter(notNull);
+		for(listener in addListeners.concat(removeListeners)) {
+			if(listener.wrapperFunction == null) {
+				Context.error("An @:add or @:remove listener must take at least one component. (Optional arguments don't count.)", listener.pos);
+			}
+		}
 		
 		//Define wrapper functions for each listener.
-		for(listener in updateListeners) {
+		for(listener in addListeners.concat(removeListeners).concat(updateListeners)) {
 			if(listener.wrapperFunction != null) {
 				fields.push(listener.wrapperFunction);
 				
-				definedViews[listener.viewName] = listener.view;
+				if(!viewNames.contains(listener.viewName)) viewNames.push(listener.viewName);
 			}
-		}
-		for(listener in addListeners.concat(removeListeners)) {
-			if(listener.wrapperFunction == null) {
-				Context.error("An @:add or @:remove listener must have at least one required component.", listener.pos);
-			}
-			fields.push(listener.wrapperFunction);
-			
-			definedViews[listener.viewName] = listener.view;
 		}
 		
 		//Add useful functions if they aren't already there.
@@ -144,7 +122,7 @@ class SystemBuilder {
 			public inline function new() {}
 			
 			public override function toString():String {
-				return $v{ clsType.name };
+				return $v{ classType.name };
 			}
 		};
 		for(optionalField in optionalFields.fields) {
@@ -157,11 +135,9 @@ class SystemBuilder {
 		var requiredFields:TypeDefinition = macro class RequiredFields {
 			@:noCompletion public override function __activate__():Void {
 				if(!activated) {
-					activated = true;
-					
 					__dt__ = 0;
 					
-					$b{ [for(view in definedViews) macro $view.activate()] }
+					$b{ [for(view in viewNames) macro $i{view}.instance.activate()] }
 					
 					$b{ addListeners.map(listener -> macro ${ listener.view }.onAdded.push(${ listener.wrapper })) }
 					$b{ removeListeners.map(listener -> macro ${ listener.view }.onRemoved.push(${ listener.wrapper })) }
@@ -175,10 +151,9 @@ class SystemBuilder {
 			
 			@:noCompletion public override function __deactivate__():Void {
 				if(activated) {
-					activated = false;
 					super.__deactivate__();
 					
-					$b{ [for(view in definedViews) macro $view.deactivate()] }
+					$b{ [for(view in viewNames) macro $i{view}.instance.deactivate()] }
 					
 					$b{ addListeners.map(listener -> macro ${ listener.view }.onAdded.remove(${ listener.wrapper })) }
 					$b{ removeListeners.map(listener -> macro ${ listener.view }.onRemoved.remove(${ listener.wrapper })) }
@@ -274,18 +249,13 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	
 	public var view(get, never):Expr;
 	private inline function get_view():Expr {
-		return macro $i{ viewName }.inst();
+		return macro $i{ viewName }.instance;
 	}
 	
 	public var viewName(get, never):String;
 	private function get_viewName():String {
 		if(this.viewName == null) {
-			this.viewName = getViewName(components);
-			
-			//Make sure the view can be looked up by name.
-			if(!viewCache.exists(this.viewName)) {
-				getView(components);
-			}
+			this.viewName = components.getViewName();
 		}
 		return this.viewName;
 	}
@@ -316,7 +286,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 				//The view always passes an `Entity` as the first argument.
 				[{ name: "entity", type: macro:echoes.Entity }]
 				//The remaining arguments must also be in the view's order.
-				.concat(viewCache.get(viewName).components
+				.concat(ViewBuilder.getComponentOrder(components)
 					//Make sure to use the same names as the listener function.
 					.map(type -> {
 						name: this.args.find(arg -> arg.type.followName() == type.followName()).name,
@@ -378,7 +348,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	public function callDuringUpdate():Expr {
 		if(components.length > 0) {
 			//Iterate over a `View`'s entities.
-			return macro $i{ viewName }.inst().iter($wrapper);
+			return macro $view.iter($wrapper);
 		} else {
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {

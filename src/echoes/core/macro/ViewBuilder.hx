@@ -14,12 +14,23 @@ using haxe.macro.Context;
 using Lambda;
 
 class ViewBuilder {
-	private static var viewTypeCache:Map<String, Type> = new Map();
+	private static var viewCache:Map<String, { cls:ComplexType, components:Array<ComplexType>, type:Type }> = new Map();
 	
-	public static var viewCache = new Map<String, { cls:ComplexType, components:Array<ComplexType> }>();
+	public static inline function isView(name:String):Bool {
+		return viewCache.exists(name);
+	}
 	
-	public static function getView(components:Array<ComplexType>):ComplexType {
-		return createViewType(components).toComplexType();
+	/**
+	 * Returns the canonical ordering of these components. (If such an ordering
+	 * hasn't been defined, the given order will become canonical.)
+	 */
+	public static function getComponentOrder(components:Array<ComplexType>):Array<ComplexType> {
+		var name:String = getViewName(components);
+		if(!viewCache.exists(name)) {
+			createViewType(components);
+		}
+		
+		return viewCache[name].components;
 	}
 	
 	/**
@@ -66,14 +77,14 @@ class ViewBuilder {
 	}
 	
 	public static function createViewType(components:Array<ComplexType>):Type {
-		var viewClsName:String = getViewName(components);
-		var viewType:Type = viewTypeCache.get(viewClsName);
+		var viewClassName:String = getViewName(components);
 		
-		if(viewType != null) {
-			return viewType;
+		if(viewCache.exists(viewClassName)) {
+			return viewCache[viewClassName].type;
 		}
 		
-		var viewTypePath:TypePath = { pack: [], name: viewClsName };
+		var viewTypePath:TypePath = { pack: [], name: viewClassName };
+		var viewComplexType:ComplexType = TPath(viewTypePath);
 		
 		/**
 		 * The function signature of the view's event dispatchers and associated
@@ -92,12 +103,8 @@ class ViewBuilder {
 				macro $i{ component.getComponentContainer().followName() }.inst().get(entity)
 			]);
 		
-		var def:TypeDefinition = macro class $viewClsName extends echoes.core.AbstractView {
-			private static var instance = new $viewTypePath();
-			
-			@:keep public static inline function inst() {
-				return instance;
-			}
+		var def:TypeDefinition = macro class $viewClassName extends echoes.core.AbstractView {
+			public static var instance(default, null):$viewComplexType = new $viewTypePath();
 			
 			public var onAdded(default, null) = new echoes.utils.Signal<$callbackType>();
 			public var onRemoved(default, null) = new echoes.utils.Signal<$callbackType>();
@@ -129,14 +136,16 @@ class ViewBuilder {
 					//$a{} - Insert function arguments from an `Array<Expr>`.
 					//Start with `entity` because that's always required.
 					$a{ [macro entity].concat(
-						//Each subsequent expression should look up a component.
-						//However, if `removedComponent` was specified, we want
-						//to use that in place of one of the components.
+						//Each argument after the first must be a component.
+						//We can get the value of most components from storage,
+						//but for the just-removed component, we need to use the
+						//value of `removedComponent` instead.
 						[for(component in components) macro {
 							var inst = $i{ component.getComponentContainer().followName() }.inst();
 							inst == removedComponentStorage ? removedComponent : inst.get(entity);
 						}]
-					) });
+					) }
+				);
 			}
 			
 			private override function reset():Void {
@@ -187,12 +196,10 @@ class ViewBuilder {
 		
 		Context.defineType(def);
 		
-		viewType = TPath(viewTypePath).toType();
+		var viewType:Type = viewComplexType.toType();
+		viewCache.set(viewClassName, { cls: viewComplexType, components: components, type: viewType });
 		
-		viewTypeCache.set(viewClsName, viewType);
-		viewCache.set(viewClsName, { cls: TPath(viewTypePath), components: components });
-		
-		Report.viewNames.push(viewClsName);
+		Report.viewNames.push(viewClassName);
 		
 		return viewType;
 	}

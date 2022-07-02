@@ -69,10 +69,12 @@ class System implements echoes.core.ISystem {
 	private var activated = false;
 	
 	@:noCompletion public function __activate__():Void {
+		activated = true;
 		onactivate();
 	}
 	
 	@:noCompletion public function __deactivate__():Void {
+		activated = false;
 		ondeactivate();
 	}
 	
