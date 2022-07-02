@@ -9,7 +9,7 @@ using echoes.core.macro.MacroTools;
 using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
 
-class ComponentBuilder {
+class ComponentStorageBuilder {
 	private static var componentContainerTypeCache = new Map<String, Type>();
 	
 	public static function createComponentContainerType(componentComplexType:ComplexType) {

@@ -4,7 +4,7 @@ package echoes.core;
  * `Storage<T>` stores all components of type `T`, indexed by entity id. That
  * means `storage[entityID]` will return that entity's component, if it has a
  * component of this type.
- * @see `echoes.core.macro.ComponentBuilder`
+ * @see `echoes.core.macro.ComponentStorageBuilder`
  */
 
 #if echoes_custom_container

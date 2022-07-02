@@ -8,7 +8,7 @@ import haxe.macro.Type;
 import haxe.macro.TypeTools;
 
 #if macro
-using echoes.core.macro.ComponentBuilder;
+using echoes.core.macro.ComponentStorageBuilder;
 using echoes.core.macro.EntityTools;
 using echoes.core.macro.MacroTools;
 using haxe.EnumTools;

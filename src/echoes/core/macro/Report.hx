@@ -11,7 +11,7 @@ import haxe.macro.Type;
  * in alphabetical order.
  */
 class Report {
-	@:allow(echoes.core.macro.ComponentBuilder)
+	@:allow(echoes.core.macro.ComponentStorageBuilder)
 	private static var componentNames:Array<String> = [];
 	
 	@:allow(echoes.core.macro.ViewBuilder)

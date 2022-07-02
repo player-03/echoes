@@ -5,7 +5,7 @@ package echoes.core.macro;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 
-using echoes.core.macro.ComponentBuilder;
+using echoes.core.macro.ComponentStorageBuilder;
 using echoes.core.macro.MacroTools;
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
