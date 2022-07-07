@@ -8,7 +8,7 @@ import echoes.View;
  * 
  * 1. Extend `System`.
  * 2. Add instance functions with the appropriate metadata (see below).
- * 3. Create a new instance of your system, and add it to the `Workflow`.
+ * 3. Create a new instance of your system, and add it to the `Echoes`.
  * 
  * Instance functions marked with `@:update`, `@:add`, or `@:remove` (or a
  * variant thereof) will automatically become listener functions, listening for
@@ -42,7 +42,7 @@ import echoes.View;
  * 
  * entity.add(new B()); //addAB() is called because the entity now has A+B.
  * 
- * Workflow.update(1); //updateBC() is called because the entity has B+C.
+ * Echoes.update(1); //updateBC() is called because the entity has B+C.
  * 
  * entity.remove(A); //removeAnyOfThree() is called because the entity used to
  *                   //have A+B+C, but now doesn't.
@@ -73,7 +73,7 @@ class System {
 	public var onDeactivate:Signal<() -> Void> = new Signal();
 	public var active(default, null):Bool = false;
 	
-	@:allow(echoes.Workflow)
+	@:allow(echoes.Echoes)
 	private function __activate__():Void {
 		if(!active) {
 			active = true;
@@ -83,7 +83,7 @@ class System {
 		}
 	}
 	
-	@:allow(echoes.Workflow)
+	@:allow(echoes.Echoes)
 	private function __deactivate__():Void {
 		if(active) {
 			active = false;
@@ -92,7 +92,7 @@ class System {
 		}
 	}
 	
-	@:allow(echoes.Workflow)
+	@:allow(echoes.Echoes)
 	private function __update__(dt:Float):Void {
 		__dt__ = dt;
 		

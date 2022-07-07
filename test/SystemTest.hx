@@ -9,7 +9,7 @@ class SystemTest extends buddy.BuddySuite {
 			var y:SystemY;
 			
 			beforeEach({
-				Workflow.reset();
+				Echoes.reset();
 				x = new SystemX();
 				y = new SystemY();
 			});
@@ -17,95 +17,95 @@ class SystemTest extends buddy.BuddySuite {
 			describe("When create Systems X and Y", {
 				it("x should not be active", x.isActive().should.be(false));
 				it("y should not be active", y.isActive().should.be(false));
-				it("should have correct count of systems", Workflow.systems.length.should.be(0));
-				it("should have correct count of views", Workflow.views.length.should.be(0));
+				it("should have correct count of systems", Echoes.systems.length.should.be(0));
+				it("should have correct count of views", Echoes.views.length.should.be(0));
 				
 				describe("When add System X", {
 					beforeEach({
-						Workflow.addSystem(x);
+						Echoes.addSystem(x);
 					});
 					it("x should be active", x.isActive().should.be(true));
 					it("y should not be active", y.isActive().should.be(false));
-					it("should have correct count of systems", Workflow.systems.length.should.be(1));
-					it("should have correct count of views", Workflow.views.length.should.be(2));
+					it("should have correct count of systems", Echoes.systems.length.should.be(1));
+					it("should have correct count of views", Echoes.views.length.should.be(2));
 	
 					describe("Then add System X again", {
 						beforeEach({
-							Workflow.addSystem(x);
+							Echoes.addSystem(x);
 						});
 						it("x should be active", x.isActive().should.be(true));
 						it("y should not be active", y.isActive().should.be(false));
-						it("should have correct count of systems", Workflow.systems.length.should.be(1));
-						it("should have correct count of views", Workflow.views.length.should.be(2));
+						it("should have correct count of systems", Echoes.systems.length.should.be(1));
+						it("should have correct count of views", Echoes.views.length.should.be(2));
 					});
 	
 					describe("Then remove System X", {
 						beforeEach({
-							Workflow.removeSystem(x);
+							Echoes.removeSystem(x);
 						});
 						it("x should not be active", x.isActive().should.be(false));
 						it("y should not be active", y.isActive().should.be(false));
-						it("should have correct count of systems", Workflow.systems.length.should.be(0));
-						it("should have correct count of views", Workflow.views.length.should.be(0));
+						it("should have correct count of systems", Echoes.systems.length.should.be(0));
+						it("should have correct count of views", Echoes.views.length.should.be(0));
 	
 						describe("Then remove System X again", {
 							beforeEach({
-								Workflow.removeSystem(x);
+								Echoes.removeSystem(x);
 							});
 							it("x should not be active", x.isActive().should.be(false));
 							it("y should not be active", y.isActive().should.be(false));
-							it("should have correct count of systems", Workflow.systems.length.should.be(0));
-							it("should have correct count of views", Workflow.views.length.should.be(0));
+							it("should have correct count of systems", Echoes.systems.length.should.be(0));
+							it("should have correct count of views", Echoes.views.length.should.be(0));
 						});
 	
 						describe("Then add System X back", {
 							beforeEach({
-								Workflow.addSystem(x);
+								Echoes.addSystem(x);
 							});
 							it("x should be active", x.isActive().should.be(true));
 							it("y should not be active", y.isActive().should.be(false));
-							it("should have correct count of systems", Workflow.systems.length.should.be(1));
-							it("should have correct count of views", Workflow.views.length.should.be(2));
+							it("should have correct count of systems", Echoes.systems.length.should.be(1));
+							it("should have correct count of views", Echoes.views.length.should.be(2));
 						});
 					});
 	
 					describe("Then add System Y", {
 						beforeEach({
-							Workflow.addSystem(y);
+							Echoes.addSystem(y);
 						});
 						it("x should be active", x.isActive().should.be(true));
 						it("y should be active", y.isActive().should.be(true));
-						it("should have correct count of systems", Workflow.systems.length.should.be(2));
-						it("should have correct count of views", Workflow.views.length.should.be(3));
+						it("should have correct count of systems", Echoes.systems.length.should.be(2));
+						it("should have correct count of views", Echoes.views.length.should.be(3));
 	
 						describe("Then remove System Y", {
 							beforeEach({
-								Workflow.removeSystem(y);
+								Echoes.removeSystem(y);
 							});
 							it("x should be active", x.isActive().should.be(true));
 							it("y should not be active", y.isActive().should.be(false));
-							it("should have correct count of systems", Workflow.systems.length.should.be(1));
-							it("should have correct count of views", Workflow.views.length.should.be(2));
+							it("should have correct count of systems", Echoes.systems.length.should.be(1));
+							it("should have correct count of views", Echoes.views.length.should.be(2));
 						});
 	
 						describe("Then remove System X", {
 							beforeEach({
-								Workflow.removeSystem(x);
+								Echoes.removeSystem(x);
 							});
 							it("x should not be active", x.isActive().should.be(false));
 							it("y should be active", y.isActive().should.be(true));
-							it("should have correct count of systems", Workflow.systems.length.should.be(1));
-							it("should have correct count of views", Workflow.views.length.should.be(2));
+							it("should have correct count of systems", Echoes.systems.length.should.be(1));
+							it("should have correct count of views", Echoes.views.length.should.be(2));
 						});
 	
 						describe("Then reset", {
 							beforeEach({
-								Workflow.reset();
+								Echoes.reset();
 							});
 							it("x should not be active", x.isActive().should.be(false));
 							it("y should not be active", y.isActive().should.be(false));
-							it("should have correct count of systems", Workflow.systems.length.should.be(0));
-							it("should have correct count of views", Workflow.views.length.should.be(0));
+							it("should have correct count of systems", Echoes.systems.length.should.be(0));
+							it("should have correct count of views", Echoes.views.length.should.be(0));
 						});
 	
 						describe("Then info", {
@@ -119,9 +119,9 @@ class SystemTest extends buddy.BuddySuite {
 							str += "\n    \\{Y\\} \\[0\\]";
 							#end
 							beforeEach({
-								Workflow.update(0);
+								Echoes.update(0);
 							});
-							it("should have correct result", Workflow.info().should.match(new EReg(str, "")));
+							it("should have correct result", Echoes.info().should.match(new EReg(str, "")));
 						});
 					});
 				});
@@ -142,8 +142,8 @@ class SystemTest extends buddy.BuddySuite {
 				it("x should not be active", x.isActive().should.be(false));
 				it("y should not be active", y.isActive().should.be(false));
 				it("should not be active", sl.isActive().should.be(false));
-				it("should have correct count of systems", Workflow.systems.length.should.be(0));
-				it("should have correct count of views", Workflow.views.length.should.be(0));
+				it("should have correct count of systems", Echoes.systems.length.should.be(0));
+				it("should have correct count of views", Echoes.views.length.should.be(0));
 				
 				describe("Then add Systems X and Y to the SystemList", {
 					beforeEach({
@@ -174,13 +174,13 @@ class SystemTest extends buddy.BuddySuite {
 					
 					describe("Then add SystemList to the flow", {
 						beforeEach({
-							Workflow.addSystem(sl);
+							Echoes.addSystem(sl);
 						});
 						it("x should be active", x.isActive().should.be(true));
 						it("y should be active", y.isActive().should.be(true));
 						it("should be active", sl.isActive().should.be(true));
-						it("should have correct count of systems", Workflow.systems.length.should.be(1));
-						it("should have correct count of views", Workflow.views.length.should.be(3));
+						it("should have correct count of systems", Echoes.systems.length.should.be(1));
+						it("should have correct count of views", Echoes.views.length.should.be(3));
 						
 						describe("Then remove System X from the SystemList", {
 							beforeEach({
@@ -191,8 +191,8 @@ class SystemTest extends buddy.BuddySuite {
 							it("x should not be active", x.isActive().should.be(false));
 							it("y should be active", y.isActive().should.be(true));
 							it("should be active", sl.isActive().should.be(true));
-							it("should have correct count of systems", Workflow.systems.length.should.be(1));
-							it("should have correct count of views", Workflow.views.length.should.be(2));
+							it("should have correct count of systems", Echoes.systems.length.should.be(1));
+							it("should have correct count of views", Echoes.views.length.should.be(2));
 							
 							describe("Then add System X back", {
 								beforeEach({
@@ -205,8 +205,8 @@ class SystemTest extends buddy.BuddySuite {
 								it("x should be active", x.isActive().should.be(true));
 								it("y should be active", y.isActive().should.be(true));
 								it("should be active", sl.isActive().should.be(true));
-								it("should have correct count of systems", Workflow.systems.length.should.be(1));
-								it("should have correct count of views", Workflow.views.length.should.be(3));
+								it("should have correct count of systems", Echoes.systems.length.should.be(1));
+								it("should have correct count of views", Echoes.views.length.should.be(3));
 							});
 							
 							describe("Then remove System Y from the SystemList", {
@@ -220,14 +220,14 @@ class SystemTest extends buddy.BuddySuite {
 								it("x should not be active", x.isActive().should.be(false));
 								it("y should not be active", y.isActive().should.be(false));
 								it("should be active", sl.isActive().should.be(true));
-								it("should have correct count of systems", Workflow.systems.length.should.be(1));
-								it("should have correct count of views", Workflow.views.length.should.be(0));
+								it("should have correct count of systems", Echoes.systems.length.should.be(1));
+								it("should have correct count of views", Echoes.views.length.should.be(0));
 							});
 						});
 						
 						describe("Then remove SystemList from the flow", {
 							beforeEach({
-								Workflow.removeSystem(sl);
+								Echoes.removeSystem(sl);
 							});
 							it("x and y should exists", {
 								sl.exists(x).should.be(true);
@@ -236,8 +236,8 @@ class SystemTest extends buddy.BuddySuite {
 							it("x should not be active", x.isActive().should.be(false));
 							it("y should not be active", y.isActive().should.be(false));
 							it("should not be active", sl.isActive().should.be(false));
-							it("should have correct count of systems", Workflow.systems.length.should.be(0));
-							it("should have correct count of views", Workflow.views.length.should.be(0));
+							it("should have correct count of systems", Echoes.systems.length.should.be(0));
+							it("should have correct count of views", Echoes.views.length.should.be(0));
 						});
 						
 						describe("Then info", {
@@ -252,9 +252,9 @@ class SystemTest extends buddy.BuddySuite {
 							str += "\n    \\{Y\\} \\[0\\]";
 							#end
 							beforeEach({
-								Workflow.update(0);
+								Echoes.update(0);
 							});
-							it("should have correct result", Workflow.info().should.match(new EReg(str, "")));
+							it("should have correct result", Echoes.info().should.match(new EReg(str, "")));
 						});
 					});
 					
@@ -273,23 +273,23 @@ class SystemTest extends buddy.BuddySuite {
 						
 						describe("Then add SystemList to the flow", {
 							beforeEach({
-								Workflow.addSystem(sl2);
+								Echoes.addSystem(sl2);
 							});
 							it("x should be active", x.isActive().should.be(true));
 							it("y should be active", y.isActive().should.be(true));
 							it("should be active", sl2.isActive().should.be(true));
-							it("should have correct count of systems", Workflow.systems.length.should.be(1));
-							it("should have correct count of views", Workflow.views.length.should.be(3));
+							it("should have correct count of systems", Echoes.systems.length.should.be(1));
+							it("should have correct count of views", Echoes.views.length.should.be(3));
 							
 							describe("Then remove SystemList from the flow", {
 								beforeEach({
-									Workflow.removeSystem(sl2);
+									Echoes.removeSystem(sl2);
 								});
 								it("x should not be active", x.isActive().should.be(false));
 								it("y should not be active", y.isActive().should.be(false));
 								it("should not be active", sl2.isActive().should.be(false));
-								it("should have correct count of systems", Workflow.systems.length.should.be(0));
-								it("should have correct count of views", Workflow.views.length.should.be(0));
+								it("should have correct count of systems", Echoes.systems.length.should.be(0));
+								it("should have correct count of views", Echoes.views.length.should.be(0));
 							});
 							
 							describe("Then info", {
@@ -305,9 +305,9 @@ class SystemTest extends buddy.BuddySuite {
 								str += "\n    \\{Y\\} \\[0\\]";
 								#end
 								beforeEach({
-									Workflow.update(0);
+									Echoes.update(0);
 								});
-								it("should have correct result", Workflow.info().should.match(new EReg(str, "")));
+								it("should have correct result", Echoes.info().should.match(new EReg(str, "")));
 							});
 						});
 					});
@@ -315,15 +315,15 @@ class SystemTest extends buddy.BuddySuite {
 				
 				describe("Then add SystemList to the flow", {
 					beforeEach({
-						Workflow.addSystem(sl);
+						Echoes.addSystem(sl);
 					});
 					it("x should not exists", sl.exists(x).should.be(false));
 					it("y should not exists", sl.exists(y).should.be(false));
 					it("x should not be active", x.isActive().should.be(false));
 					it("y should not be active", y.isActive().should.be(false));
 					it("should be active", sl.isActive().should.be(true));
-					it("should have correct count of systems", Workflow.systems.length.should.be(1));
-					it("should have correct count of views", Workflow.views.length.should.be(0));
+					it("should have correct count of systems", Echoes.systems.length.should.be(1));
+					it("should have correct count of views", Echoes.views.length.should.be(0));
 					
 					describe("Then add System X to the SystemList", {
 						beforeEach({
@@ -334,8 +334,8 @@ class SystemTest extends buddy.BuddySuite {
 						it("x should be active", x.isActive().should.be(true));
 						it("y should not be active", y.isActive().should.be(false));
 						it("should be active", sl.isActive().should.be(true));
-						it("should have correct count of systems", Workflow.systems.length.should.be(1));
-						it("should have correct count of views", Workflow.views.length.should.be(2));
+						it("should have correct count of systems", Echoes.systems.length.should.be(1));
+						it("should have correct count of views", Echoes.views.length.should.be(2));
 						
 						describe("Then add System Y to the SystemList", {
 							beforeEach({
@@ -346,8 +346,8 @@ class SystemTest extends buddy.BuddySuite {
 							it("x should be active", x.isActive().should.be(true));
 							it("y should be active", y.isActive().should.be(true));
 							it("should be active", sl.isActive().should.be(true));
-							it("should have correct count of systems", Workflow.systems.length.should.be(1));
-							it("should have correct count of views", Workflow.views.length.should.be(3));
+							it("should have correct count of systems", Echoes.systems.length.should.be(1));
+							it("should have correct count of views", Echoes.views.length.should.be(3));
 						});
 					});
 				});

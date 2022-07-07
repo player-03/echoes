@@ -10,7 +10,7 @@ class EntityTest extends buddy.BuddySuite {
 			var b:ComponentB;
 			
 			beforeEach({
-				echoes.Workflow.reset();
+				echoes.Echoes.reset();
 				a = new ComponentA(1);
 				b = new ComponentB(1);
 			});
@@ -19,7 +19,7 @@ class EntityTest extends buddy.BuddySuite {
 				beforeEach({
 					e = new Entity(true);
 				});
-				it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+				it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 				it("should be activated", e.isActive().should.be(true));
 				it("should be valid", e.isValid().should.be(true));
 				
@@ -27,7 +27,7 @@ class EntityTest extends buddy.BuddySuite {
 					beforeEach({
 						e.add(a);
 					});
-					it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+					it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 					it("should be activated", e.isActive().should.be(true));
 					it("should be valid", e.isValid().should.be(true));
 					it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -39,7 +39,7 @@ class EntityTest extends buddy.BuddySuite {
 						beforeEach({
 							e.add(b);
 						});
-						it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+						it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 						it("should be activated", e.isActive().should.be(true));
 						it("should be valid", e.isValid().should.be(true));
 						it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -52,7 +52,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.add(b2);
 							});
-							it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+							it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 							it("should be activated", e.isActive().should.be(true));
 							it("should be valid", e.isValid().should.be(true));
 							it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -66,7 +66,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.remove(ComponentA);
 							});
-							it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+							it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 							it("should be activated", e.isActive().should.be(true));
 							it("should be valid", e.isValid().should.be(true));
 							it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -78,7 +78,7 @@ class EntityTest extends buddy.BuddySuite {
 								beforeEach({
 									e.remove(ComponentA);
 								});
-								it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+								it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 								it("should be activated", e.isActive().should.be(true));
 								it("should be valid", e.isValid().should.be(true));
 								it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -91,7 +91,7 @@ class EntityTest extends buddy.BuddySuite {
 								beforeEach({
 									e.remove(ComponentB);
 								});
-								it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+								it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 								it("should be activated", e.isActive().should.be(true));
 								it("should be valid", e.isValid().should.be(true));
 								it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -104,7 +104,7 @@ class EntityTest extends buddy.BuddySuite {
 								beforeEach({
 									e.add(a);
 								});
-								it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+								it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 								it("should be activated", e.isActive().should.be(true));
 								it("should be valid", e.isValid().should.be(true));
 								it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -118,7 +118,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.removeAll();
 							});
-							it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+							it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 							it("should be activated", e.isActive().should.be(true));
 							it("should be valid", e.isValid().should.be(true));
 							it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -130,7 +130,7 @@ class EntityTest extends buddy.BuddySuite {
 								beforeEach({
 									e.removeAll();
 								});
-								it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+								it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 								it("should be activated", e.isActive().should.be(true));
 								it("should be valid", e.isValid().should.be(true));
 								it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -143,7 +143,7 @@ class EntityTest extends buddy.BuddySuite {
 								beforeEach({
 									e.add(b);
 								});
-								it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+								it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 								it("should be activated", e.isActive().should.be(true));
 								it("should be valid", e.isValid().should.be(true));
 								it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -157,7 +157,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.activate();
 							});
-							it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+							it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 							it("should be activated", e.isActive().should.be(true));
 							it("should be valid", e.isValid().should.be(true));
 							it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -169,7 +169,7 @@ class EntityTest extends buddy.BuddySuite {
 								beforeEach({
 									e.activate();
 								});
-								it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+								it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 								it("should be activated", e.isActive().should.be(true));
 								it("should be valid", e.isValid().should.be(true));
 								it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -183,7 +183,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.deactivate();
 							});
-							it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+							it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 							it("should not be activated", e.isActive().should.be(false));
 							it("should be valid", e.isValid().should.be(true));
 							it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -195,7 +195,7 @@ class EntityTest extends buddy.BuddySuite {
 								beforeEach({
 									e.deactivate();
 								});
-								it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+								it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 								it("should not be activated", e.isActive().should.be(false));
 								it("should be valid", e.isValid().should.be(true));
 								it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -208,7 +208,7 @@ class EntityTest extends buddy.BuddySuite {
 								beforeEach({
 									e.activate();
 								});
-								it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+								it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 								it("should be activated", e.isActive().should.be(true));
 								it("should be valid", e.isValid().should.be(true));
 								it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -222,7 +222,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.destroy();
 							});
-							it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+							it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 							it("should not be activated", e.isActive().should.be(false));
 							it("should not be valid", e.isValid().should.be(false));
 							it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -234,7 +234,7 @@ class EntityTest extends buddy.BuddySuite {
 								beforeEach({
 									e.destroy();
 								});
-								it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+								it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 								it("should not be activated", e.isActive().should.be(false));
 								it("should not be valid", e.isValid().should.be(false));
 								it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -247,7 +247,7 @@ class EntityTest extends buddy.BuddySuite {
 								beforeEach({
 									e = new Entity();
 								});
-								it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+								it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 								it("should be activated", e.isActive().should.be(true));
 								it("should be valid", e.isValid().should.be(true));
 								it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -261,7 +261,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e = new Entity();
 							});
-							it("should be added to the flow", echoes.Workflow.entities.length.should.be(2));
+							it("should be added to the flow", echoes.Echoes.entities.length.should.be(2));
 							it("should be activated", e.isActive().should.be(true));
 							it("should be valid", e.isValid().should.be(true));
 							it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -274,7 +274,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.remove(ComponentA, ComponentB);
 							});
-							it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+							it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 							it("should be activated", e.isActive().should.be(true));
 							it("should be valid", e.isValid().should.be(true));
 							it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -287,7 +287,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.remove(ComponentA).remove(ComponentB);
 							});
-							it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+							it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 							it("should be activated", e.isActive().should.be(true));
 							it("should be valid", e.isValid().should.be(true));
 							it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -302,7 +302,7 @@ class EntityTest extends buddy.BuddySuite {
 					beforeEach({
 						e.add(a, b);
 					});
-					it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+					it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 					it("should be activated", e.isActive().should.be(true));
 					it("should be valid", e.isValid().should.be(true));
 					it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -315,7 +315,7 @@ class EntityTest extends buddy.BuddySuite {
 					beforeEach({
 						e.add(a).add(b);
 					});
-					it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+					it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 					it("should be activated", e.isActive().should.be(true));
 					it("should be valid", e.isValid().should.be(true));
 					it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -329,7 +329,7 @@ class EntityTest extends buddy.BuddySuite {
 				beforeEach({
 					e = new Entity(false);
 				});
-				it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+				it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 				it("should not be activated", e.isActive().should.be(false));
 				it("should be valid", e.isValid().should.be(true));
 				it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -342,7 +342,7 @@ class EntityTest extends buddy.BuddySuite {
 					beforeEach({
 						e.activate();
 					});
-					it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+					it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 					it("should be activated", e.isActive().should.be(true));
 					it("should be valid", e.isValid().should.be(true));
 					it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -356,7 +356,7 @@ class EntityTest extends buddy.BuddySuite {
 					beforeEach({
 						e.add(a);
 					});
-					it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+					it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 					it("should not be activated", e.isActive().should.be(false));
 					it("should be valid", e.isValid().should.be(true));
 					it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -369,7 +369,7 @@ class EntityTest extends buddy.BuddySuite {
 						beforeEach({
 							e.add(b);
 						});
-						it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+						it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 						it("should not be activated", e.isActive().should.be(false));
 						it("should be valid", e.isValid().should.be(true));
 						it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -382,7 +382,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.remove(ComponentA);
 							});
-							it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+							it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 							it("should not be activated", e.isActive().should.be(false));
 							it("should be valid", e.isValid().should.be(true));
 							it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -396,7 +396,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.removeAll();
 							});
-							it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+							it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 							it("should not be activated", e.isActive().should.be(false));
 							it("should be valid", e.isValid().should.be(true));
 							it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -410,7 +410,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.activate();
 							});
-							it("should be added to the flow", echoes.Workflow.entities.length.should.be(1));
+							it("should be added to the flow", echoes.Echoes.entities.length.should.be(1));
 							it("should be activated", e.isActive().should.be(true));
 							it("should be valid", e.isValid().should.be(true));
 							it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -424,7 +424,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.deactivate();
 							});
-							it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+							it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 							it("should not be activated", e.isActive().should.be(false));
 							it("should be valid", e.isValid().should.be(true));
 							it("should have a ComponentA", e.exists(ComponentA).should.be(true));
@@ -438,7 +438,7 @@ class EntityTest extends buddy.BuddySuite {
 							beforeEach({
 								e.destroy();
 							});
-							it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+							it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 							it("should not be activated", e.isActive().should.be(false));
 							it("should not be valid", e.isValid().should.be(false));
 							it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -456,7 +456,7 @@ class EntityTest extends buddy.BuddySuite {
 					e = new Entity();
 					e.destroy();
 				});
-				it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+				it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 				it("should not be activated", e.isActive().should.be(false));
 				it("should not be valid", e.isValid().should.be(false));
 				it("should not have a ComponentA", e.exists(ComponentA).should.be(false));
@@ -466,7 +466,7 @@ class EntityTest extends buddy.BuddySuite {
 					beforeEach({
 						e.activate();
 					});
-					it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+					it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 					it("should not be activated", e.isActive().should.be(false));
 					it("should not be valid", e.isValid().should.be(false));
 				});
@@ -475,7 +475,7 @@ class EntityTest extends buddy.BuddySuite {
 					beforeEach({
 						e.deactivate();
 					});
-					it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+					it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 					it("should not be activated", e.isActive().should.be(false));
 					it("should not be valid", e.isValid().should.be(false));
 				});
@@ -484,7 +484,7 @@ class EntityTest extends buddy.BuddySuite {
 					beforeEach({
 						e.destroy();
 					});
-					it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+					it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 					it("should not be activated", e.isActive().should.be(false));
 					it("should not be valid", e.isValid().should.be(false));
 				});
@@ -493,7 +493,7 @@ class EntityTest extends buddy.BuddySuite {
 					beforeEach({
 						e.removeAll();
 					});
-					it("should not be added to the flow", echoes.Workflow.entities.length.should.be(0));
+					it("should not be added to the flow", echoes.Echoes.entities.length.should.be(0));
 					it("should not be activated", e.isActive().should.be(false));
 					it("should not be valid", e.isValid().should.be(false));
 				});
@@ -506,7 +506,7 @@ class EntityTest extends buddy.BuddySuite {
 					entities = [ for(i in 0...1000) new Entity() ];
 					last = entities[entities.length - 1];
 				});
-				it("should be added to the flow", echoes.Workflow.entities.length.should.be(1000));
+				it("should be added to the flow", echoes.Echoes.entities.length.should.be(1000));
 				it("last entity should not have a ComponentA", last.exists(ComponentA).should.be(false));
 				it("last entity should not get a ComponentA", last.get(ComponentA).should.be(null));
 				it("last entity should be activated", last.isActive().should.be(true));

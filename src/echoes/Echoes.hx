@@ -5,7 +5,7 @@ import echoes.core.ReadOnlyData;
 import echoes.Entity;
 import echoes.View;
 
-class Workflow {
+class Echoes {
 	@:allow(echoes.Entity) @:allow(echoes.core.ComponentStorage)
 	private static var componentStorage:Array<DynamicComponentStorage> = [];
 	
@@ -32,7 +32,7 @@ class Workflow {
 	
 	/**
 	 * @param fps The number of updates to perform each second. If this is zero,
-	 * you will need to call `Workflow.update()` yourself.
+	 * you will need to call `Echoes.update()` yourself.
 	 */
 	public static function init(?fps:Float = 60):Void {
 		if(!initialized) {
@@ -45,7 +45,7 @@ class Workflow {
 	}
 	
 	/**
-	 * Returns the workflow statistics:
+	 * Returns the app statistics:
 	 * 
 	 * ```text
 	 * ( systems count ) { views count } [ entities count | entity cache size ]
@@ -93,8 +93,7 @@ class Workflow {
 	}
 	
 	/**
-	 * Removes all views, systems and entities from the workflow, and resets the
-	 * id sequence.
+	 * Deactivates all views and systems and destroys all entities.
 	 */
 	public static function reset():Void {
 		for(entity in activeEntities) {

@@ -9,14 +9,14 @@ class ComponentTypeTest extends buddy.BuddySuite {
 			var s:ComponentTypeSystem;
 			
 			beforeEach({
-				Workflow.reset();
+				Echoes.reset();
 			});
 			
 			describe("When create System with Views of Components of Different Types", {
 				beforeEach({
 					e = new Entity();
 					s = new ComponentTypeSystem();
-					Workflow.addSystem(s);
+					Echoes.addSystem(s);
 				});
 				
 				it("views should be empty", {
@@ -32,7 +32,7 @@ class ComponentTypeTest extends buddy.BuddySuite {
 					s.funcs.entities.length.should.be(0);
 				});
 				
-				describe("Then get Workflow info", {
+				describe("Then get Echoes info", {
 					var str = "\\# \\( 1 \\) \\{ 12 \\} \\[ 1 \\| 0 \\]";
 					#if echoes_profiling
 					str += " : \\d ms";
@@ -51,9 +51,9 @@ class ComponentTypeTest extends buddy.BuddySuite {
 					str += "\n    \\{\\(Array\\<\\(ObjectComponent\\-\\>ObjectComponent\\)\\>\\-\\>Void\\)\\} \\[0\\]";
 					#end
 					beforeEach({
-						Workflow.update(0);
+						Echoes.update(0);
 					});
-					it("should have correct result", Workflow.info().should.match(new EReg(str, "")));
+					it("should have correct result", Echoes.info().should.match(new EReg(str, "")));
 				});
 				
 				describe("Then add an ObjectComponent", {

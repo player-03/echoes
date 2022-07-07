@@ -18,7 +18,7 @@ using Lambda;
  * `Storage`. (Caution: don't use this integer as a unique id, as destroyed
  * entities will be cached and reused!)
  */
-@:allow(echoes.Workflow)
+@:allow(echoes.Echoes)
 abstract Entity(Int) from Int to Int {
 	public static inline var INVALID:Entity = -1;
 	private static var nextId:Int = 0;
@@ -36,33 +36,32 @@ abstract Entity(Int) from Int to Int {
 		
 		if(activate) {
 			statuses[this] = Active;
-			Workflow._activeEntities.add(this);
+			Echoes._activeEntities.add(this);
 		} else {
 			statuses[this] = Inactive;
 		}
 	}
 	
 	/**
-	 * Adds this entity to the workflow, so it can be found in views and updated
-	 * by systems.
+	 * Registers this entity so it can be found in views and updated by systems.
 	 */
 	public function activate():Void {
 		if(status() == Inactive) {
 			statuses[this] = Active;
-			Workflow._activeEntities.add(this);
-			for(view in Workflow.activeViews) view.addIfMatched(this);
+			Echoes._activeEntities.add(this);
+			for(view in Echoes.activeViews) view.addIfMatched(this);
 		}
 	}
 	
 	/**
-	 * Removes this entity from the workflow (and also from all views), but
-	 * saves all associated components. Call `activate()` to add it again.
+	 * Removes this entity from all views and systems, but saves all associated
+	 * components. Call `activate()` to restore it.
 	 */
 	public function deactivate():Void {
 		if(status() == Active) {
-			Workflow._activeEntities.remove(this);
+			Echoes._activeEntities.remove(this);
 			statuses[this] = Inactive;
-			for(view in Workflow.activeViews) view.removeIfExists(this);
+			for(view in Echoes.activeViews) view.removeIfExists(this);
 		}
 	}
 	
@@ -87,12 +86,12 @@ abstract Entity(Int) from Int to Int {
 	 */
 	public function removeAll():Void {
 		if(status() == Active) {
-			for(view in Workflow.activeViews) {
+			for(view in Echoes.activeViews) {
 				view.removeIfExists(this);
 			}
 		}
 		
-		for(storage in Workflow.componentStorage) {
+		for(storage in Echoes.componentStorage) {
 			storage.remove(this);
 		}
 	}
@@ -105,7 +104,7 @@ abstract Entity(Int) from Int to Int {
 	public function destroy():Void {
 		if(!isDestroyed()) {
 			removeAll();
-			Workflow._activeEntities.remove(this);
+			Echoes._activeEntities.remove(this);
 			idPool.push(this);
 			statuses[this] = Destroyed;
 		}
@@ -113,7 +112,7 @@ abstract Entity(Int) from Int to Int {
 	
 	public function getComponents():Map<String, Dynamic> {
 		var components:Map<String, Dynamic> = new Map();
-		for(storage in Workflow.componentStorage) {
+		for(storage in Echoes.componentStorage) {
 			if(storage.exists(this)) {
 				components[storage.name] = storage.get(this);
 			}

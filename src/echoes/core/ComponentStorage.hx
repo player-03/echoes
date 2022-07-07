@@ -1,7 +1,7 @@
 package echoes.core;
 
 import echoes.Entity;
-import echoes.Workflow;
+import echoes.Echoes;
 import echoes.View;
 
 class ComponentStorage<T> {
@@ -20,7 +20,7 @@ class ComponentStorage<T> {
 	
 	private function new(name:String) {
 		this.name = name;
-		Workflow.componentStorage.push(this);
+		Echoes.componentStorage.push(this);
 	}
 	
 	public inline function get(entity:Entity):T {
@@ -62,7 +62,7 @@ class ComponentStorage<T> {
 		}
 	}
 	
-	@:allow(echoes.Workflow)
+	@:allow(echoes.Echoes)
 	private inline function clear():Void {
 		storage.clear();
 	}

@@ -1,7 +1,7 @@
 using buddy.Should;
 
 import echoes.View;
-import echoes.Workflow;
+import echoes.Echoes;
 import echoes.Entity;
 
 class ViewTypeTest extends buddy.BuddySuite {
@@ -9,7 +9,7 @@ class ViewTypeTest extends buddy.BuddySuite {
 		buddy.BuddySuite.useDefaultTrace = true;
 		describe("Test View with Different Type Params", {
 			beforeEach({
-				Workflow.reset();
+				Echoes.reset();
 			});
 			
 			describe("When define a View with Type Params", {
@@ -23,25 +23,25 @@ class ViewTypeTest extends buddy.BuddySuite {
 				});
 				
 				describe("When add System to the flow", {
-					beforeEach(Workflow.addSystem(tvs));
+					beforeEach(Echoes.addSystem(tvs));
 					
 					it("should have correct count of views", {
-						Workflow.views.length.should.be(1);
+						Echoes.views.length.should.be(1);
 					});
 					
 					describe("When add standalone System to the flow", {
-						beforeEach(Workflow.addSystem(new StandaloneTypeViewSystem()));
+						beforeEach(Echoes.addSystem(new StandaloneTypeViewSystem()));
 						
 						it("should have correct count of views", {
-							Workflow.views.length.should.be(1);
+							Echoes.views.length.should.be(1);
 						});
 					});
 					
 					describe("When remove System from the flow", {
-						beforeEach(Workflow.removeSystem(tvs));
+						beforeEach(Echoes.removeSystem(tvs));
 						
 						it("should have correct count of views", {
-							Workflow.views.length.should.be(0);
+							Echoes.views.length.should.be(0);
 						});
 					});
 				});
@@ -58,25 +58,25 @@ class ViewTypeTest extends buddy.BuddySuite {
 				});
 				
 				describe("When add System to the flow", {
-					beforeEach(Workflow.addSystem(fvs));
+					beforeEach(Echoes.addSystem(fvs));
 					
 					it("should have correct count of views", {
-						Workflow.views.length.should.be(1);
+						Echoes.views.length.should.be(1);
 					});
 					
 					describe("When add standalone System to the flow", {
-						beforeEach(Workflow.addSystem(new StandaloneFuncViewSystem()));
+						beforeEach(Echoes.addSystem(new StandaloneFuncViewSystem()));
 						
 						it("should have correct count of views", {
-							Workflow.views.length.should.be(1);
+							Echoes.views.length.should.be(1);
 						});
 					});
 					
 					describe("When remove System from the flow", {
-						beforeEach(Workflow.removeSystem(fvs));
+						beforeEach(Echoes.removeSystem(fvs));
 						
 						it("should have correct count of views", {
-							Workflow.views.length.should.be(0);
+							Echoes.views.length.should.be(0);
 						});
 					});
 				});

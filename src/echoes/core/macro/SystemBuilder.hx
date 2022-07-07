@@ -354,7 +354,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 				switch(arg.type.followComplexType()) {
 					case macro:StdTypes.Int, macro:echoes.Entity:
 						//Iterate over all entities.
-						return macro for(entity in echoes.Workflow.entities)
+						return macro for(entity in echoes.Echoes.entities)
 							${ call() };
 					default:
 				}

@@ -22,8 +22,8 @@ class ViewBase {
 	public function activate():Void {
 		activations++;
 		if(activations == 1) {
-			Workflow._activeViews.push(this);
-			for(e in Workflow.activeEntities) {
+			Echoes._activeViews.push(this);
+			for(e in Echoes.activeEntities) {
 				addIfMatched(e);
 			}
 		}
@@ -74,9 +74,9 @@ class ViewBase {
 		}
 	}
 	
-	@:allow(echoes.Workflow) private function reset():Void {
+	@:allow(echoes.Echoes) private function reset():Void {
 		activations = 0;
-		Workflow._activeViews.remove(this);
+		Echoes._activeViews.remove(this);
 		while(!entities.isEmpty()) {
 			removeIfExists(entities.first());
 		}

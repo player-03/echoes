@@ -9,7 +9,7 @@ import echoes.utils.Timestep;
  * var physics:SystemList = new SystemList("Physics");
  * physics.add(new MovementSystem());
  * physics.add(new CollisionSystem());
- * Workflow.add(physics);
+ * Echoes.add(physics);
  * ```
  */
 @:allow(echoes) @:skipBuildMacro
