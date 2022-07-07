@@ -28,6 +28,21 @@ class Workflow {
 	#end
 	
 	private static var lastUpdate:Float = 0;
+	private static var initialized:Bool = false;
+	
+	/**
+	 * @param fps The number of updates to perform each second. If this is zero,
+	 * you will need to call `Workflow.update()` yourself.
+	 */
+	public static function init(?fps:Float = 60):Void {
+		if(!initialized) {
+			initialized = true;
+			
+			if(fps > 0) {
+				new haxe.Timer(Std.int(1000 / fps)).run = update;
+			}
+		}
+	}
 	
 	/**
 	 * Returns the workflow statistics:
