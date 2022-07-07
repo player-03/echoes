@@ -1,8 +1,8 @@
 package echoes;
 
-import echoes.Entity;
-import echoes.core.ICleanableComponentContainer;
+import echoes.core.ComponentStorage;
 import echoes.core.ReadOnlyData;
+import echoes.Entity;
 
 #if !macro
 @:genericBuild(echoes.core.macro.ViewBuilder.build())
@@ -56,24 +56,25 @@ class ViewBase {
 		//Overridden by `ViewBuilder`.
 	}
 	
-	private function dispatchRemovedCallback(entity:Entity, ?removedComponentStorage:ICleanableComponentContainer, ?removedComponent:Any):Void {
+	private function dispatchRemovedCallback(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
 		//Overridden by `ViewBuilder`.
 	}
 	
-	@:allow(echoes.Entity) function addIfMatched(entity:Entity):Void {
+	@:allow(echoes.Entity) private function addIfMatched(entity:Entity):Void {
 		if(!entities.has(entity) && isMatched(entity)) {
 			_entities.add(entity);
 			dispatchAddedCallback(entity);
 		}
 	}
 	
-	@:allow(echoes.Entity) function removeIfExists(entity:Entity, ?removedComponentStorage:ICleanableComponentContainer, ?removedComponent:Any):Void {
+	@:allow(echoes.Entity) @:allow(echoes.core.ComponentStorage)
+	private function removeIfExists(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
 		if(_entities.remove(entity)) {
 			dispatchRemovedCallback(entity, removedComponentStorage, removedComponent);
 		}
 	}
 	
-	@:allow(echoes.Workflow) function reset():Void {
+	@:allow(echoes.Workflow) private function reset():Void {
 		activations = 0;
 		Workflow._activeViews.remove(this);
 		while(!entities.isEmpty()) {

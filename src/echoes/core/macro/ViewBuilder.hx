@@ -119,7 +119,7 @@ class ViewBuilder {
 					//Each expression adds this `View` to a related list.
 					[for(component in components) {
 						var componentContainer:String = component.getComponentContainer().followName();
-						macro @:privateAccess $i{ componentContainer }.instance.addRelatedView(this);
+						macro $i{ componentContainer }.instance.relatedViews.push(this);
 					}]
 				}
 			}
@@ -129,7 +129,7 @@ class ViewBuilder {
 				onAdded.dispatch($a{ callbackArgs });
 			}
 			
-			private override function dispatchRemovedCallback(entity:echoes.Entity, ?removedComponentStorage:echoes.core.ICleanableComponentContainer, ?removedComponent:Any):Void {
+			private override function dispatchRemovedCallback(entity:echoes.Entity, ?removedComponentStorage:echoes.core.ComponentStorage.DynamicComponentStorage, ?removedComponent:Any):Void {
 				onRemoved.dispatch(
 					//$a{} - Insert function arguments from an `Array<Expr>`.
 					//Start with `entity` because that's always required.
@@ -156,7 +156,7 @@ class ViewBuilder {
 					//Each expression removes this `View` from a related list.
 					[for(component in components) {
 						var componentContainer:String = component.getComponentContainer().followName();
-						macro @:privateAccess $i{ componentContainer }.instance.removeRelatedView(this);
+						macro $i{ componentContainer }.instance.relatedViews.remove(this);
 					}]
 				}
 			}

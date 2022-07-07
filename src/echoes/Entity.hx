@@ -115,7 +115,7 @@ abstract Entity(Int) from Int to Int {
 		var components:Map<String, Dynamic> = new Map();
 		for(storage in Workflow.componentStorage) {
 			if(storage.exists(this)) {
-				components[storage.name] = storage.getDynamic(this);
+				components[storage.name] = storage.get(this);
 			}
 		}
 		return components;

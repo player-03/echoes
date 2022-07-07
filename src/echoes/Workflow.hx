@@ -1,14 +1,14 @@
 package echoes;
 
-import echoes.Entity;
-import echoes.View;
-import echoes.core.ICleanableComponentContainer;
+import echoes.core.ComponentStorage;
 import echoes.core.ISystem;
 import echoes.core.ReadOnlyData;
+import echoes.Entity;
+import echoes.View;
 
 class Workflow {
-	@:allow(echoes.Entity)
-	private static var componentStorage:Array<ICleanableComponentContainer> = [];
+	@:allow(echoes.Entity) @:allow(echoes.core.ComponentStorage)
+	private static var componentStorage:Array<DynamicComponentStorage> = [];
 	
 	@:allow(echoes.Entity)
 	private static var _activeEntities:List<Entity> = new List();
@@ -97,7 +97,7 @@ class Workflow {
 			activeViews[i].reset();
 		}
 		for(storage in componentStorage) {
-			storage.reset();
+			storage.clear();
 		}
 		
 		Entity.idPool.resize(0);
