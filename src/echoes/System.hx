@@ -1,5 +1,8 @@
 package echoes;
 
+import echoes.utils.Signal;
+import echoes.View;
+
 /**
  * The base class for all systems. Using them requires three steps:
  * 
@@ -59,31 +62,41 @@ package echoes;
 #if !macro
 @:autoBuild(echoes.core.macro.SystemBuilder.build())
 #end
-class System implements echoes.core.ISystem {
+class System {
 	#if echoes_profiling
 	@:noCompletion private var __updateTime__:Float = 0;
 	#end
 	
 	@:noCompletion private var __dt__:Float = 0;
 	
-	private var activated = false;
+	public var onActivate:Signal<() -> Void> = new Signal();
+	public var onDeactivate:Signal<() -> Void> = new Signal();
+	public var active(default, null):Bool = false;
 	
-	@:noCompletion public function __activate__():Void {
-		activated = true;
-		onactivate();
+	@:allow(echoes.Workflow)
+	private function __activate__():Void {
+		if(!active) {
+			active = true;
+			__dt__ = 0;
+			
+			onActivate.dispatch();
+		}
 	}
 	
-	@:noCompletion public function __deactivate__():Void {
-		activated = false;
-		ondeactivate();
+	@:allow(echoes.Workflow)
+	private function __deactivate__():Void {
+		if(active) {
+			active = false;
+			
+			onDeactivate.dispatch();
+		}
 	}
 	
-	@:noCompletion public function __update__(dt:Float):Void {
+	@:allow(echoes.Workflow)
+	private function __update__(dt:Float):Void {
 		__dt__ = dt;
-	}
-	
-	public function isActive():Bool {
-		return activated;
+		
+		//Everything else is handled by macro.
 	}
 	
 	public function info(?indent = "    ", ?level = 0):String {
@@ -96,15 +109,7 @@ class System implements echoes.core.ISystem {
 		#end
 	}
 	
-	/**
-	 * Calls when system is added to the workflow
-	 */
-	public function onactivate() { }
-	
-	/**
-	 * Calls when system is removed from the workflow
-	 */
-	public function ondeactivate() { }
-	
-	public function toString():String return "System";
+	public function toString():String {
+		return Type.getClassName(Type.getClass(this));
+	}
 }

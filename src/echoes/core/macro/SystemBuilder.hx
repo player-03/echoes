@@ -80,6 +80,8 @@ class SystemBuilder {
 		if(classType == null) {
 			Context.warning("SystemBuilder only acts on classes.", Context.currentPos());
 			return fields;
+		} else if(classType.meta.has(":skipBuildMacro")) {
+			return fields;
 		}
 		
 		var viewNames:Array<String> = [];
@@ -133,34 +135,32 @@ class SystemBuilder {
 		
 		//Add lifecycle functions no matter what.
 		var requiredFields:TypeDefinition = macro class RequiredFields {
-			@:noCompletion public override function __activate__():Void {
-				if(!activated) {
-					__dt__ = 0;
-					
+			private override function __activate__():Void {
+				if(!active) {
 					$b{ [for(view in viewNames) macro $i{view}.instance.activate()] }
 					
 					$b{ addListeners.map(listener -> macro ${ listener.view }.onAdded.push(${ listener.wrapper })) }
 					$b{ removeListeners.map(listener -> macro ${ listener.view }.onRemoved.push(${ listener.wrapper })) }
 					
+					super.__activate__();
+					
 					//If any entities already exist, call the `@:add` listeners.
 					$b{ addListeners.map(listener -> macro ${ listener.view }.iter(${ listener.wrapper })) }
-					
-					super.__activate__();
 				};
 			}
 			
-			@:noCompletion public override function __deactivate__():Void {
-				if(activated) {
-					super.__deactivate__();
-					
+			private override function __deactivate__():Void {
+				if(active) {
 					$b{ [for(view in viewNames) macro $i{view}.instance.deactivate()] }
 					
 					$b{ addListeners.map(listener -> macro ${ listener.view }.onAdded.remove(${ listener.wrapper })) }
 					$b{ removeListeners.map(listener -> macro ${ listener.view }.onRemoved.remove(${ listener.wrapper })) }
+					
+					super.__deactivate__();
 				}
 			}
 			
-			@:noCompletion public override function __update__(dt:Float):Void {
+			private override function __update__(dt:Float):Void {
 				#if echoes_profiling
 				var __timestamp__ = Date.now().getTime();
 				#end

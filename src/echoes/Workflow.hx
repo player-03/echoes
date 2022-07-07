@@ -1,7 +1,6 @@
 package echoes;
 
 import echoes.core.ComponentStorage;
-import echoes.core.ISystem;
 import echoes.core.ReadOnlyData;
 import echoes.Entity;
 import echoes.View;
@@ -20,9 +19,9 @@ class Workflow {
 	public static var activeViews(get, never):ReadOnlyArray<ViewBase>;
 	private static inline function get_activeViews():ReadOnlyArray<ViewBase> return _activeViews;
 	
-	private static var _activeSystems:Array<ISystem> = [];
-	public static var activeSystems(get, never):ReadOnlyArray<ISystem>;
-	private static inline function get_activeSystems():ReadOnlyArray<ISystem> return _activeSystems;
+	private static var _activeSystems:Array<System> = [];
+	public static var activeSystems(get, never):ReadOnlyArray<System>;
+	private static inline function get_activeSystems():ReadOnlyArray<System> return _activeSystems;
 	
 	#if echoes_profiling
 	private static var lastUpdateLength:Int = 0;
@@ -109,20 +108,20 @@ class Workflow {
 	//System management
 	//=================
 	
-	public static function addSystem(system:ISystem):Void {
+	public static function addSystem(system:System):Void {
 		if(!hasSystem(system)) {
 			_activeSystems.push(system);
 			system.__activate__();
 		}
 	}
 	
-	public static function removeSystem(system:ISystem):Void {
+	public static function removeSystem(system:System):Void {
 		if(_activeSystems.remove(system)) {
 			system.__deactivate__();
 		}
 	}
 	
-	public static inline function hasSystem(system:ISystem):Bool {
+	public static inline function hasSystem(system:System):Bool {
 		return activeSystems.contains(system);
 	}
 }
