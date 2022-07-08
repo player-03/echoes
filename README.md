@@ -82,9 +82,11 @@ class MovementSystem extends System {
       position.y += velocity.y * time;
   }
   
-  //You can define a custom `View` instead of writing a function. You don't need
-  //to set it equal to anything; this will be done for you.
-  private var velocityView:View<Velocity>;
+  /**
+   * This `View` object lists every entity with a `Velocity`. Because the `View`
+   * constructor is private, you must call `getView()` instead.
+   */
+  private var velocityView:View<Velocity> = getView();
   
   //Functions without arguments, or with only a `Float` argument, will be called
   //only once per update.

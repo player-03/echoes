@@ -84,22 +84,6 @@ class SystemBuilder {
 			return fields;
 		}
 		
-		var viewNames:Array<String> = [];
-		
-		//Initialize variables of type `View`.
-		for(field in fields) {
-			switch(field.kind) {
-				case FVar(null, _):
-				//If the variable is a view, `followComplexType()` will invoke
-				//`ViewBuilder`, defining the type for `isView()` to find.
-				case FVar(_.followComplexType() => complexType = TPath({ name: className }), _) if(className.isView()):
-					if(!viewNames.contains(className)) viewNames.push(className);
-					
-					field.kind = FVar(complexType, macro $i{ className }.instance);
-				default:
-			}
-		}
-		
 		//Locate marked functions.
 		var updateListeners:Array<ListenerFunction> = fields.filter(containsMeta.bind(_, UPDATE_META)).map(ListenerFunction.fromField).filter(notNull);
 		var addListeners:Array<ListenerFunction> = fields.filter(containsMeta.bind(_, ADD_META)).map(ListenerFunction.fromField).filter(notNull);
@@ -111,11 +95,13 @@ class SystemBuilder {
 		}
 		
 		//Define wrapper functions for each listener.
+		var viewNames:Array<String> = [];
 		for(listener in addListeners.concat(removeListeners).concat(updateListeners)) {
 			if(listener.wrapperFunction != null) {
 				fields.push(listener.wrapperFunction);
 				
-				if(!viewNames.contains(listener.viewName)) viewNames.push(listener.viewName);
+				if(!viewNames.contains(listener.viewName))
+					viewNames.push(listener.viewName);
 			}
 		}
 		
@@ -137,7 +123,7 @@ class SystemBuilder {
 		var requiredFields:TypeDefinition = macro class RequiredFields {
 			private override function __activate__():Void {
 				if(!active) {
-					$b{ [for(view in viewNames) macro $i{view}.instance.activate()] }
+					$b{ [for(view in viewNames) macro $i{ view }.instance.activate()] }
 					
 					$b{ addListeners.map(listener -> macro ${ listener.view }.onAdded.push(${ listener.wrapper })) }
 					$b{ removeListeners.map(listener -> macro ${ listener.view }.onRemoved.push(${ listener.wrapper })) }
@@ -151,7 +137,7 @@ class SystemBuilder {
 			
 			private override function __deactivate__():Void {
 				if(active) {
-					$b{ [for(view in viewNames) macro $i{view}.instance.deactivate()] }
+					$b{ [for(view in viewNames) macro $i{ view }.instance.deactivate()] }
 					
 					$b{ addListeners.map(listener -> macro ${ listener.view }.onAdded.remove(${ listener.wrapper })) }
 					$b{ removeListeners.map(listener -> macro ${ listener.view }.onRemoved.remove(${ listener.wrapper })) }
