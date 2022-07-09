@@ -13,8 +13,8 @@ using haxe.macro.Context;
 class MacroTools {
 	/**
 	 * Acts like `Context.follow()`, but doesn't follow abstracts and typedefs
-	 * unless they're marked `@:useUnderlyingType`. Normally, it only follows
-	 * monomorphs and `Null<T>` types.
+	 * unless they're marked `@:eager`. Normally, it only follows monomorphs
+	 * and `Null<T>` types.
 	 */
 	public static function followMono(type:Type):Type {
 		return switch(type) {
@@ -24,7 +24,7 @@ class MacroTools {
 				followMono(innerType);
 			case TAbstract(_.get() => { type: innerType, meta: meta }, _)
 				| TType(_.get() => { type: innerType, meta: meta }, _)
-				if(meta.has(":useUnderlyingType")):
+				if(meta.has(":eager")):
 				followMono(innerType);
 			default:
 				type;
