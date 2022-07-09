@@ -25,60 +25,60 @@ import echoes.System;
 import echoes.Echoes;
 
 class EchoesExample {
-  public static function main():Void {
-    Echoes.init();
-    
-    //To use a system, you need to register an instance.
-    Echoes.addSystem(new RenderSystem());
-    
-    //To use an entity, create a new instance and add the components your
-    //systems will use.
-    var appleTree:Entity = new Entity();
-    appleTree.add(loadImage("assets/AppleTree.png"));
-    appleTree.add(new Position(100, 0));
-    //...
-  }
-  
-  private static function loadImage(path:String):DisplayObject {
-    //...
-  }
+	public static function main():Void {
+		Echoes.init();
+		
+		//To use a system, you need to register an instance.
+		Echoes.addSystem(new RenderSystem());
+		
+		//To use an entity, create a new instance and add the components your
+		//systems will use.
+		var appleTree:Entity = new Entity();
+		appleTree.add(loadImage("assets/AppleTree.png"));
+		appleTree.add(new Position(100, 0));
+		//...
+	}
+	
+	private static function loadImage(path:String):DisplayObject {
+		//...
+	}
 }
 
 class RenderSystem extends System {
-  /**
-   * This function is called whenever any entity gains a `DisplayObject`
-   * component, and it adds the `DisplayObject` to the scene.
-   */
-  @:add private function onDisplayObjectAdded(displayObject:DisplayObject):Void {
-    Lib.current.addChild(displayObject);
-  }
-  
-  /**
-   * This function is called whenever any entity loses a `DisplayObject`
-   * component, and it removes the `DisplayObject` from the scene.
-   */
-  @:remove private function onDisplayObjectRemoved(displayObject:DisplayObject):Void {
-    Lib.current.removeChild(displayObject);
-  }
-  
-  /**
-   * This function is called several times per frame, once for every entity with
-   * **both** a `DisplayObject` and a `Position`. It keeps the two components in
-   * sync, moving the former to match the latter.
-   */
-  @:update private function updatePosition(displayObject:DisplayObject, position:Position):Void {
-    displayObject.x = position.x;
-    displayObject.y = position.y;
-  }
-  
-  /**
-   * This function is called once per frame, after all calls to
-   * `updatePosition()` have returned. If you need to clean anything up at the
-   * end of a frame, this is a good place to do it.
-   */
-  @:update private function finalize():Void {
-    //...
-  }
+	/**
+	 * This function is called whenever any entity gains a `DisplayObject`
+	 * component, and it adds the `DisplayObject` to the scene.
+	 */
+	@:add private function onDisplayObjectAdded(displayObject:DisplayObject):Void {
+		Lib.current.addChild(displayObject);
+	}
+	
+	/**
+	 * This function is called whenever any entity loses a `DisplayObject`
+	 * component, and it removes the `DisplayObject` from the scene.
+	 */
+	@:remove private function onDisplayObjectRemoved(displayObject:DisplayObject):Void {
+		Lib.current.removeChild(displayObject);
+	}
+	
+	/**
+	 * This function is called several times per frame, once for every entity with
+	 * **both** a `DisplayObject` and a `Position`. It keeps the two components in
+	 * sync, moving the former to match the latter.
+	 */
+	@:update private function updatePosition(displayObject:DisplayObject, position:Position):Void {
+		displayObject.x = position.x;
+		displayObject.y = position.y;
+	}
+	
+	/**
+	 * This function is called once per frame, after all calls to
+	 * `updatePosition()` have returned. If you need to clean anything up at the
+	 * end of a frame, this is a good place to do it.
+	 */
+	@:update private function finalize():Void {
+		//...
+	}
 }
 ```
 
@@ -91,103 +91,102 @@ import echoes.SystemList;
 import echoes.Echoes;
 
 class EchoesExample {
-  public static function main():Void {
-    Echoes.init();
-    
-    //Using a `SystemList` helps keep related systems organized.
-    var physicsSystems:SystemList = new SystemList("Physics");
-    physicsSystems.add(new MovementSystem());
-    physicsSystems.add(new CollisionSystem());
-    
-    //Adding `physicsSystems` first means that all physics systems will run
-    //before `RenderSystem`. (Even if new physics systems are added later on,
-    //they will still run first.)
-    Echoes.addSystem(physicsSystems);
-    Echoes.addSystem(new RenderSystem());
-    
-    //Create entities: one tree and two rabbits.
-    var appleTree:Entity = new Entity();
-    appleTree.add(loadImage("assets/AppleTree.png"));
-    appleTree.add(new Position(100, 0));
-    
-    //`add()` returns the entity, allowing you to chain calls.
-    var john:Entity = new Entity()
-      .add(new Position(0, 0))
-      .add(new Velocity(2.5, 0))
-      .add(loadImage("assets/Rabbit.png"))
-      .add(("John":Name));
-    
-    //`add()` can also take multiple components.
-    var jack:Entity = new Entity();
-    jack.add(new Position(150, 0), new Velocity(-2.5, 0));
-    jack.add(loadImage("assets/Rabbit.png"), ("Jack":Name));
-    
-    //You can manually access and modify components, if needed.
-    trace(jack.get(Position).x); //150
-    john.get(Velocity).x = 4.5;
-    trace(john.get(Velocity)); //{ x: 4.5, y: 0 }
-    
-    //Even though `Name` is a typedef of `String`, Echoes considers them to be
-    //different. These entities have `Name` components, not `String` components.
-    trace(jack.get(String)); //null
-    trace(jack.get(Name)); //"Jack"
-  }
+	public static function main():Void {
+		Echoes.init();
+		
+		//Using a `SystemList` helps keep related systems organized.
+		var physicsSystems:SystemList = new SystemList("Physics");
+		physicsSystems.add(new MovementSystem());
+		physicsSystems.add(new CollisionSystem());
+		
+		//Adding `physicsSystems` first means that all physics systems will run
+		//before `RenderSystem`. (Even if new physics systems are added later
+        //on, they will still run first.)
+		Echoes.addSystem(physicsSystems);
+		Echoes.addSystem(new RenderSystem());
+		
+		//Create entities: one tree and two rabbits.
+		var appleTree:Entity = new Entity();
+		appleTree.add(loadImage("assets/AppleTree.png"));
+		appleTree.add(new Position(100, 0));
+		
+		//`add()` returns the entity, allowing you to chain calls.
+		var john:Entity = new Entity()
+			.add(new Position(0, 0))
+			.add(new Velocity(2.5, 0))
+			.add(loadImage("assets/Rabbit.png"))
+			.add(("John":Name));
+		
+		//`add()` can also take multiple components.
+		var jack:Entity = new Entity();
+		jack.add(new Position(150, 0), new Velocity(-2.5, 0));
+		jack.add(loadImage("assets/Rabbit.png"), ("Jack":Name));
+		
+		//You can manually access and modify components.
+		john.get(Velocity).x = 4.5;
+		trace(john.get(Velocity)); //{ x: 4.5, y: 0 }
+        
+		trace(jack.get(Position).x); //150
+		trace(jack.get(Name)); //"Jack"
+	}
 }
 
+//Using typedefs allows you to assign meaning to common types. Echoes will now
+//distinguish between `Name`s and other `String`s.
 typedef Name = String;
 
 class MovementSystem extends System {
-  private var timeElapsed:Float = 0;
-  
-  /**
-   * This function is called several times per frame, once for every entity with
-   * **both** a `Position` and a `Velocity`. `Float` is a special case, and is
-   * never treated as a component.
-   */
-  @:update private function updatePosition(position:Position, velocity:Velocity, time:Float):Void {
-      //Changing the entity's position a small amount each frame produces the
-      //appearance of smooth motion.
-      position.x += velocity.x * time;
-      position.y += velocity.y * time;
-  }
-  
-  /**
-   * This `View` object lists every entity with a `Velocity`. Because the `View`
-   * constructor is private, you must call `getView()` instead.
-   */
-  private var velocityView:View<Velocity> = getView();
-  
-  /**
-   * Because `Float` is a special case, this function is treated like
-   * `finalize()` from `RenderSystem`, being called only once per update cycle.
-   */
-  @:update private function countTime(time:Float):Void {
-    if(timeElapsed < 0) {
-      return;
-    }
-    
-    timeElapsed += time;
-    
-    if(timeElapsed >= 20) {
-      trace("Race over!");
-      
-      //Iterate through all entities with `Velocity` components.
-      for(entity in velocityView.entities) {
-        var velocity:Velocity = entity.get(Velocity);
-        velocity.x = 0;
-        velocity.y = 0;
-      }
-    }
-  }
+	private var timeElapsed:Float = 0;
+	
+	/**
+	 * This function is called several times per frame, once for every entity
+     * with **both** a `Position` and a `Velocity`.
+     * 
+     * `Float` is a special case, and is never treated as a component.
+	 */
+	@:update private function updatePosition(position:Position, velocity:Velocity, time:Float):Void {
+			//Changing the entity's position a small amount each frame produces the
+			//appearance of smooth motion.
+			position.x += velocity.x * time;
+			position.y += velocity.y * time;
+	}
+	
+	/**
+	 * This `View` object lists every entity with a `Velocity`. Because the
+     * `View` constructor is private, you must call `getView()` instead.
+	 */
+	private var velocityView:View<Velocity> = getView();
+	
+	/**
+	 * Because `Float` is a special case, this function behaves like
+     * `RenderSystem.finalize()`, being called only once per update.
+	 */
+	@:update private function countTime(time:Float):Void {
+		if(timeElapsed < 0) {
+			return;
+		}
+		
+		timeElapsed += time;
+		
+		if(timeElapsed >= 20) {
+			trace("Race over!");
+			
+			//Iterate through all entities with `Velocity` components.
+			for(entity in velocityView.entities) {
+				var velocity:Velocity = entity.get(Velocity);
+				velocity.x = 0;
+				velocity.y = 0;
+			}
+		}
+	}
 }
 ```
 
 ### Compiler flags
 Echoes offers a few ways to customize compilation.
 
-- `-Dechoes_profiling` turns on time tracking. With this flag enabled, `Echoes.info()` will return a list of how much time was spent on each system during the most recent update.
-- `-Dechoes_report` lists all known components and views at the end of compilation.
-- `-Dechoes_array_container` causes Echoes to store data in `Array` format, rather than `IntMap` format. This is less efficient in most cases, but may help if your entities all use the same set of components.
+- `-Dechoes_profiling` turns on time tracking. With this flag enabled, `Echoes.info()` will return a printable list of how much time was spent on each system during the most recent update.
+- `-Dechoes_report` prints a list of all compiled components and views.
 - `-Dechoes_max_name_length=[number]` adjusts the length of generated class names, which can help if you exceed your operating system's filename length limit.
 
 ## Installation
@@ -195,3 +194,23 @@ Echoes offers a few ways to customize compilation.
 ```bash
 haxelib git echoes https://github.com/player-03/echoes.git
 ```
+
+## Breaking changes
+
+### Since version 0.1.0
+
+- Haxe 3 is no longer supported.
+- Several types have been renamed or merged:
+  - `Workflow` is now `Echoes`.
+  - `AbstractView` is now `ViewBase`.
+  - `ISystem` no longer exists; just use `System` as a base class.
+  - `Storage` and `ICleanableComponentContainer` have been merged into `ComponentStorage`.
+- `-Dechoes_array_container` has been removed.
+- Systems no longer initialize `View` variables automatically. You must now call `Echoes.getSingleton()`.
+
+   ```diff
+   -private var namedEntities:View<Name>;
+   +private var namedEntities:View<Name> = Echoes.getSingleton();
+   ```
+
+- `@rm` is no longer a valid way to shorten `@:remove`. You may now omit any number of letters from the end, but not from the middle. (Thus, `@:rem` is now valid.)
