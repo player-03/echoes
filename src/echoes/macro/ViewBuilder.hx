@@ -1,10 +1,9 @@
 package echoes.macro;
 
-import haxe.macro.Expr;
-
 #if macro
 
 import haxe.crypto.Md5;
+import haxe.macro.Expr;
 import haxe.macro.Printer;
 import haxe.macro.Type;
 
@@ -14,44 +13,7 @@ using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using Lambda;
 
-#end
-
 class ViewBuilder {
-	/**
-	 * Returns a view of the expected type. For example:
-	 * 
-	 * ```haxe
-	 * var view:View<Component> = ViewBuilder.getView(); //Returns a View<Component>.
-	 * var view2:View<A, B, C> = ViewBuilder.getView(); //Returns a View<A, B, C>.
-	 * ```
-	 * 
-	 * Both macros and regular code can call this function.
-	 * @param activate Whether to activate the view before returning it.
-	 * Defaults to true based on the assumption that you want to use the view.
-	 */
-	public static #if !macro macro #end function getView(?activate:Bool = true):Expr {
-		//There's no need to call `createViewType()`; Haxe will automatically do
-		//so at least once.
-		switch(Context.getExpectedType().followMono().toComplexType()) {
-			case TPath({ name: className }) if(isView(className)):
-				if(activate) {
-					return macro {
-						$i{className}.instance.activate();
-						$i{className}.instance;
-					};
-				} else {
-					return macro $i{className}.instance;
-				}
-			default:
-				Context.error("getView() called without an expected type. Try one of these approaches instead:\n"
-					+ "var view:View<A, B, C> = ViewBuilder.getView();\n"
-					+ "var view2 = (ViewBuilder.getView():View<X, Y, Z>);", Context.currentPos());
-				return macro null;
-		}
-	}
-	
-	#if macro
-	
 	private static var viewCache:Map<String, { cls:ComplexType, components:Array<ComplexType>, type:Type }> = new Map();
 	
 	public static inline function isView(name:String):Bool {
@@ -239,6 +201,6 @@ class ViewBuilder {
 		
 		return viewType;
 	}
-	
-	#end
 }
+
+#end

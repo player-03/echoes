@@ -5,6 +5,14 @@ import echoes.Entity;
 import echoes.utils.ReadOnlyData;
 import echoes.View;
 
+#if macro
+import haxe.macro.Expr;
+
+using echoes.macro.MacroTools;
+using echoes.macro.ViewBuilder;
+using haxe.macro.Context;
+#end
+
 class Echoes {
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
 	private static var componentStorage:Array<DynamicComponentStorage> = [];
@@ -137,5 +145,45 @@ class Echoes {
 	
 	public static inline function hasSystem(system:System):Bool {
 		return activeSystems.contains(system);
+	}
+	
+	//View management
+	//===============
+	
+	/**
+	 * Gets a `View` instance from anywhere, relying on
+	 * `Context.getExpectedType()` to determine which type of view you want.
+	 * 
+	 * Sample usage:
+	 * 
+	 * ```haxe
+	 * var view:View<String> = Echoes.getView();
+	 * var view2 = (Echoes.getView():View<A, B>);
+	 * //var view3 = Echoes.getView(); //Error: getView() called without an expected type.
+	 * ```
+	 * @param activate Whether to activate the view before returning it.
+	 * Defaults to true for convenience.
+	 */
+	//Tip: macros can call this function too!
+	public static #if !macro macro #end function getView(?activate:Bool = true):Expr {
+		//There's no need to call `ViewBuilder.createViewType()`; Haxe will
+		//automatically do so at least once.
+		switch(Context.getExpectedType().followMono().toComplexType()) {
+			case TPath({ name: className }):
+				if(className.isView()) {
+					if(activate) {
+						return macro {
+							$i{className}.instance.activate();
+							$i{className}.instance;
+						};
+					} else {
+						return macro $i{className}.instance;
+					}
+				}
+			default:
+		}
+		
+		Context.error("getView() called without an expected type.", Context.currentPos());
+		return macro null;
 	}
 }

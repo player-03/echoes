@@ -114,16 +114,4 @@ class System {
 	public function toString():String {
 		return Type.getClassName(Type.getClass(this));
 	}
-	
-	/**
-	 * Returns a view of the expected type. For example:
-	 * 
-	 * ```haxe
-	 * private var view:View<Component> = getView(); //Returns a View<Component>.
-	 * public var view2:View<A, B, C> = getView(); //Returns a View<A, B, C>.
-	 * ```
-	 */
-	private macro function getView(self:Expr):Expr {
-		return ViewBuilder.getView();
-	}
 }
