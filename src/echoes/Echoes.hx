@@ -1,12 +1,12 @@
 package echoes;
 
-import echoes.core.ComponentStorage;
-import echoes.core.ReadOnlyData;
+import echoes.ComponentStorage;
 import echoes.Entity;
+import echoes.utils.ReadOnlyData;
 import echoes.View;
 
 class Echoes {
-	@:allow(echoes.Entity) @:allow(echoes.core.ComponentStorage)
+	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
 	private static var componentStorage:Array<DynamicComponentStorage> = [];
 	
 	@:allow(echoes.Entity)

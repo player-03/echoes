@@ -1,4 +1,4 @@
-package echoes.core.macro;
+package echoes.macro;
 
 #if macro
 
@@ -6,7 +6,7 @@ import haxe.macro.Expr;
 import haxe.macro.Printer;
 import haxe.macro.Type;
 
-using echoes.core.macro.MacroTools;
+using echoes.macro.MacroTools;
 using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
 
@@ -25,7 +25,7 @@ class ComponentStorageBuilder {
 		var storageTypePath:TypePath = { pack: [], name: storageTypeName };
 		storageType = TPath(storageTypePath);
 		
-		var def:TypeDefinition = macro class $storageTypeName extends echoes.core.ComponentStorage<$componentComplexType> {
+		var def:TypeDefinition = macro class $storageTypeName extends echoes.ComponentStorage<$componentComplexType> {
 			public static var instance(default, null):$storageType = new $storageTypePath();
 			
 			private function new() {

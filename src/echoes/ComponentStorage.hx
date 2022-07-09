@@ -1,4 +1,4 @@
-package echoes.core;
+package echoes;
 
 import echoes.Entity;
 import echoes.Echoes;

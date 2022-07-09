@@ -1,4 +1,4 @@
-package echoes.core.macro;
+package echoes.macro;
 
 #if macro
 

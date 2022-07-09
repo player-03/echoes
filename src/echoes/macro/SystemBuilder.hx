@@ -1,4 +1,4 @@
-package echoes.core.macro;
+package echoes.macro;
 
 #if macro
 
@@ -6,8 +6,8 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 
-using echoes.core.macro.MacroTools;
-using echoes.core.macro.ViewBuilder;
+using echoes.macro.MacroTools;
+using echoes.macro.ViewBuilder;
 using StringTools;
 using Lambda;
 

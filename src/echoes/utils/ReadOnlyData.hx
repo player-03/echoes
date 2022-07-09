@@ -1,4 +1,4 @@
-package echoes.core;
+package echoes.utils;
 
 @:forward(first, iterator, isEmpty, last, length)
 @:forward.new

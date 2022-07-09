@@ -1,12 +1,12 @@
 package echoes;
 
 #if macro
-import echoes.core.macro.EntityTools;
+import echoes.macro.EntityTools;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 
-using echoes.core.macro.ComponentStorageBuilder;
-using echoes.core.macro.MacroTools;
+using echoes.macro.ComponentStorageBuilder;
+using echoes.macro.MacroTools;
 using haxe.macro.Context;
 using Lambda;
 #end

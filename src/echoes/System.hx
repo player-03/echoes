@@ -1,6 +1,6 @@
 package echoes;
 
-import echoes.core.macro.ViewBuilder;
+import echoes.macro.ViewBuilder;
 import echoes.utils.Signal;
 import echoes.View;
 import haxe.macro.Expr;
@@ -62,7 +62,7 @@ import haxe.macro.Expr;
  * `@:a`, `@:echoes_rem`, `@:echoes_u`, and several others are all valid.
  */
 #if !macro
-@:autoBuild(echoes.core.macro.SystemBuilder.build())
+@:autoBuild(echoes.macro.SystemBuilder.build())
 #end
 class System {
 	#if echoes_profiling

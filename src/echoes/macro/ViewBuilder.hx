@@ -1,4 +1,4 @@
-package echoes.core.macro;
+package echoes.macro;
 
 import haxe.macro.Expr;
 
@@ -8,8 +8,8 @@ import haxe.crypto.Md5;
 import haxe.macro.Printer;
 import haxe.macro.Type;
 
-using echoes.core.macro.ComponentStorageBuilder;
-using echoes.core.macro.MacroTools;
+using echoes.macro.ComponentStorageBuilder;
+using echoes.macro.MacroTools;
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using Lambda;
@@ -167,7 +167,7 @@ class ViewBuilder {
 				onAdded.dispatch($a{ callbackArgs });
 			}
 			
-			private override function dispatchRemovedCallback(entity:echoes.Entity, ?removedComponentStorage:echoes.core.ComponentStorage.DynamicComponentStorage, ?removedComponent:Any):Void {
+			private override function dispatchRemovedCallback(entity:echoes.Entity, ?removedComponentStorage:echoes.ComponentStorage.DynamicComponentStorage, ?removedComponent:Any):Void {
 				onRemoved.dispatch(
 					//$a{} - Insert function arguments from an `Array<Expr>`.
 					//Start with `entity` because that's always required.

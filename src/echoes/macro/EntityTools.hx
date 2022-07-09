@@ -1,12 +1,12 @@
-package echoes.core.macro;
+package echoes.macro;
 
 #if macro
 
 import haxe.macro.Expr;
 import haxe.macro.Type;
 
-using echoes.core.macro.ComponentStorageBuilder;
-using echoes.core.macro.MacroTools;
+using echoes.macro.ComponentStorageBuilder;
+using echoes.macro.MacroTools;
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 

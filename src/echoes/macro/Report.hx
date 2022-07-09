@@ -1,4 +1,4 @@
-package echoes.core.macro;
+package echoes.macro;
 
 #if macro
 
@@ -11,10 +11,10 @@ import haxe.macro.Type;
  * in alphabetical order.
  */
 class Report {
-	@:allow(echoes.core.macro.ComponentStorageBuilder)
+	@:allow(echoes.macro.ComponentStorageBuilder)
 	private static var componentNames:Array<String> = [];
 	
-	@:allow(echoes.core.macro.ViewBuilder)
+	@:allow(echoes.macro.ViewBuilder)
 	private static var viewNames:Array<String> = [];
 	
 	private static var reportRegistered = false;

@@ -1,4 +1,4 @@
-package echoes.core.macro;
+package echoes.macro;
 
 import haxe.macro.ComplexTypeTools;
 import haxe.macro.Context;
@@ -8,9 +8,9 @@ import haxe.macro.Type;
 import haxe.macro.TypeTools;
 
 #if macro
-using echoes.core.macro.ComponentStorageBuilder;
-using echoes.core.macro.EntityTools;
-using echoes.core.macro.MacroTools;
+using echoes.macro.ComponentStorageBuilder;
+using echoes.macro.EntityTools;
+using echoes.macro.MacroTools;
 using haxe.EnumTools;
 using haxe.macro.ExprTools;
 #else

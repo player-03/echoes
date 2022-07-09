@@ -1,11 +1,11 @@
 package echoes;
 
-import echoes.core.ComponentStorage;
-import echoes.core.ReadOnlyData;
+import echoes.ComponentStorage;
 import echoes.Entity;
+import echoes.utils.ReadOnlyData;
 
 #if !macro
-@:genericBuild(echoes.core.macro.ViewBuilder.build())
+@:genericBuild(echoes.macro.ViewBuilder.build())
 #end
 class View<Rest> extends ViewBase { }
 
@@ -67,7 +67,7 @@ class ViewBase {
 		}
 	}
 	
-	@:allow(echoes.Entity) @:allow(echoes.core.ComponentStorage)
+	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
 	private function removeIfExists(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
 		if(_entities.remove(entity)) {
 			dispatchRemovedCallback(entity, removedComponentStorage, removedComponent);
