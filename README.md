@@ -206,11 +206,11 @@ haxelib git echoes https://github.com/player-03/echoes.git
   - `ISystem` no longer exists; just use `System` as a base class.
   - `Storage` and `ICleanableComponentContainer` have been merged into `ComponentStorage`.
 - `-Dechoes_array_container` has been removed.
-- Systems no longer initialize `View` variables automatically. You must now call `Echoes.getSingleton()`.
+- Systems no longer initialize `View` variables automatically. You must now call `Echoes.getView()`.
 
    ```diff
    -private var namedEntities:View<Name>;
-   +private var namedEntities:View<Name> = Echoes.getSingleton();
+   +private var namedEntities:View<Name> = Echoes.getView();
    ```
 
 - `@rm` is no longer a valid way to shorten `@:remove`. You may now omit any number of letters from the end, but not from the middle. (Thus, `@:rem` is now valid.)
