@@ -101,7 +101,7 @@ class EchoesExample {
 		
 		//Adding `physicsSystems` first means that all physics systems will run
 		//before `RenderSystem`. (Even if new physics systems are added later
-        //on, they will still run first.)
+		//on, they will still run first.)
 		Echoes.addSystem(physicsSystems);
 		Echoes.addSystem(new RenderSystem());
 		
@@ -125,7 +125,7 @@ class EchoesExample {
 		//You can manually access and modify components.
 		john.get(Velocity).x = 4.5;
 		trace(john.get(Velocity)); //{ x: 4.5, y: 0 }
-        
+		
 		trace(jack.get(Position).x); //150
 		trace(jack.get(Name)); //"Jack"
 	}
@@ -140,9 +140,9 @@ class MovementSystem extends System {
 	
 	/**
 	 * This function is called several times per frame, once for every entity
-     * with **both** a `Position` and a `Velocity`.
-     * 
-     * `Float` is a special case, and is never treated as a component.
+	 * with **both** a `Position` and a `Velocity`.
+	 * 
+	 * `Float` is a special case, and is never treated as a component.
 	 */
 	@:update private function updatePosition(position:Position, velocity:Velocity, time:Float):Void {
 			//Changing the entity's position a small amount each frame produces the
@@ -153,13 +153,13 @@ class MovementSystem extends System {
 	
 	/**
 	 * This `View` object lists every entity with a `Velocity`. Because the
-     * `View` constructor is private, you must call `getView()` instead.
+	 * `View` constructor is private, you must call `getView()` instead.
 	 */
 	private var velocityView:View<Velocity> = getView();
 	
 	/**
 	 * Because `Float` is a special case, this function behaves like
-     * `RenderSystem.finalize()`, being called only once per update.
+	 * `RenderSystem.finalize()`, being called only once per update.
 	 */
 	@:update private function countTime(time:Float):Void {
 		if(timeElapsed < 0) {
