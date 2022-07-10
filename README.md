@@ -205,7 +205,7 @@ haxelib git echoes https://github.com/player-03/echoes.git
   - `AbstractView` is now `ViewBase`.
   - `ISystem` no longer exists; just use `System` as a base class.
   - `Storage` and `ICleanableComponentContainer` have been merged into `ComponentStorage`.
-- `-Dechoes_array_container` has been removed.
+- `-Dechoes_array_container` and `-Dechoes_vector_container` have been removed.
 - Systems no longer initialize `View` variables automatically. You must now call `Echoes.getView()`.
 
    ```diff
@@ -214,3 +214,4 @@ haxelib git echoes https://github.com/player-03/echoes.git
    ```
 
 - `@rm` is no longer a valid way to shorten `@:remove`. You may now omit any number of letters from the end, but not from the middle. (Thus, `@:rem` is now valid.)
+- Typedefs are treated as their own components, distinct from the underlying type. To disable this behavior, mark the typedef `@:eager`.
