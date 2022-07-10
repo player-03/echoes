@@ -107,7 +107,7 @@ class SystemBuilder {
 		
 		//Add useful functions if they aren't already there.
 		var optionalFields:TypeDefinition = macro class OptionalFields {
-			public inline function new() {}
+			public function new() {}
 			
 			public override function toString():String {
 				return $v{ classType.name };
