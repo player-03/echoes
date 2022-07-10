@@ -199,22 +199,41 @@ haxelib git echoes https://github.com/player-03/echoes.git
 
 ### Since version 0.1.0
 
-- Haxe 3 is no longer supported.
-- Several types have been renamed or merged:
-  - `Workflow` is now `Echoes`.
-  - `AbstractView` is now `ViewBase`.
-  - `ISystem` no longer exists; just use `System` as a base class.
-  - `Storage` and `ICleanableComponentContainer` have been merged into `ComponentStorage`.
-- `-Dechoes_array_container` and `-Dechoes_vector_container` have been removed.
-- Systems no longer initialize `View` variables automatically. You must now call `Echoes.getView()`.
+Entities:
 
-   ```diff
-   -private var namedEntities:View<Name>;
-   +private var namedEntities:View<Name> = Echoes.getView();
-   ```
+- `Entity.print()` is now `Entity.getComponents()`. This returns a `Map`, allowing you to iterate over all of the components.
 
-- `@rm` is no longer a valid way to shorten `@:remove`. You may now omit any number of letters from the end, but not from the middle. (Thus, `@:rem` is now valid.)
+Components:
+
 - Typedefs are treated as their own components, distinct from the underlying type. To disable this behavior, mark the typedef `@:eager`.
-- `View.size()` is now `View.entities.length`.
-- `View.isActive()` is now `View.active`.
-- `Signal` now uses the `Array` API: `push()`, `length`, etc.
+- `Storage` and `ICleanableComponentContainer` have been merged into `ComponentStorage`.
+
+Systems:
+
+- Systems no longer initialize `View` variables automatically. You must now call `Echoes.getView()`. For instance: `private var namedEntities:View<Name> = Echoes.getView();`
+- `@rm` is no longer a valid way to shorten `@:remove`. You may now omit any number of letters from the end, but not from the middle. (Thus, `@:rem` is now valid.)
+
+Miscellaneous:
+
+- Haxe 3 is no longer supported.
+- `Echoes.update()` will calculate the elapsed time on its own, and no longer takes an argument. If you need to adjust the rate at which time passes, use a `SystemList` with a `ScaledTimestep`.
+- `-Dechoes_array_container` and `-Dechoes_vector_container` have been removed.
+
+Finally, several classes and variables were renamed. Use these find-and-replace operations to update your code.
+
+Find | Replace with | Notes
+-----|--------------|------
+`echoes.core` | `echoes`
+`Workflow` | `Echoes`
+`Echoes.entities` | `Echoes.activeEntities`
+`Echoes.views` | `Echoes.activeViews`
+`Echoes.systems` | `Echoes.activeSystems`
+`AbstractView` | `ViewBase` | Import `echoes.View`.
+`ISystem` | `System` | Change "`implements`" to "`extends`," if applicable.
+`ICleanableComponentContainer` | `ComponentStorage`
+`view.size()` | `view.entities.length` | You might have used a different variable name than `view`.
+`view.isActive()` | `view.active` | Ditto.
+`onAdded.add()` | `onAdded.push()`
+`onAdded.size()` | `onAdded.length`
+`onRemoved.add()` | `onRemoved.push()`
+`onRemoved.size()` | `onRemoved.length`
