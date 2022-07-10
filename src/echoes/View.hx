@@ -18,6 +18,8 @@ class ViewBase {
 	private inline function get_entities():ReadOnlyList<Entity> return _entities;
 	
 	private var activations:Int = 0;
+	public var active(get, never):Bool;
+	private inline function get_active():Bool return activations > 0;
 	
 	public function activate():Void {
 		activations++;
@@ -34,14 +36,6 @@ class ViewBase {
 		if(activations <= 0) {
 			reset();
 		}
-	}
-	
-	public inline function isActive():Bool {
-		return activations > 0;
-	}
-	
-	public inline function size():Int {
-		return entities.length;
 	}
 	
 	/**

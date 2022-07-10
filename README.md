@@ -215,3 +215,5 @@ haxelib git echoes https://github.com/player-03/echoes.git
 
 - `@rm` is no longer a valid way to shorten `@:remove`. You may now omit any number of letters from the end, but not from the middle. (Thus, `@:rem` is now valid.)
 - Typedefs are treated as their own components, distinct from the underlying type. To disable this behavior, mark the typedef `@:eager`.
+- `View.size()` is now `View.entities.length`.
+- `View.isActive()` is now `View.active`.
