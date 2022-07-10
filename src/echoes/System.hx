@@ -101,6 +101,19 @@ class System {
 		//Everything else is handled by macro.
 	}
 	
+	/**
+	 * Returns the expected view (functioning like `Echoes.getView()`), except
+	 * the view will activate and deactivate whenever this system does.
+	 */
+	public macro function makeLinkedView(self:Expr):Expr {
+		var view:Expr = Echoes.getView(false);
+		return macro {
+			$self.onActivated.push($view.activate);
+			$self.onDeactivated.push($view.deactivate);
+			$view;
+		};
+	}
+	
 	public function info(?indent = "    ", ?level = 0):String {
 		indent = StringTools.rpad("", indent, indent.length * level);
 		

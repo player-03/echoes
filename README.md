@@ -210,7 +210,7 @@ Components:
 
 Systems:
 
-- Systems no longer initialize `View` variables automatically. You must now call `Echoes.getView()`. For instance: `private var namedEntities:View<Name> = Echoes.getView();`
+- Systems no longer initialize `View` variables automatically. You must now call `makeLinkedView()` for the same behavior.
 - `@rm` is no longer a valid way to shorten `@:remove`. You may now omit any number of letters from the end, but not from the middle. (Thus, `@:rem` is now valid.)
 
 Miscellaneous:

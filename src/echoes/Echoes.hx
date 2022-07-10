@@ -163,6 +163,7 @@ class Echoes {
 	 * ```
 	 * @param activate Whether to activate the view before returning it.
 	 * Defaults to true for convenience.
+	 * @see `System.makeLinkedView()` to attach the view to a system.
 	 */
 	//Tip: macros can call this function too!
 	public static #if !macro macro #end function getView(?activate:Bool = true):Expr {
