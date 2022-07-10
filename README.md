@@ -217,3 +217,4 @@ haxelib git echoes https://github.com/player-03/echoes.git
 - Typedefs are treated as their own components, distinct from the underlying type. To disable this behavior, mark the typedef `@:eager`.
 - `View.size()` is now `View.entities.length`.
 - `View.isActive()` is now `View.active`.
+- `Signal` now uses the `Array` API: `push()`, `length`, etc.

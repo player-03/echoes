@@ -11,8 +11,4 @@ abstract Signal<T:haxe.Constraints.Function>(Array<T>) {
 			listener($a{args});
 		};
 	}
-	
-	public inline function clear():Void {
-		this.resize(0);
-	}
 }

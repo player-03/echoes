@@ -148,8 +148,8 @@ class ViewBuilder {
 			
 			private override function reset():Void {
 				super.reset();
-				onAdded.clear();
-				onRemoved.clear();
+				onAdded.resize(0);
+				onRemoved.resize(0);
 				
 				//$b{} - Insert expressions from an `Array<Expr>`, in order.
 				$b{
