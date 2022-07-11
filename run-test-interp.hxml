@@ -1,9 +1,0 @@
--cp src
--cp test
--lib buddy
--main Run.hx
---interp
--D echoes_profiling
--D echoes_report
--D echoes_array_container
--D buddy-ignore-passing-specs

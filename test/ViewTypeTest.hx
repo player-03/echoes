@@ -26,14 +26,14 @@ class ViewTypeTest extends buddy.BuddySuite {
 					beforeEach(Echoes.addSystem(tvs));
 					
 					it("should have correct count of views", {
-						Echoes.views.length.should.be(1);
+						Echoes.activeViews.length.should.be(1);
 					});
 					
 					describe("When add standalone System to the flow", {
 						beforeEach(Echoes.addSystem(new StandaloneTypeViewSystem()));
 						
 						it("should have correct count of views", {
-							Echoes.views.length.should.be(1);
+							Echoes.activeViews.length.should.be(1);
 						});
 					});
 					
@@ -41,7 +41,7 @@ class ViewTypeTest extends buddy.BuddySuite {
 						beforeEach(Echoes.removeSystem(tvs));
 						
 						it("should have correct count of views", {
-							Echoes.views.length.should.be(0);
+							Echoes.activeViews.length.should.be(0);
 						});
 					});
 				});
@@ -61,14 +61,14 @@ class ViewTypeTest extends buddy.BuddySuite {
 					beforeEach(Echoes.addSystem(fvs));
 					
 					it("should have correct count of views", {
-						Echoes.views.length.should.be(1);
+						Echoes.activeViews.length.should.be(1);
 					});
 					
 					describe("When add standalone System to the flow", {
 						beforeEach(Echoes.addSystem(new StandaloneFuncViewSystem()));
 						
 						it("should have correct count of views", {
-							Echoes.views.length.should.be(1);
+							Echoes.activeViews.length.should.be(1);
 						});
 					});
 					
@@ -76,7 +76,7 @@ class ViewTypeTest extends buddy.BuddySuite {
 						beforeEach(Echoes.removeSystem(fvs));
 						
 						it("should have correct count of views", {
-							Echoes.views.length.should.be(0);
+							Echoes.activeViews.length.should.be(0);
 						});
 					});
 				});
@@ -98,9 +98,9 @@ abstract VC(String) {
 }
 
 class TypeViewSystem extends echoes.System {
-	public var rest:View<VA, VB>;
+	public var rest:View<VA, VB> = makeLinkedView();
 	
-	public var restReversed:View<VA, VB>;
+	public var restReversed:View<VA, VB> = makeLinkedView();
 	
 	@:u function ab(a:VA, b:VB) { }
 	
@@ -118,9 +118,9 @@ class TypeViewSystem extends echoes.System {
 }
 
 class FuncViewSystem extends echoes.System {
-	public var fv:View<VA->VB->Void, VA->VB>;
+	public var fv:View<VA->VB->Void, VA->VB> = makeLinkedView();
 	
-	public var fvReversed:View<VA->VB, VA->VB->Void>;
+	public var fvReversed:View<VA->VB, VA->VB->Void> = makeLinkedView();
 	
 	@:u function abv_ab(abv:VA->VB->Void, ab:VA->VB) { }
 	
@@ -130,9 +130,9 @@ class FuncViewSystem extends echoes.System {
 }
 
 class StandaloneTypeViewSystem extends echoes.System {
-	public static var ab:View<VA, VB>;
+	public static var ab:View<VA, VB> = makeLinkedView();
 }
 
 class StandaloneFuncViewSystem extends echoes.System {
-	public static var fv:View<VA->VB->Void, VA->VB>;
+	public static var fv:View<VA->VB->Void, VA->VB> = makeLinkedView();
 }

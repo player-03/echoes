@@ -17,7 +17,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 				var s1 = new SystemUpdateMeta();
 				
 				describe("Then update", {
-					beforeEach(Echoes.update(0));
+					beforeEach(Echoes.update());
 					it("should have correct result", {
 						BuildResult.value.should.be('');
 					});
@@ -29,7 +29,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 						});
 						
 						describe("Then update", {
-							beforeEach(Echoes.update(0));
+							beforeEach(Echoes.update());
 							it("should have correct result", {
 								BuildResult.value.should.be('^[0____]');
 							});
@@ -43,7 +43,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 								});
 			
 								describe("Then update", {
-									beforeEach(Echoes.update(0));
+									beforeEach(Echoes.update());
 									it("should have correct result", {
 										BuildResult.value.should.be('^[0____][0___0e0e_]');
 									});
@@ -57,7 +57,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 										});
 										
 										describe("Then update", {
-											beforeEach(Echoes.update(0));
+											beforeEach(Echoes.update());
 											it("should have correct result", {
 												BuildResult.value.should.be('^[0____][0___0e0e_][0_AA_0A0A_0e0e_0eA0eA]');
 											});
@@ -71,7 +71,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 												});
 		
 												describe("Then update", {
-													beforeEach(Echoes.update(0));
+													beforeEach(Echoes.update());
 													it("should have correct result", {
 														BuildResult.value.should.be('^[0____][0___0e0e_][0_AA_0A0A_0e0e_0eA0eA][0_AA_0A0A_0e0e_0eA0eA0eB0eB0eAB0eAB]');
 													});
@@ -83,7 +83,7 @@ class SystemMetaTest extends buddy.BuddySuite {
 														});
 							
 														describe("Then update", {
-															beforeEach(Echoes.update(0));
+															beforeEach(Echoes.update());
 															it("should have correct result", {
 																BuildResult.value.should.be('^[0____][0___0e0e_][0_AA_0A0A_0e0e_0eA0eA][0_AA_0A0A_0e0e_0eA0eA0eB0eB0eAB0eAB]$');
 															});
@@ -139,17 +139,17 @@ class SystemMetaTest extends buddy.BuddySuite {
 				describe("Then add System to the flow", {
 					beforeEach(Echoes.addSystem(s1));
 					it("should correctly add listeners", {
-						ViewCompA.inst().isActive().should.be(true);
-						ViewCompA.inst().onAdded.size().should.be(3);
-						ViewCompA.inst().onRemoved.size().should.be(3);
+						ViewCompA.instance.active.should.be(true);
+						ViewCompA.instance.onAdded.length.should.be(3);
+						ViewCompA.instance.onRemoved.length.should.be(3);
 					});
 					
 					describe("Then remove System from the flow", {
 						beforeEach(Echoes.removeSystem(s1));
 						it("should correctly remove listeners", {
-							ViewCompA.inst().isActive().should.be(false);
-							ViewCompA.inst().onAdded.size().should.be(0);
-							ViewCompA.inst().onRemoved.size().should.be(0);
+							ViewCompA.instance.active.should.be(false);
+							ViewCompA.instance.onAdded.length.should.be(0);
+							ViewCompA.instance.onRemoved.length.should.be(0);
 						});
 					});
 					
@@ -176,25 +176,25 @@ class SystemMetaTest extends buddy.BuddySuite {
 						
 						beforeEach(Echoes.addSystem(s2));
 						it("should correctly add listeners", {
-							ViewCompA.inst().isActive().should.be(true);
-							ViewCompA.inst().onAdded.size().should.be(4);
-							ViewCompA.inst().onRemoved.size().should.be(4);
+							ViewCompA.instance.active.should.be(true);
+							ViewCompA.instance.onAdded.length.should.be(4);
+							ViewCompA.instance.onRemoved.length.should.be(4);
 						});
 						
 						describe("Then remove a second System with equal View from the flow", {
 							beforeEach(Echoes.removeSystem(s2));
 							it("should correctly remove listeners", {
-								ViewCompA.inst().isActive().should.be(true);
-								ViewCompA.inst().onAdded.size().should.be(3);
-								ViewCompA.inst().onRemoved.size().should.be(3);
+								ViewCompA.instance.active.should.be(true);
+								ViewCompA.instance.onAdded.length.should.be(3);
+								ViewCompA.instance.onRemoved.length.should.be(3);
 							});
 							
 							describe("Then remove a first System from the flow", {
 								beforeEach(Echoes.removeSystem(s1));
 								it("should correctly remove listeners", {
-									ViewCompA.inst().isActive().should.be(false);
-									ViewCompA.inst().onAdded.size().should.be(0);
-									ViewCompA.inst().onRemoved.size().should.be(0);
+									ViewCompA.instance.active.should.be(false);
+									ViewCompA.instance.onAdded.length.should.be(0);
+									ViewCompA.instance.onRemoved.length.should.be(0);
 								});
 							});
 							
@@ -220,9 +220,9 @@ class SystemMetaTest extends buddy.BuddySuite {
 						describe("Then remove a first System from the flow", {
 							beforeEach(Echoes.removeSystem(s1));
 							it("should correctly remove listeners", {
-								ViewCompA.inst().isActive().should.be(true);
-								ViewCompA.inst().onAdded.size().should.be(1);
-								ViewCompA.inst().onRemoved.size().should.be(1);
+								ViewCompA.instance.active.should.be(true);
+								ViewCompA.instance.onAdded.length.should.be(1);
+								ViewCompA.instance.onRemoved.length.should.be(1);
 							});
 							
 							describe("Then create Entities", {
@@ -282,23 +282,22 @@ abstract CompC(String) {
 
 class SystemUpdateMeta extends echoes.System {
 	@:u function empty0() BuildResult.value += '[';
-	@:u function _f____(f:Float) BuildResult.value += '$f';
+	@:u function _f____(f:Float) BuildResult.value += '0';
 	@:u function empty1() BuildResult.value += '_';
 	@:u function ___a__(a:CompA) BuildResult.value += '$a';
 	@:u function empty2() BuildResult.value += '_';
-	@:u function _f_a_(f:Float, a:CompA) BuildResult.value += '${f}${a}';
+	@:u function _f_a_(f:Float, a:CompA) BuildResult.value += '0${a}';
 	@:u function empty3() BuildResult.value += '_';
-	@:u function _fe___(f:Float, e:Entity) BuildResult.value += '${f}e';
+	@:u function _fe___(f:Float, e:Entity) BuildResult.value += '0e';
 	@:u function empty4() BuildResult.value += '_';
-	@:u function _fea__(f:Float, e:Entity, a:CompA) BuildResult.value += '${f}e${a}';
-	@:u function _fe_b_(f:Float, e:Entity, b:CompB) BuildResult.value += '${f}e${b}';
-	@:u function _feab_(f:Float, e:Entity, a:CompA, b:CompB) BuildResult.value += '${f}e${a}${b}';
+	@:u function _fea__(f:Float, e:Entity, a:CompA) BuildResult.value += '0e${a}';
+	@:u function _fe_b_(f:Float, e:Entity, b:CompB) BuildResult.value += '0e${b}';
+	@:u function _feab_(f:Float, e:Entity, a:CompA, b:CompB) BuildResult.value += '0e${a}${b}';
 	@:u function empty5() BuildResult.value += ']';
-	override function onactivate() {
-		BuildResult.value += '^';
-	}
-	override function ondeactivate() {
-		BuildResult.value += '$';
+	
+	public function new() {
+		onActivate.push(() -> BuildResult.value += '^');
+		onDeactivate.push(() -> BuildResult.value += '$');
 	}
 }
 

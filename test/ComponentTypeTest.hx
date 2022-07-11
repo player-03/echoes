@@ -36,22 +36,22 @@ class ComponentTypeTest extends buddy.BuddySuite {
 					var str = "\\# \\( 1 \\) \\{ 12 \\} \\[ 1 \\| 0 \\]";
 					#if echoes_profiling
 					str += " : \\d ms";
-					str += "\n    ComponentTypeTest.ComponentTypeSystem : \\d ms";
-					str += "\n    \\{ObjectComponent\\} \\[0\\]";
-					str += "\n    \\{AbstractObjectComponent\\} \\[0\\]";
-					str += "\n    \\{AbstractPrimitive\\} \\[0\\]";
-					str += "\n    \\{EnumComponent\\} \\[0\\]";
-					str += "\n    \\{EnumAbstractComponent\\} \\[0\\]";
-					str += "\n    \\{IObjectComponent\\} \\[0\\]";
-					str += "\n    \\{ExtendObjectComponent\\} \\[0\\]";
-					str += "\n    \\{TypeParamComponent\\<ObjectComponent\\>\\} \\[0\\]";
-					str += "\n    \\{TypeParamComponent\\<Array\\<ObjectComponent\\>\\>\\} \\[0\\]";
-					str += "\n    \\{\\(ObjectComponent\\-\\>ObjectComponent\\-\\>Void\\)\\} \\[0\\]";
-					str += "\n    \\{\\(\\(ObjectComponent\\-\\>ObjectComponent\\)\\-\\>Void\\)\\} \\[0\\]";
-					str += "\n    \\{\\(Array\\<\\(ObjectComponent\\-\\>ObjectComponent\\)\\>\\-\\>Void\\)\\} \\[0\\]";
+					str += "\n    ComponentTypeSystem : \\d ms";
+					str += "\n    \\{ComponentTypeTest\\.ObjectComponent\\} \\[0\\]";
+					str += "\n    \\{ComponentTypeTest\\.AbstractObjectComponent\\} \\[0\\]";
+					str += "\n    \\{ComponentTypeTest\\.AbstractPrimitive\\} \\[0\\]";
+					str += "\n    \\{ComponentTypeTest\\.EnumComponent\\} \\[0\\]";
+					str += "\n    \\{ComponentTypeTest\\.EnumAbstractComponent\\} \\[0\\]";
+					str += "\n    \\{ComponentTypeTest\\.IObjectComponent\\} \\[0\\]";
+					str += "\n    \\{ComponentTypeTest\\.ExtendObjectComponent\\} \\[0\\]";
+					str += "\n    \\{ComponentTypeTest\\.TypeParamComponent<ComponentTypeTest\\.ObjectComponent>\\} \\[0\\]";
+					str += "\n    \\{ComponentTypeTest\\.TypeParamComponent<Array<ComponentTypeTest\\.ObjectComponent>>\\} \\[0\\]";
+					str += "\n    \\{\\(ComponentTypeTest\\.ObjectComponent, ComponentTypeTest\\.ObjectComponent\\) -> StdTypes\\.Void\\} \\[0\\]";
+					str += "\n    \\{\\(ComponentTypeTest\\.ObjectComponent -> ComponentTypeTest\\.ObjectComponent\\) -> StdTypes\\.Void\\} \\[0\\]";
+					str += "\n    \\{Array<ComponentTypeTest\\.ObjectComponent -> ComponentTypeTest\\.ObjectComponent> -> StdTypes\\.Void\\} \\[0\\]";
 					#end
 					beforeEach({
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct result", Echoes.info().should.match(new EReg(str, "")));
 				});
@@ -185,7 +185,7 @@ class ObjectComponent implements IObjectComponent {
 	public function getValue() return value;
 }
 
-typedef TypedefObjectComponent = ObjectComponent;
+@:eager typedef TypedefObjectComponent = ObjectComponent;
 
 @:forward(getValue)
 abstract AbstractObjectComponent(ObjectComponent) {
@@ -224,26 +224,26 @@ class TypeParamComponent<T> {
 	}
 }
 
-typedef TypedefTypeParamComponent = TypeParamComponent<ObjectComponent>;
-typedef TypedefAnotherTypeParamComponent = TypeParamComponent<ExtendObjectComponent>;
+@:eager typedef TypedefTypeParamComponent = TypeParamComponent<ObjectComponent>;
+@:eager typedef TypedefAnotherTypeParamComponent = TypeParamComponent<ExtendObjectComponent>;
 
-typedef TypedefNestedTypeParamComponent = TypeParamComponent<Array<ObjectComponent>>;
+@:eager typedef TypedefNestedTypeParamComponent = TypeParamComponent<Array<ObjectComponent>>;
 
-typedef TypedefFunc = ObjectComponent->ObjectComponent->Void;
-typedef TypedefNestedFunc = (ObjectComponent->ObjectComponent)->Void;
-typedef TypedefTypeParamFunc = Array<ObjectComponent->ObjectComponent>->Void;
+@:eager typedef TypedefFunc = ObjectComponent->ObjectComponent->Void;
+@:eager typedef TypedefNestedFunc = (ObjectComponent->ObjectComponent)->Void;
+@:eager typedef TypedefTypeParamFunc = Array<ObjectComponent->ObjectComponent>->Void;
 
 class ComponentTypeSystem extends System {
-	public var objects:View<ObjectComponent>;
-	public var abstractObjects:View<AbstractObjectComponent>;
-	public var abstractPrimitives:View<AbstractPrimitive>;
-	public var enums:View<EnumComponent>;
-	public var enumAbstracts:View<EnumAbstractComponent>;
-	public var iobjects:View<IObjectComponent>;
-	public var extendObjects:View<ExtendObjectComponent>;
-	public var typeParams:View<TypeParamComponent<ObjectComponent>>;
-	public var nestedTypeParams:View<TypeParamComponent<Array<ObjectComponent>>>;
-	public var funcs:View<ObjectComponent->ObjectComponent->Void>;
-	public var nestedFuncs:View<(ObjectComponent->ObjectComponent)->Void>;
-	public var typeParamFuncs:View<Array<ObjectComponent->ObjectComponent>->Void>;
+	public var objects:View<ObjectComponent> = makeLinkedView();
+	public var abstractObjects:View<AbstractObjectComponent> = makeLinkedView();
+	public var abstractPrimitives:View<AbstractPrimitive> = makeLinkedView();
+	public var enums:View<EnumComponent> = makeLinkedView();
+	public var enumAbstracts:View<EnumAbstractComponent> = makeLinkedView();
+	public var iobjects:View<IObjectComponent> = makeLinkedView();
+	public var extendObjects:View<ExtendObjectComponent> = makeLinkedView();
+	public var typeParams:View<TypeParamComponent<ObjectComponent>> = makeLinkedView();
+	public var nestedTypeParams:View<TypeParamComponent<Array<ObjectComponent>>> = makeLinkedView();
+	public var funcs:View<ObjectComponent->ObjectComponent->Void> = makeLinkedView();
+	public var nestedFuncs:View<(ObjectComponent->ObjectComponent)->Void> = makeLinkedView();
+	public var typeParamFuncs:View<Array<ObjectComponent->ObjectComponent>->Void> = makeLinkedView();
 }

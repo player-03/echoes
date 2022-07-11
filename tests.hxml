@@ -1,6 +1,9 @@
+-cp src
 -cp test
 -lib buddy
 -main Run
+--interp
 -dce full
+-D echoes_profiling
 -D analyzer-optimize
 -D buddy-ignore-passing-specs

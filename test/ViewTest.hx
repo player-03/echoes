@@ -51,7 +51,7 @@ class ViewTest extends buddy.BuddySuite {
 							for(e in entities) {
 								e.add(new C());
 							}
-							Echoes.update(0);
+							Echoes.update();
 						});
 						it("should matching correctly", {
 							mvs.a.entities.length.should.be(300);
@@ -67,7 +67,7 @@ class ViewTest extends buddy.BuddySuite {
 							for(e in entities) {
 								e.remove(C);
 							}
-							Echoes.update(0);
+							Echoes.update();
 						});
 						it("should matching correctly", {
 							mvs.a.entities.length.should.be(300);
@@ -82,7 +82,7 @@ class ViewTest extends buddy.BuddySuite {
 								for(e in entities) {
 									e.add(new C());
 								}
-								Echoes.update(0);
+								Echoes.update();
 							});
 							it("should matching correctly", {
 								mvs.a.entities.length.should.be(300);
@@ -99,7 +99,7 @@ class ViewTest extends buddy.BuddySuite {
 							for(e in entities) {
 								e.removeAll();
 							}
-							Echoes.update(0);
+							Echoes.update();
 						});
 						it("should matching correctly", {
 							mvs.a.entities.length.should.be(0);
@@ -115,7 +115,7 @@ class ViewTest extends buddy.BuddySuite {
 							for(e in entities) {
 								e.deactivate();
 							}
-							Echoes.update(0);
+							Echoes.update();
 						});
 						it("should matching correctly", {
 							mvs.a.entities.length.should.be(0);
@@ -130,7 +130,7 @@ class ViewTest extends buddy.BuddySuite {
 								for(e in entities) {
 									e.activate();
 								}
-								Echoes.update(0);
+								Echoes.update();
 							});
 							it("should matching correctly", {
 								mvs.a.entities.length.should.be(300);
@@ -147,7 +147,7 @@ class ViewTest extends buddy.BuddySuite {
 							for(e in entities) {
 								e.destroy();
 							}
-							Echoes.update(0);
+							Echoes.update();
 						});
 						it("should matching correctly", {
 							mvs.a.entities.length.should.be(0);
@@ -167,8 +167,8 @@ class ViewTest extends buddy.BuddySuite {
 				
 				beforeEach({
 					Echoes.addSystem(mvs);
-					mvs.av.onAdded.add(onad);
-					mvs.av.onRemoved.add(onrm);
+					mvs.av.onAdded.push(onad);
+					mvs.av.onRemoved.push(onrm);
 					e = new Entity();
 				});
 				
@@ -244,15 +244,15 @@ class ViewTest extends buddy.BuddySuite {
 				
 				beforeEach({
 					Echoes.addSystem(ivs);
-					ivs.av.onAdded.add(onad);
-					ivs.av.onRemoved.add(onrm);
+					ivs.av.onAdded.push(onad);
+					ivs.av.onRemoved.push(onrm);
 					for(i in 0...5) new Entity().add(new A(), new V(i));
 				});
 				
 				describe("When iterating", {
 					beforeEach({
 						ivs.f = function(id, a, v) log += '$v';
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(5));
 					it("should have correct log", log.should.be("+0+1+2+3+401234"));
@@ -260,7 +260,7 @@ class ViewTest extends buddy.BuddySuite {
 					describe("Then add an Entity and iterating", {
 						beforeEach({
 							new Entity().add(new A(), new V(5));
-							Echoes.update(0);
+							Echoes.update();
 						});
 						it("should have correct length", ivs.av.entities.length.should.be(6));
 						it("should have correct log", log.should.be("+0+1+2+3+401234+5012345"));
@@ -270,7 +270,7 @@ class ViewTest extends buddy.BuddySuite {
 				describe("Then remove Component while iterating", {
 					beforeEach({
 						ivs.f = function(id, a, v) id.remove(V);
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(0));
 					it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
@@ -279,7 +279,7 @@ class ViewTest extends buddy.BuddySuite {
 				describe("Then remove all of Components while iterating", {
 					beforeEach({
 						ivs.f = function(id, a, v) id.removeAll();
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(0));
 					it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
@@ -288,7 +288,7 @@ class ViewTest extends buddy.BuddySuite {
 				describe("Then destroy Entity while iterating", {
 					beforeEach({
 						ivs.f = function(id, a, v) id.destroy();
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(0));
 					it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
@@ -297,7 +297,7 @@ class ViewTest extends buddy.BuddySuite {
 				describe("Then deactivate Entity while iterating", {
 					beforeEach({
 						ivs.f = function(id, a, v) id.deactivate();
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(0));
 					it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
@@ -310,7 +310,7 @@ class ViewTest extends buddy.BuddySuite {
 								new Entity().add(new A(), new V(9));
 							}
 						}
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(10));
 					it("should have correct log", log.should.be("+0+1+2+3+4+9+9+9+9+9"));
@@ -324,7 +324,7 @@ class ViewTest extends buddy.BuddySuite {
 								new Entity().add(new A(), new V(9));
 							}
 						}
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(5));
 					it("should have correct log", log.should.be("+0+1+2+3+4-0+9-1+9-2+9-3+9-4+9"));
@@ -335,7 +335,7 @@ class ViewTest extends buddy.BuddySuite {
 						ivs.f = function(id, a, v) {
 							ivs.av.iter(function(e, a, v) e.remove(V));
 						}
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(0));
 					it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
@@ -346,7 +346,7 @@ class ViewTest extends buddy.BuddySuite {
 						ivs.f = function(id, a, v) {
 							ivs.av.iter(function(e, a, v) e.removeAll());
 						}
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(0));
 					it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
@@ -357,7 +357,7 @@ class ViewTest extends buddy.BuddySuite {
 						ivs.f = function(id, a, v) {
 							ivs.av.iter(function(e, a, v) e.destroy());
 						}
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(0));
 					it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
@@ -368,7 +368,7 @@ class ViewTest extends buddy.BuddySuite {
 						ivs.f = function(id, a, v) {
 							ivs.av.iter(function(e, a, v) e.deactivate());
 						}
-						Echoes.update(0);
+						Echoes.update();
 					});
 					it("should have correct length", ivs.av.entities.length.should.be(0));
 					it("should have correct log", log.should.be("+0+1+2+3+4-0-1-2-3-4"));
@@ -380,36 +380,36 @@ class ViewTest extends buddy.BuddySuite {
 				var onrm = function(id:Entity, a:A, v:V) log += '-$v';
 				
 				beforeEach({
-					mvs.av.onAdded.add(onad);
-					mvs.av.onRemoved.add(onrm);
+					if(!mvs.av.onAdded.contains(onad)) mvs.av.onAdded.push(onad);
+					if(!mvs.av.onRemoved.contains(onrm)) mvs.av.onRemoved.push(onrm);
 					for(i in 1...4) new Entity().add(new A(), new V(i));
 				});
 				
 				describe("Initially", {
-					it("should not be active", mvs.av.isActive().should.be(false));
+					it("should not be active", mvs.av.active.should.be(false));
 					it("should not have entities", mvs.av.entities.length.should.be(0));
-					it("should have on ad signals", mvs.av.onAdded.size().should.be(1));
-					it("should have on rm signals", mvs.av.onRemoved.size().should.be(1));
+					it("should have on ad signals", mvs.av.onAdded.length.should.be(1));
+					it("should have on rm signals", mvs.av.onRemoved.length.should.be(1));
 					it("should have correct log", log.should.be(""));
 					
 					describe("Then activate", {
 						beforeEach({
 							mvs.av.activate();
 						});
-						it("should be active", mvs.av.isActive().should.be(true));
+						it("should be active", mvs.av.active.should.be(true));
 						it("should have entities", mvs.av.entities.length.should.be(3));
-						it("should have on ad signals", mvs.av.onAdded.size().should.be(1));
-						it("should have on rm signals", mvs.av.onRemoved.size().should.be(1));
+						it("should have on ad signals", mvs.av.onAdded.length.should.be(1));
+						it("should have on rm signals", mvs.av.onRemoved.length.should.be(1));
 						it("should have correct log", log.should.be("+1+2+3"));
 						
 						describe("Then deactivate", {
 							beforeEach({
 								mvs.av.deactivate();
 							});
-							it("should not be active", mvs.av.isActive().should.be(false));
+							it("should not be active", mvs.av.active.should.be(false));
 							it("should not have entities", mvs.av.entities.length.should.be(0));
-							it("should have on ad signals", mvs.av.onAdded.size().should.be(1));
-							it("should have on rm signals", mvs.av.onRemoved.size().should.be(1));
+							it("should not have on ad signals", mvs.av.onAdded.length.should.be(0));
+							it("should not have on rm signals", mvs.av.onRemoved.length.should.be(0));
 							it("should have correct log", log.should.be("+1+2+3-1-2-3"));
 						});
 						
@@ -417,107 +417,11 @@ class ViewTest extends buddy.BuddySuite {
 							beforeEach({
 								@:privateAccess mvs.av.reset();
 							});
-							it("should not be active", mvs.av.isActive().should.be(false));
+							it("should not be active", mvs.av.active.should.be(false));
 							it("should not have entities", mvs.av.entities.length.should.be(0));
-							it("should not have on ad signals", mvs.av.onAdded.size().should.be(0));
-							it("should not have on rm signals", mvs.av.onRemoved.size().should.be(0));
+							it("should not have on ad signals", mvs.av.onAdded.length.should.be(0));
+							it("should not have on rm signals", mvs.av.onRemoved.length.should.be(0));
 							it("should have correct log", log.should.be("+1+2+3-1-2-3"));
-						});
-					});
-				});
-			});
-			
-			describe("Test Sorting", {
-				var vprinter = function(e:Entity) return '${ e.get(V) }';
-				var eprinter = function(e:Entity) return '$e';
-				
-				var gt = function(e1:Entity, e2:Entity) return e2.get(V).val - e1.get(V).val;
-				var lr = function(e1:Entity, e2:Entity) return e1.get(V).val - e2.get(V).val;
-				
-				describe("Initially", {
-					beforeEach({
-						Echoes.addSystem(ivs);
-						var id = 0;
-						for(i in 0...3) {
-							for(j in 1...4) {
-								new Entity().add(
-									new V(j * 2), 
-									new A()
-								);
-							}
-						}
-					});
-					
-					it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("246246246"));
-					it("should have correct e order", ivs.av.entities.map(eprinter).join("").should.be("012345678"));
-					
-					describe("Then sort desc", {
-						beforeEach({
-							ivs.av.entities.sort(gt);
-						});
-						it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("666444222"));
-						it("should have correct e order", ivs.av.entities.map(eprinter).join("").should.be("258147036"));
-						
-						describe("Then sort desc again", {
-							beforeEach({
-								ivs.av.entities.sort(gt);
-							});
-							it("should not change v order", ivs.av.entities.map(vprinter).join("").should.be("666444222"));
-							it("should not change e order", ivs.av.entities.map(eprinter).join("").should.be("258147036"));
-						});
-						
-						describe("Then add one more Entity", {
-							var e:Entity;
-							
-							beforeEach(e = new Entity().add(new V(3), new A()));
-							it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("6664442223"));
-							
-							describe("Then sort asc", {
-								beforeEach({
-									ivs.av.entities.sort(lr);
-								});
-								it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("2223444666"));
-								
-								describe("Then destroy an Entity", {
-									beforeEach(e.destroy());
-									it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("222444666"));
-								});
-							});
-						});
-					});
-					
-					describe("Then sort asc", {
-						beforeEach({
-							ivs.av.entities.sort(lr);
-						});
-						it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("222444666"));
-						it("should have correct e order", ivs.av.entities.map(eprinter).join("").should.be("036147258"));
-						
-						describe("Then sort asc again", {
-							beforeEach({
-								ivs.av.entities.sort(lr);
-							});
-							it("should not change v order", ivs.av.entities.map(vprinter).join("").should.be("222444666"));
-							it("should not change e order", ivs.av.entities.map(eprinter).join("").should.be("036147258"));
-						});
-						
-						describe("Then add one more Entity", {
-							var e:Entity;
-							
-							beforeEach(e = new Entity().add(new V(3), new A()));
-							it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("2224446663"));
-							
-							describe("Then sort desc", {
-								beforeEach({
-									ivs.av.entities.sort(gt);
-								});
-								it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("6664443222"));
-								
-								describe("Then destroy an Entity", {
-									beforeEach(e.destroy());
-									it("should have correct v order", ivs.av.entities.map(vprinter).join("").should.be("666444222"));
-								});
-							});
 						});
 					});
 				});
@@ -527,19 +431,19 @@ class ViewTest extends buddy.BuddySuite {
 }
 
 class MatchingViewSystem extends echoes.System {
-	public var a:View<A>;
-	public var b:View<B>;
+	public var a:View<A> = makeLinkedView();
+	public var b:View<B> = makeLinkedView();
 	
-	public var ab:View<A, B>;
-	public var bc:View<B, C>;
+	public var ab:View<A, B> = makeLinkedView();
+	public var bc:View<B, C> = makeLinkedView();
 	
-	public var abcd:View<A, B, C, D>;
+	public var abcd:View<A, B, C, D> = makeLinkedView();
 	
-	public var av:View<A, V>;
+	public var av:View<A, V> = makeLinkedView();
 }
 
 class IteratingViewSystem extends echoes.System {
-	public var av:View<A, V>;
+	public var av:View<A, V> = makeLinkedView();
 	
 	public var f:Entity->A->V->Void = null;
 	
