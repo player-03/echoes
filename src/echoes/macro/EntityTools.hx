@@ -23,7 +23,7 @@ class EntityTools {
 	 * @param components Components of `Any` type.
 	 * @return The entity.
 	 */
-	public static function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echoes.Entity> {
+	public static function add(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
 		return macro {
 			var entity:echoes.Entity = $self;
 			

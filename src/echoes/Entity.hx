@@ -126,7 +126,7 @@ abstract Entity(Int) from Int to Int {
 	 * @param components Components of `Any` type.
 	 * @return This entity.
 	 */
-	public macro function add(self:Expr, components:Array<ExprOf<Any>>):ExprOf<echoes.Entity> {
+	public macro function add(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
 		return EntityTools.add(self, components);
 	}
 	
