@@ -108,8 +108,8 @@ class System {
 	public macro function makeLinkedView(self:Expr):Expr {
 		var view:Expr = Echoes.getView(false);
 		return macro {
-			$self.onActivated.push($view.activate);
-			$self.onDeactivated.push($view.deactivate);
+			$self.onActivate.push($view.activate);
+			$self.onDeactivate.push($view.deactivate);
 			$view;
 		};
 	}
