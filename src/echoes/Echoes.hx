@@ -45,6 +45,7 @@ class Echoes {
 	public static function init(?fps:Float = 60):Void {
 		if(!initialized) {
 			initialized = true;
+			lastUpdate = haxe.Timer.stamp();
 			
 			if(fps > 0) {
 				new haxe.Timer(Std.int(1000 / fps)).run = update;
