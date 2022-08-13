@@ -82,15 +82,10 @@ abstract Entity(Int) from Int to Int {
 	
 	/**
 	 * Removes all of this entity's components, but does not deactivate or
-	 * destroy it.
+	 * destroy it. Caution: if a `@:remove` listener adds a component to the
+	 * entity, that component may remain afterwards.
 	 */
 	public function removeAll():Void {
-		if(status() == Active) {
-			for(view in Echoes.activeViews) {
-				view.removeIfExists(this);
-			}
-		}
-		
 		for(storage in Echoes.componentStorage) {
 			storage.remove(this);
 		}
