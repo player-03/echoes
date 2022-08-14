@@ -15,8 +15,8 @@ using Lambda;
  * The entity part of entity-component-system.
  * 
  * Under the hood, an `Entity` is an integer key, used to look up components in
- * `Storage`. (Caution: don't use this integer as a unique id, as destroyed
- * entities will be cached and reused!)
+ * `ComponentStorage`. (Caution: don't use this integer as a unique id, as
+ * destroyed entities will be cached and reused!)
  */
 @:allow(echoes.Echoes)
 abstract Entity(Int) from Int to Int {

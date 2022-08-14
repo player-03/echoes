@@ -520,8 +520,8 @@ class BlueprintData {
 					
 					var printedType:String = printer.printComplexType(type);
 					
-					if(printedType == "Int" || printedType == "StdTypes.Int") {
-						Context.error("Int is reserved for entity ids - consider using a typedef or abstract", field.pos);
+					if(printedType == "Entity" || printedType == "echoes.Entity") {
+						Context.error("Entity is reserved - consider using a typedef, abstract, or Int", field.pos);
 					} else if(printedType == "Float" || printedType == "StdTypes.Float") {
 						Context.error("Float is reserved for lengths of time - consider using a typedef or abstract", field.pos);
 					}

@@ -15,6 +15,14 @@ class ComponentStorageBuilder {
 	
 	public static function getComponentContainer(componentComplexType:ComplexType):ComplexType {
 		var componentTypeName:String = componentComplexType.followName();
+		switch(componentTypeName) {
+			case "echoes.Entity":
+				Context.error('Entity is not an allowed component type. Try using a typedef, an abstract, or Int instead.', Context.currentPos());
+			case "StdTypes.Float":
+				Context.error('Float is not an allowed component type. Try using a typedef or an abstract instead.', Context.currentPos());
+			default:
+		}
+		
 		var storageTypeName:String = "ComponentStorage_" + componentComplexType.toIdentifier();
 		var storageType:ComplexType = storageCache.get(storageTypeName);
 		

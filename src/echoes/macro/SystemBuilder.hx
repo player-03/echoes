@@ -221,9 +221,9 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 			
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
-					//Float is reserved for delta time; Int and Entity are both
-					//reserved for the entity.
-					case macro:StdTypes.Float, macro:StdTypes.Int, macro:echoes.Entity:
+					//Float is reserved for delta time; Entity is reserved for
+					//the entity.
+					case macro:StdTypes.Float, macro:echoes.Entity:
 					default:
 						//There are two ways to mark an argument as optional.
 						if(!arg.opt && arg.value == null) {
@@ -243,9 +243,9 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 			
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
-					//Float is reserved for delta time; Int and Entity are both
-					//reserved for the entity.
-					case macro:StdTypes.Float, macro:StdTypes.Int, macro:echoes.Entity:
+					//Float is reserved for delta time; Entity is reserved for
+					//the entity.
+					case macro:StdTypes.Float, macro:echoes.Entity:
 					default:
 						//There are two ways to mark an argument as optional.
 						if(arg.opt || arg.value != null) {
@@ -334,7 +334,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 				case macro:StdTypes.Float:
 					//Defined as a private variable of `System`.
 					macro __dt__;
-				case macro:StdTypes.Int, macro:echoes.Entity:
+				case macro:echoes.Entity:
 					//Defined as a wrapper function's first argument, and also
 					//defined in `callDuringUpdate()`.
 					macro entity;
@@ -361,9 +361,11 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 			//Iterate over a `View`'s entities.
 			return macro $view.iter($wrapper);
 		} else {
+			//No components to filter by, but there may still be an `Entity`
+			//argument. (And/or a `Float` argument, which isn't relevant.)
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
-					case macro:StdTypes.Int, macro:echoes.Entity:
+					case macro:echoes.Entity:
 						//Iterate over all entities.
 						return macro for(entity in echoes.Echoes.activeEntities)
 							${ call() };

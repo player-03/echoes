@@ -213,6 +213,7 @@ Systems:
 
 - Systems no longer initialize `View` variables automatically. You must now call `makeLinkedView()` for the same behavior.
 - `@rm` is no longer a valid way to shorten `@:remove`. You may now omit any number of letters from the end, but not from the middle. (Thus, `@:rem` is now valid.)
+- As far as listener functions are concerned, `Int` no longer means anything special. To get a reference to the entity, take an argument of type `Entity`.
 
 Miscellaneous:
 
