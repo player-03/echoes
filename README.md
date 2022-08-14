@@ -145,10 +145,10 @@ class MovementSystem extends System {
 	 * `Float` is a special case, and is never treated as a component.
 	 */
 	@:update private function updatePosition(position:Position, velocity:Velocity, time:Float):Void {
-			//Changing the entity's position a small amount each frame produces the
-			//appearance of smooth motion.
-			position.x += velocity.x * time;
-			position.y += velocity.y * time;
+		//Changing the entity's position a small amount each frame produces the
+		//appearance of smooth motion.
+		position.x += velocity.x * time;
+		position.y += velocity.y * time;
 	}
 	
 	/**
@@ -177,6 +177,53 @@ class MovementSystem extends System {
 				velocity.x = 0;
 				velocity.y = 0;
 			}
+		}
+	}
+}
+```
+
+#### Special arguments
+Certain argument types have special meanings, for easy access to information. `Float` refers to the duration of this update, in seconds, and `Entity` refers to the entity being processed.
+
+When you take an argument of either type, instead of getting a component as normal, you get the special value. Plus, the function will be called even though the entity doesn't have corresponding components. (In fact, entities aren't allowed to have those components.)
+
+```haxe
+//The entity must have `Position` and `Velocity`, but `Float` will be provided.
+@:update private function updatePosition(position:Position, velocity:Velocity, time:Float):Void {
+	position.x += velocity.x * time;
+	position.y += velocity.y * time;
+}
+
+//Taking an `Entity` argument allows you to view and modify components.
+@:update private function stopIfOutOfBounds(position:Position, entity:Entity):Void {
+	//entity.get() is just a little more verbose, but does the same thing.
+	if(position != entity.get(Position)) {
+		throw "Those should always be equal.";
+	}
+	
+	//You can create code that only runs when an optional component exists.
+	if(entity.exists(Velocity) && Math.abs(position.x) > 200) {
+		entity.remove(Velocity);
+	}
+}
+```
+
+Echoes also supports the standard "optional argument" syntax.
+
+```haxe
+//Only `Position` is required, but `Velocity` will be provided if available.
+@:update private function stopAtBounds(position:Position, ?velocity:Velocity):Void {
+	if(position.x > 200) {
+		position.x = 200;
+		
+		if(velocity != null) {
+			velocity.x = 0;
+		}
+	} else if(position.x < -200) {
+		position.x = -200;
+		
+		if(velocity != null) {
+			velocity.x = 0;
 		}
 	}
 }
