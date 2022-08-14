@@ -207,6 +207,7 @@ Components:
 
 - Typedefs are treated as their own components, distinct from the underlying type. To disable this behavior, mark the typedef `@:eager`.
 - `Storage` and `ICleanableComponentContainer` have been merged into `ComponentStorage`.
+- Components may no longer be `null`. Trying to add a null component instead removes that component (if it exists).
 
 Systems:
 

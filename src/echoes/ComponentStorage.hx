@@ -32,6 +32,11 @@ class ComponentStorage<T> {
 	}
 	
 	public function add(entity:Entity, component:T):Void {
+		if(component == null) {
+			remove(entity);
+			return;
+		}
+		
 		storage[entity] = component;
 		
 		if(entity.isActive()) {
