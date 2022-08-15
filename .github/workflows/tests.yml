@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+  
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        haxe-version: [4.0.5, 4.1.5, 4.2.5]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: ${{ matrix.haxe-version }}
+      
+      - name: Set HAXEPATH
+        run: echo "HAXEPATH=$HAXE_STD_PATH/.." >> $GITHUB_ENV
+      
+      - run: haxelib install utest
+      
+      - name: Run tests
+        run: haxe tests.hxml --interp
