@@ -1,4 +1,3 @@
 *.hxproj
-/.vscode
-*.map
-/bin
+bin/
+dump/

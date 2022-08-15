@@ -1,9 +1,7 @@
+#Sample usage: haxe tests.hxml --interp
+
 -cp src
 -cp test
--lib buddy
--main Run
---interp
+-lib utest
+-main Main
 -dce full
--D echoes_profiling
--D analyzer-optimize
--D buddy-ignore-passing-specs
