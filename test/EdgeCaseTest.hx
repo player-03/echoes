@@ -142,14 +142,10 @@ class RecursiveEventSystem extends System implements IMethodCounter {
 	}
 	
 	@:add private function briefRemovesItself(brief:Brief, entity:Entity):Void {
-		trace("briefRemovesItself");
 		entity.remove(Brief);
-		trace("done briefRemovesItself");
 	}
 	
 	@:remove private function permanentAddsItself(permanent:Permanent, entity:Entity):Void {
-		trace("permanentAddsItself");
 		entity.add(permanent);
-		trace("done permanentAddsItself");
 	}
 }
