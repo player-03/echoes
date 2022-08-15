@@ -14,6 +14,12 @@ using haxe.macro.Context;
 #end
 
 class Echoes {
+	#if ((haxe_ver < 4.2) && macro)
+	private static function __init__():Void {
+		Context.error("Error: Echoes requires at least Haxe 4.2.", Context.currentPos());
+	}
+	#end
+	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
 	private static var componentStorage:Array<DynamicComponentStorage> = [];
 	
