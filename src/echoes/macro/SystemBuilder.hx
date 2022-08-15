@@ -45,10 +45,10 @@ class SystemBuilder {
 	 * - "echoes_u"
 	 * - ":echoes_updated"
 	 * 
-	 * @param searchTerms One or more metadata names, consisting of lowercase
-	 * letters (no colon, no "echoes_").
+	 * @param searchTerms A metadata name consisting of lowercase letters (no
+	 * colon, no "echoes_").
 	 */
-	private static function getMeta(field:Field, ...searchTerms:String):Null<MetadataEntry> {
+	private static function getMeta(field:Field, searchTerm:String):Null<MetadataEntry> {
 		for(meta in field.meta) {
 			var name:String = meta.name;
 			if(name.startsWith(":")) {
@@ -58,7 +58,7 @@ class SystemBuilder {
 				name = name.substr("echoes_".length);
 			}
 			
-			if(name.length > 0 && searchTerms.toArray().exists(searchTerm -> searchTerm.startsWith(name))) {
+			if(name.length > 0 && searchTerm.startsWith(name)) {
 				//Encourage users to include a colon in their metadata.
 				if(!meta.name.startsWith(":")) {
 					Context.warning('@${meta.name} is deprecated; use @:${meta.name} instead.'
