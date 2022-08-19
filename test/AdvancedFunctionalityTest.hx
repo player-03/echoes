@@ -11,17 +11,6 @@ import utest.Test;
 
 @:depends(BasicFunctionalityTest)
 class AdvancedFunctionalityTest extends Test {
-	private var count1:Int = 0;
-	private var count2:Int = 0;
-	
-	private function function1():Void {
-		count1++;
-	}
-	
-	private function function2():Void {
-		count2++;
-	}
-	
 	private function teardown():Void {
 		Echoes.reset();
 		MethodCounter.reset();
@@ -32,6 +21,17 @@ class AdvancedFunctionalityTest extends Test {
 		//meaning `function1 != function1`.
 		Assert.notEquals(function1, function1, "Haxe changed how it handles closures.");
 		Assert.isTrue(Reflect.compareMethods(function1, function1));
+		
+		//Make some listener functions.
+		var count1:Int = 0;
+		var count2:Int = 0;
+		
+		function function1():Void {
+			count1++;
+		}
+		function function2():Void {
+			count2++;
+		}
 		
 		//Make a signal.
 		var signal:Signal<()->Void> = new Signal();
