@@ -11,37 +11,41 @@ import utest.Test;
 
 @:depends(BasicFunctionalityTest)
 class AdvancedFunctionalityTest extends Test {
+	private var count1:Int = 0;
+	
+	private function listener1():Void {
+		count1++;
+	}
+	
 	private function teardown():Void {
 		Echoes.reset();
 		MethodCounter.reset();
 	}
 	
 	private function testSignals():Void {
-		//Haxe creates a new closure each time you access an instance method,
-		//meaning `function1 != function1`.
-		Assert.notEquals(function1, function1, "Haxe changed how it handles closures.");
-		Assert.isTrue(Reflect.compareMethods(function1, function1));
-		
-		//Make some listener functions.
-		var count1:Int = 0;
+		count1 = 0;
 		var count2:Int = 0;
 		
-		function function1():Void {
-			count1++;
-		}
-		function function2():Void {
+		//Haxe creates a new closure each time you access an instance method,
+		//meaning `listener1 != listener1`.
+		Assert.notEquals(listener1, listener1, "Haxe changed how it handles closures.");
+		Assert.isTrue(Reflect.compareMethods(listener1, listener1));
+		
+		//However, local functions don't use closures.
+		function listener2():Void {
 			count2++;
 		}
+		Assert.equals(listener2, listener2);
+		Assert.isTrue(Reflect.compareMethods(listener2, listener2));
 		
 		//Make a signal.
 		var signal:Signal<()->Void> = new Signal();
 		
-		signal.push(function1);
-		Assert.isTrue(signal.contains(function1));
-		Assert.isTrue(signal.contains(function1));
+		signal.push(listener1);
+		Assert.isTrue(signal.contains(listener1));
 		
-		signal.push(function2);
-		Assert.isTrue(signal.contains(function2));
+		signal.push(listener2);
+		Assert.isTrue(signal.contains(listener2));
 		
 		//Dispatch it.
 		signal.dispatch();
@@ -49,8 +53,8 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals(1, count2);
 		
 		//Remove a function and dispatch again.
-		signal.remove(function1);
-		Assert.isFalse(signal.contains(function1));
+		signal.remove(listener1);
+		Assert.isFalse(signal.contains(listener1));
 		
 		signal.dispatch();
 		Assert.equals(1, count1);
