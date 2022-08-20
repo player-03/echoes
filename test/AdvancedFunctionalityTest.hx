@@ -22,16 +22,19 @@ class AdvancedFunctionalityTest extends Test {
 		MethodCounter.reset();
 	}
 	
+	//Tests may be run in any order, but not in parallel.
+	
 	private function testSignals():Void {
 		count1 = 0;
 		var count2:Int = 0;
 		
-		//Haxe creates a new closure each time you access an instance method,
-		//meaning `listener1 != listener1`.
-		Assert.notEquals(listener1, listener1, "Haxe changed how it handles closures.");
+		//Each time you access an instance method, Haxe will create a new
+		//closure, meaning `listener1 != listener1`. The only reliable way to
+		//compare methods is via `Reflect`.
+		Assert.notEquals(listener1, listener1, "Haxe changed how it handles instance methods.");
 		Assert.isTrue(Reflect.compareMethods(listener1, listener1));
 		
-		//However, local functions don't use closures.
+		//However, local functions work fine.
 		function listener2():Void {
 			count2++;
 		}

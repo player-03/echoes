@@ -18,6 +18,8 @@ class EdgeCaseTest extends Test {
 		MethodCounter.reset();
 	}
 	
+	//Tests may be run in any order, but not in parallel.
+	
 	private function testNullComponents():Void {
 		var entity:Entity = new Entity();
 		

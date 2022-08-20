@@ -16,6 +16,8 @@ class BasicFunctionalityTest extends Test {
 		MethodCounter.reset();
 	}
 	
+	//Tests may be run in any order, but not in parallel.
+	
 	private function testEntities():Void {
 		//Make an inactive entity.
 		var entity:Entity = new Entity(false);
@@ -42,10 +44,12 @@ class BasicFunctionalityTest extends Test {
 		entity.destroy();
 		Assert.isFalse(entity.exists(Shape));
 		Assert.equals(Destroyed, entity.status());
+		Assert.equals(1, @:privateAccess Entity.idPool.length);
 		
 		//Make a new entity (should use the same ID as the old).
 		var newEntity:Entity = new Entity();
 		Assert.equals(entity, newEntity);
+		Assert.equals(0, @:privateAccess Entity.idPool.length);
 	}
 	
 	private function testComponents():Void {
