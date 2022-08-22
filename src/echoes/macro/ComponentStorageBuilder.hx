@@ -41,7 +41,7 @@ class ComponentStorageBuilder {
 			}
 		}
 		
-		Context.defineType(def);
+		try Context.getType(storageTypeName) catch (e:Dynamic) Context.defineType(def);
 		
 		storageCache.set(storageTypeName, storageType);
 		
