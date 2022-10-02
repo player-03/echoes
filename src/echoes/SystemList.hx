@@ -1,6 +1,6 @@
 package echoes;
 
-import echoes.utils.Timestep;
+import echoes.utils.Clock;
 
 /**
  * A group of systems, to help with organization.
@@ -18,11 +18,11 @@ class SystemList extends System {
 	
 	private var systems:Array<System> = [];
 	
-	private var timestep:Timestep;
+	private var clock:Clock;
 	
-	public function new(?name:String = "SystemList", ?timestep:Timestep) {
+	public function new(?name:String = "SystemList", ?clock:Clock) {
 		this.name = name;
-		this.timestep = timestep != null ? timestep : new Timestep();
+		this.clock = clock != null ? clock : new Clock();
 	}
 	
 	private override function __activate__():Void {
@@ -51,8 +51,8 @@ class SystemList extends System {
 		#end
 		
 		__dt__ = dt;
-		timestep.advance(dt);
-		for(step in timestep) {
+		clock.addTime(dt);
+		for(step in clock) {
 			for(system in systems) {
 				system.__update__(step);
 			}

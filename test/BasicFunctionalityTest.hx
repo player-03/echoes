@@ -4,7 +4,7 @@ import Components;
 import echoes.Echoes;
 import echoes.Entity;
 import echoes.SystemList;
-import echoes.utils.Timestep;
+import echoes.utils.Clock;
 import MethodCounter.assertTimesCalled;
 import Systems;
 import utest.Assert;
@@ -189,8 +189,8 @@ class BasicFunctionalityTest extends Test {
 	}
 	
 	private function testUpdateEvents():Void {
-		//Create a `TimeCountSystem` and use a custom `Timestep`.
-		var systems:SystemList = new SystemList(new OneSecondTimestep());
+		//Create a `TimeCountSystem` and use a custom `Clock`.
+		var systems:SystemList = new SystemList(new OneSecondClock());
 		Echoes.addSystem(systems);
 		
 		var timeCountSystem:TimeCountSystem = new TimeCountSystem();
@@ -232,11 +232,11 @@ class BasicFunctionalityTest extends Test {
 }
 
 /**
- * A custom `Timestep` that advances 1 second whenever `Echoes.update()` is
- * called, regardless of the real-world time elapsed.
+ * A custom `Clock` that advances 1 second whenever `Echoes.update()` is called,
+ * regardless of the real-world time elapsed.
  */
-class OneSecondTimestep extends Timestep {
-	public override function advance(time:Float):Void {
-		super.advance(1);
+class OneSecondClock extends Clock {
+	public override function addTime(time:Float):Void {
+		super.addTime(1);
 	}
 }
