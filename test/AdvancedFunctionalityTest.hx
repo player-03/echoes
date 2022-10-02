@@ -3,6 +3,8 @@ package;
 import Components;
 import echoes.Echoes;
 import echoes.Entity;
+import echoes.System;
+import echoes.SystemList;
 import echoes.utils.Signal;
 import echoes.View;
 import Systems;
@@ -23,6 +25,26 @@ class AdvancedFunctionalityTest extends Test {
 	}
 	
 	//Tests may be run in any order, but not in parallel.
+	
+	private function testAddBefore():Void {
+		var list:SystemList = new SystemList();
+		
+		var appearanceSystem:AppearanceSystem = new AppearanceSystem();
+		var nameSystem:NameSystem = new NameSystem();
+		var optionalComponentSystem:OptionalComponentSystem = new OptionalComponentSystem();
+		var timeCountSystem:TimeCountSystem = new TimeCountSystem();
+		
+		list.add(appearanceSystem);
+		list.add(nameSystem, AppearanceSystem);
+		list.add(optionalComponentSystem);
+		list.add(timeCountSystem, OptionalComponentSystem, NameSystem);
+		
+		var systems:Array<System> = @:privateAccess list.systems;
+		Assert.equals(timeCountSystem, systems[0]);
+		Assert.equals(nameSystem, systems[1]);
+		Assert.equals(appearanceSystem, systems[2]);
+		Assert.equals(optionalComponentSystem, systems[3]);
+	}
 	
 	private function testSignals():Void {
 		count1 = 0;

@@ -74,9 +74,22 @@ class SystemList extends System {
 		return result.toString();
 	}
 	
-	public function add(system:System):SystemList {
+	/**
+	 * Adds the given system to this list.
+	 * @param before If any of these `System` subclasses already exist in the
+	 * list, the new system will be inserted before the first.
+	 */
+	public function add(system:System, ...before:Class<System>):SystemList {
 		if(!exists(system)) {
-			systems.push(system);
+			var index:Int = Lambda.findIndex(before, type -> Lambda.exists(systems, otherSystem ->
+				Std.isOfType(otherSystem, type)));
+			
+			if(index >= 0) {
+				systems.insert(index, system);
+			} else {
+				systems.push(system);
+			}
+			
 			if(active) {
 				system.__activate__();
 			}
