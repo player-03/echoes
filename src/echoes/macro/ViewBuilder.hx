@@ -98,10 +98,21 @@ class ViewBuilder {
 		 * `View<Hue, Saturation>`, this would be
 		 * `[macro entity, macro HueContainer.instance.get(entity), macro SaturationContainer.instance.get(entity)]`.
 		 */
-		var callbackArgs:Array<Expr> = [macro entity]
-			.concat([for(component in components)
-				macro $i{ component.getComponentContainer().followName() }.instance.get(entity)
-			]);
+		var callbackArgs:Array<Expr> = [for(component in components)
+			macro $i{ component.getComponentContainer().followName() }.instance.get(entity)];
+		/**
+		 * The arguments required to dispatch a removed callback event. These
+		 * are the same as `callbackArgs` except for the just-removed component,
+		 * which is stored in the `removedComponent` variable.
+		 */
+		var removedCallbackArgs:Array<Expr> = [for(component in components) macro {
+			var inst = $i{ component.getComponentContainer().followName() }.instance;
+			inst == removedComponentStorage ? removedComponent : inst.get(entity);
+		}];
+		
+		//Pass `entity` as the first argument to both.
+		callbackArgs.unshift(macro entity);
+		removedCallbackArgs.unshift(macro entity);
 		
 		var def:TypeDefinition = macro class $viewClassName extends echoes.View.ViewBase {
 			public static var instance(default, null):$viewComplexType = new $viewTypePath();
@@ -126,24 +137,22 @@ class ViewBuilder {
 			
 			private override function dispatchAddedCallback(entity:echoes.Entity):Void {
 				//$a{} - Insert function arguments from an `Array<Expr>`.
-				onAdded.dispatch($a{ callbackArgs });
+				for(callback in onAdded) {
+					callback($a{ callbackArgs });
+					if(!entities.has(entity)) {
+						break;
+					}
+				}
 			}
 			
 			private override function dispatchRemovedCallback(entity:echoes.Entity, ?removedComponentStorage:echoes.ComponentStorage.DynamicComponentStorage, ?removedComponent:Any):Void {
-				onRemoved.dispatch(
+				for(callback in onRemoved) {
 					//$a{} - Insert function arguments from an `Array<Expr>`.
-					//Start with `entity` because that's always required.
-					$a{ [macro entity].concat(
-						//Each argument after the first must be a component.
-						//We can get the value of most components from storage,
-						//but for the just-removed component, we need to use the
-						//value of `removedComponent` instead.
-						[for(component in components) macro {
-							var inst = $i{ component.getComponentContainer().followName() }.instance;
-							inst == removedComponentStorage ? removedComponent : inst.get(entity);
-						}]
-					) }
-				);
+					callback($a{ removedCallbackArgs });
+					if(entities.has(entity)) {
+						break;
+					}
+				}
 			}
 			
 			private override function reset():Void {

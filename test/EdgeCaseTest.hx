@@ -72,14 +72,20 @@ class EdgeCaseTest extends Test {
 		//Activate the system first so that it can process events first.
 		Echoes.addSystem(new RecursiveEventSystem());
 		
-		//Thanks to `ComponentStorage`'s optimizations, certain events should
-		//stop propagating after the `RecursiveEventSystem` functions. (The
-		//`View` finishes dispatching it to all listeners, but other views of
-		//that component aren't notified.)
-		(Echoes.getView():View<One, Two>).onAdded.push((entity, one, two) -> Assert.fail("Added event propagated to a second view despite being canceled."));
-		(Echoes.getView():View<Two, Three>).onAdded.push((entity, two, three) -> Assert.fail("Added event propagated to a second view despite being canceled."));
-		(Echoes.getView():View<Brief, One>).onAdded.push((entity, brief, one) -> Assert.fail("Added event propagated to a second view despite being canceled."));
-		(Echoes.getView():View<Permanent, One>).onRemoved.push((entity, permanent, one) -> Assert.fail("Removed event propagated to a second view despite being canceled."));
+		//Certain events should stop propagating after `RecursiveEventSystem`
+		//gets to them.
+		(Echoes.getView():View<One, Two>).onAdded.push((entity, one, two)
+			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
+		(Echoes.getView():View<Two, Three>).onAdded.push((entity, two, three)
+			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
+		(Echoes.getView():View<Brief, One>).onAdded.push((entity, brief, one)
+			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
+		(Echoes.getView():View<Permanent, One>).onRemoved.push((entity, permanent, one)
+			-> Assert.fail("ComponentStorage.remove() didn't stop iterating despite component being re-added."));
+		(Echoes.getView():View<Brief>).onAdded.push((entity, brief)
+			-> Assert.fail("ViewBuilder.dispatchAddedCallback() didn't stop iterating despite entity being removed."));
+		(Echoes.getView():View<Permanent>).onRemoved.push((entity, permanent)
+			-> Assert.fail("ViewBuilder.dispatchRemovedCallback() didn't stop iterating despite entity being re-added."));
 		
 		//Test components that add/remove other components.
 		entity.add((1:One));
@@ -114,7 +120,8 @@ class EdgeCaseTest extends Test {
 		entity.remove(Permanent);
 		Assert.isTrue(entity.exists(Permanent));
 		
-		//Clear the permanent listener before cleaning up.
+		//Clear the permanent listeners before cleaning up.
+		(Echoes.getView():View<Permanent>).onRemoved.pop();
 		(Echoes.getView():View<Permanent, One>).onRemoved.pop();
 	}
 }
