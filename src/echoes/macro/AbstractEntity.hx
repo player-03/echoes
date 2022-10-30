@@ -106,11 +106,27 @@ class AbstractEntity {
 	public static function build():Array<Field> {
 		var fields:Array<Field> = Context.getBuildFields();
 		
-		switch(!Context.getLocalType().followWithAbstracts().toComplexType()) {
-			case macro:Int, macro:StdTypes.Int:
-				//Probably an entity.
-			default:
-				Context.fatalError(Context.getLocalClass().toString() + " should wrap echoes.Entity.", Context.currentPos());
+		var name:String = Context.getLocalClass().get().name;
+		function throwNotEntity():Void {
+			Context.fatalError('$name should wrap echoes.Entity.', Context.currentPos());
+		}
+		
+		var nameMatcher:EReg = ~/^(.+)_Impl_$/;
+		if(nameMatcher.match(name)) {
+			name = nameMatcher.matched(1);
+			switch(name.getType()) {
+				case TAbstract(t, _):
+					switch(t.get().type.followWithAbstracts().toComplexType()) {
+						case macro:Int, macro:StdTypes.Int:
+							//Success
+						default:
+							throwNotEntity();
+					}
+				default:
+					throwNotEntity();
+			};
+		} else {
+			throwNotEntity();
 		}
 		
 		var blueprint:BlueprintData = BlueprintData.current();
