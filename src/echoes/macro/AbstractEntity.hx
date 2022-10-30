@@ -165,8 +165,9 @@ class AbstractEntity {
 							}
 						}
 					case FProp(get, set, t, e):
-						if(field.access.indexOf(AStatic) < 0) {
-							throw "Assertion failed: the Haxe compiler no longer makes properties static";
+						//Static properties should be left alone.
+						if(field.access.indexOf(AStatic) >= 0) {
+							continue;
 						}
 						
 						//Properties can mostly be left as-is, as long as they don't have an underlying variable.
@@ -296,23 +297,6 @@ class AbstractEntity {
 		return macro $p{packWithName};
 	}
 	
-	private static function complexTypeExpr(complexType:ComplexType, pos:Position):Expr {
-		switch(complexType) {
-			case TPath({pack: pack, name: name, params: params}):
-				if(params != null && params.length > 0) {
-					return macro (_:$complexType);
-				} else {
-					if(pack != null && pack.length > 0) {
-						return dotAccessExpr(pack, name);
-					} else {
-						return macro $i{name};
-					}
-				}
-			default:
-				return null;
-		}
-	}
-	
 	private static function replaceVariableAccess(expr:Expr):Expr {
 		switch(expr.expr) {
 			case EReturn({expr: EBinop(OpAssign, {expr: EConst(CIdent(c))}, e)}) if(c == fieldName):
@@ -343,16 +327,16 @@ class AbstractEntity {
 		}
 		
 		if(setter) {
-			var typeExpr:Expr = complexTypeExpr(fieldData.type, fieldData.pos);
+			var type:ComplexType = fieldData.type;
 			array.push({
 				access: [AInline],
 				kind: FFun({
 					//On static platforms, setting opt:true is the
 					//easiest way to allow null values.
 					args: [{name: "value", type: fieldData.type, opt: true}],
-					expr: @:pos(fieldData.pos) macro {
+					expr: macro {
 						if(value == null) {
-							this.remove($typeExpr);
+							this.remove((_:$type));
 						} else {
 							this.add(value);
 						}
