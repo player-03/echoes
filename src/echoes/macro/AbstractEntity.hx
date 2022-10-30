@@ -1,7 +1,6 @@
 package echoes.macro;
 
 import haxe.macro.ComplexTypeTools;
-import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 import haxe.macro.Type;
@@ -12,6 +11,7 @@ using echoes.macro.ComponentStorageBuilder;
 using echoes.macro.EntityTools;
 using echoes.macro.MacroTools;
 using haxe.EnumTools;
+using haxe.macro.Context;
 using haxe.macro.ExprTools;
 #else
 import echoes.Entity;
@@ -23,6 +23,7 @@ import echoes.Entity;
  * 
  * ```haxe
  * typedef Color = Int;
+ * @:build(echoes.macro.AbstractEntity.build())
  * abstract ColorfulEntity(Entity) {
  *     public var color:Color;
  * }
@@ -46,6 +47,7 @@ import echoes.Entity;
  * 
  * ```haxe
  * typedef Color = Int;
+ * @:build(echoes.macro.AbstractEntity.build())
  * abstract ColorfulEntity(Entity) {
  *     public var color:Color;
  *     
@@ -104,30 +106,11 @@ class AbstractEntity {
 	public static function build():Array<Field> {
 		var fields:Array<Field> = Context.getBuildFields();
 		
-		switch(Context.getLocalType()) {
-			case TInst(_.get().kind => KAbstractImpl(_.get().type => parent), _):
-				var lastName:String = null;
-				while(parent != null) {
-					switch(parent) {
-						case TAbstract(_.get() => parentAbstract, _):
-							if(parentAbstract.module == "StdTypes") {
-								return fields;
-							} else if(parentAbstract.name == lastName) {
-								return fields;
-							} else if(parentAbstract.name == "Entity"
-								&& parentAbstract.pack.length == 1 && parentAbstract.pack[0] == "echoes") {
-								parent = null;
-								break;
-							} else {
-								lastName = parentAbstract.name;
-								parent = parentAbstract.type;
-							}
-						default:
-							return fields;
-					}
-				}
+		switch(!Context.getLocalType().followWithAbstracts().toComplexType()) {
+			case macro:Int, macro:StdTypes.Int:
+				//Probably an entity.
 			default:
-				return fields;
+				Context.fatalError(Context.getLocalClass().toString() + " should wrap echoes.Entity.", Context.currentPos());
 		}
 		
 		var blueprint:BlueprintData = BlueprintData.current();

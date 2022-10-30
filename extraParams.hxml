@@ -1,1 +1,0 @@
---macro addGlobalMetadata("", "@:build(echoes.macro.AbstractEntity.build())")
