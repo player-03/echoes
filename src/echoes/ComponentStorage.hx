@@ -23,7 +23,7 @@ class ComponentStorage<T> {
 		Echoes.componentStorage.push(this);
 	}
 	
-	public inline function get(entity:Entity):T {
+	public inline function get(entity:Entity):Null<T> {
 		return storage[entity];
 	}
 	
