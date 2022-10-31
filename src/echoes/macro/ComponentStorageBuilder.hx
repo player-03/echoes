@@ -11,7 +11,9 @@ using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
 
 class ComponentStorageBuilder {
-	private static var storageCache:Map<String, ComplexType> = new Map();
+	private static var storageCache:Map<String, TypeDefinition> = new Map();
+	
+	private static var registered:Bool = false;
 	
 	public static function getComponentContainer(componentComplexType:ComplexType):ComplexType {
 		var componentTypeName:String = componentComplexType.followName();
@@ -24,14 +26,12 @@ class ComponentStorageBuilder {
 		}
 		
 		var storageTypeName:String = "ComponentStorage_" + componentComplexType.toIdentifier();
-		var storageType:ComplexType = storageCache.get(storageTypeName);
+		var storageTypePath:TypePath = { pack: [], name: storageTypeName };
+		var storageType:ComplexType = TPath(storageTypePath);
 		
-		if(storageType != null) {
+		if(storageCache.exists(storageTypeName)) {
 			return storageType;
 		}
-		
-		var storageTypePath:TypePath = { pack: [], name: storageTypeName };
-		storageType = TPath(storageTypePath);
 		
 		var def:TypeDefinition = macro class $storageTypeName extends echoes.ComponentStorage<$componentComplexType> {
 			public static var instance(default, null):$storageType = new $storageTypePath();
@@ -41,9 +41,11 @@ class ComponentStorageBuilder {
 			}
 		};
 		
-		Context.defineType(def);
-		
-		storageCache.set(storageTypeName, storageType);
+		storageCache.set(storageTypeName, def);
+		if(!registered) {
+			registered = true;
+			Context.onTypeNotFound(storageCache.get);
+		}
 		
 		Report.componentNames.push(componentTypeName);
 		Report.gen();
