@@ -17,9 +17,9 @@ class ComponentStorageBuilder {
 		var componentTypeName:String = componentComplexType.followName();
 		switch(componentTypeName) {
 			case "echoes.Entity":
-				Context.error('Entity is not an allowed component type. Try using a typedef, an abstract, or Int instead.', Context.currentPos());
+				Context.error("Entity is not an allowed component type. Try using a typedef, an abstract, or Int instead.", Context.currentPos());
 			case "StdTypes.Float":
-				Context.error('Float is not an allowed component type. Try using a typedef or an abstract instead.', Context.currentPos());
+				Context.error("Float is not an allowed component type. Try using a typedef or an abstract instead.", Context.currentPos());
 			default:
 		}
 		
@@ -39,7 +39,7 @@ class ComponentStorageBuilder {
 			private function new() {
 				super($v{componentTypeName});
 			}
-		}
+		};
 		
 		Context.defineType(def);
 		
