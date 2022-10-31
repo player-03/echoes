@@ -123,7 +123,8 @@ class SystemBuilder {
 		//Define wrapper functions for each listener.
 		for(listener in addListeners.concat(removeListeners).concat(updateListeners)) {
 			if(listener.wrapperFunction != null) {
-				fields.push(listener.wrapperFunction);
+				if(!fields.exists(field -> field.name == listener.wrapperName))
+					fields.push(listener.wrapperFunction);
 				
 				if(!linkedViews.contains(listener.viewName))
 					linkedViews.push(listener.viewName);
