@@ -67,6 +67,15 @@ class ComponentStorage<T> {
 		}
 	}
 	
+	/**
+	 * Dispatches a `@:remove` event (if applicable) before adding `component`.
+	 * To make Echoes use this, tag the component type with `@:echoes_replace`.
+	 */
+	public inline function replace(entity:Entity, component:T):Void {
+		remove(entity);
+		add(entity, component);
+	}
+	
 	@:allow(echoes.Echoes)
 	private inline function clear():Void {
 		storage.clear();

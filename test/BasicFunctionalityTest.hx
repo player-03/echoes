@@ -163,6 +163,18 @@ class BasicFunctionalityTest extends Test {
 		assertTimesCalled(2, "NameSystem.nameAdded");
 		assertTimesCalled(0, "NameSystem.nameRemoved");
 		
+		//Overwrite some components.
+		redLine.add(("darkRedLine":Name));
+		assertTimesCalled(3, "NameSystem.nameAdded");
+		assertTimesCalled(1, "NameSystem.nameRemoved");
+		
+		assertTimesCalled(2, "AppearanceSystem.shapeAdded");
+		assertTimesCalled(0, "AppearanceSystem.shapeRemoved");
+		circle.add(SQUARE);
+		circle.add(CIRCLE);
+		assertTimesCalled(2, "AppearanceSystem.shapeAdded");
+		assertTimesCalled(0, "AppearanceSystem.shapeRemoved");
+		
 		//Deconstruct an entity.
 		redLine.remove(Shape);
 		assertTimesCalled(0, "AppearanceSystem.colorRemoved");
@@ -174,17 +186,17 @@ class BasicFunctionalityTest extends Test {
 		assertTimesCalled(1, "AppearanceSystem.colorAndShapeRemoved");
 		
 		redLine.removeAll();
-		assertTimesCalled(1, "NameSystem.nameRemoved");
+		assertTimesCalled(2, "NameSystem.nameRemoved");
 		
 		//Deactivate a system.
 		Echoes.removeSystem(nameSystem);
-		assertTimesCalled(2, "NameSystem.nameRemoved");
+		assertTimesCalled(3, "NameSystem.nameRemoved");
 		
 		//Destroy the remaining entity.
 		assertTimesCalled(1, "AppearanceSystem.shapeRemoved");
 		
 		circle.destroy();
-		assertTimesCalled(2, "NameSystem.nameRemoved");
+		assertTimesCalled(3, "NameSystem.nameRemoved");
 		assertTimesCalled(2, "AppearanceSystem.shapeRemoved");
 	}
 	

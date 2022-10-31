@@ -13,4 +13,5 @@ enum abstract Shape(String) {
 	var STAR;
 }
 
+@:echoes_replace
 typedef Name = String;
