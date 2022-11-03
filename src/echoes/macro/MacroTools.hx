@@ -54,7 +54,7 @@ class MacroTools {
 			default:
 		}
 		
-		Context.error('Failed to parse `${ new Printer().printExpr(e) }`. Try making a typedef or using the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.', Context.currentPos());
+		Context.error('Failed to parse `${ new Printer().printExpr(e) }`. Try making a typedef or using the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.', e.pos);
 		return macro:Dynamic;
 	}
 	
