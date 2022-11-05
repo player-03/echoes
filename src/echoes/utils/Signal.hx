@@ -1,19 +1,5 @@
 package echoes.utils;
 
-#if lime
-import lime.app.Event;
-
-@:forward @:forward.new
-abstract Signal<T:haxe.Constraints.Function>(Event<T>) from Event<T> to Event<T> {
-	public function contains(listener:T):Bool {
-		return this.has(listener);
-	}
-	
-	public function push(listener:T):Void {
-		this.add(listener);
-	}
-}
-#else
 #if macro
 import haxe.macro.Expr;
 #end
@@ -34,7 +20,7 @@ abstract Signal<T:haxe.Constraints.Function>(Array<T>) {
 		return false;
 	}
 	
-	public macro function dispatch(self:Expr, args:Array<Expr>) {
+	public macro function dispatch(self:Expr, args:Array<Expr>):Expr {
 		return macro for(listener in $self) {
 			listener($a{ args });
 		};
@@ -61,4 +47,3 @@ abstract Signal<T:haxe.Constraints.Function>(Array<T>) {
 		return false;
 	}
 }
-#end
