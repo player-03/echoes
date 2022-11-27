@@ -1,5 +1,6 @@
 package echoes;
 
+import echoes.Echoes.SystemDetails;
 import echoes.utils.Clock;
 
 /**
@@ -63,15 +64,10 @@ class SystemList extends System {
 		#end
 	}
 	
-	public override function info(?indent:String = "    ", ?level:Int = 0):String {
-		var result:StringBuf = new StringBuf();
-		result.add(super.info(indent, level));
-		
-		for(system in systems) {
-			result.add('\n${ system.info(indent, level + 1) }');
-		}
-		
-		return result.toString();
+	public override function getStatistics():SystemDetails {
+		var result:SystemDetails = super.getStatistics();
+		result.children = [for(system in systems) system.getStatistics()];
+		return result;
 	}
 	
 	/**

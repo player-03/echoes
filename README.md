@@ -232,7 +232,7 @@ Echoes also supports the standard "optional argument" syntax.
 ### Compiler flags
 Echoes offers a few ways to customize compilation.
 
-- `-Dechoes_profiling` turns on time tracking. With this flag enabled, `Echoes.info()` will return a printable list of how much time was spent on each system during the most recent update.
+- `-Dechoes_profiling` turns on time tracking. With this flag enabled, `Echoes.getStatistics()` will include the amount of time spent on each system during the most recent update.
 - `-Dechoes_report` prints a list of all compiled components and views.
 - `-Dechoes_max_name_length=[number]` adjusts the length of generated class names, which can help if you exceed your operating system's filename length limit.
 
@@ -267,6 +267,7 @@ Miscellaneous:
 - Haxe 3 is no longer supported.
 - `Echoes.update()` will calculate the elapsed time on its own, and no longer takes an argument. If you need to adjust the rate at which time passes, use a `SystemList` with a `ScaledTimestep`.
 - `-Dechoes_array_container` and `-Dechoes_vector_container` have been removed.
+- `Echoes.info()` is now `Echoes.getStatistics()`.
 
 Finally, several classes and variables were renamed. Use these find-and-replace operations to update your code.
 

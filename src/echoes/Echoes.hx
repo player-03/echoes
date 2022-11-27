@@ -61,34 +61,19 @@ class Echoes {
 	}
 	
 	/**
-	 * Returns the app statistics:
-	 * 
-	 * ```text
-	 * ( systems count ) { views count } [ entities count | entity cache size ]
-	 * ```
-	 * 
-	 * If `echoes_profiling` is set, additionally returns:
-	 * 
-	 * ```text
-	 *  : update time ms
-	 * ( system name ) : update time ms
-	 * { view name } [ entities in view ]
-	 * ```
+	 * Returns statistics about the app in JSON-compatible form.
 	 */
-	public static function info():String {
-		var ret = '# ( ${activeSystems.length} ) { ${activeViews.length} } [ ${activeEntities.length} | ${Entity.idPool.length} ]'; // TODO version or something
-		
-		#if echoes_profiling
-		ret += ' : $lastUpdateLength ms'; // total
-		for(system in activeSystems) {
-			ret += '\n${ system.info('    ', 1) }';
-		}
-		for(view in activeViews) {
-			ret += '\n    {$view} [${ view.entities.length }]';
-		}
-		#end
-		
-		return ret;
+	public static function getStatistics():AppStatistics {
+		return {
+			cachedEntities: Entity.idPool.length,
+			entities: activeEntities.length,
+			systems: [for(system in activeSystems) system.getStatistics()],
+			views: [for(view in activeViews)
+				{
+					name: Std.string(view),
+					entities: view.entities.length
+				}]
+		};
 	}
 	
 	/**
@@ -199,3 +184,21 @@ class Echoes {
 		return macro null;
 	}
 }
+
+typedef AppStatistics = {
+	var cachedEntities:Int;
+	var entities:Int;
+	var systems:Array<SystemDetails>;
+	var views:Array<{
+		var name:String;
+		var entities:Int;
+	}>;
+};
+
+typedef SystemDetails = {
+	var name:String;
+	@:optional var children:Array<SystemDetails>;
+	#if echoes_profiling
+	var deltaTime:Int;
+	#end
+};

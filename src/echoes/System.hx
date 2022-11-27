@@ -1,5 +1,6 @@
 package echoes;
 
+import echoes.Echoes.SystemDetails;
 import echoes.macro.ViewBuilder;
 import echoes.utils.Signal;
 import echoes.View;
@@ -114,14 +115,11 @@ class System {
 		};
 	}
 	
-	public function info(?indent = "    ", ?level = 0):String {
-		indent = StringTools.rpad("", indent, indent.length * level);
-		
-		#if echoes_profiling
-		return '$indent$this : $__updateTime__ ms';
-		#else
-		return '$indent$this';
-		#end
+	public function getStatistics():SystemDetails {
+		return {
+			name: Std.string(this)
+			#if echoes_profiling , deltaTime: __updateTime__ #end
+		};
 	}
 	
 	public function toString():String {
