@@ -105,12 +105,12 @@ class AdvancedFunctionalityTest extends Test {
 		var colorShape:Entity = new Entity().add((0xFFFFFF:Color), STAR);
 		
 		//Make some views; each should see a different selection of entities.
-		var viewOfName:View<Name> = Echoes.getView();
+		var viewOfName:View<Name> = Echoes.getSingleton();
 		Assert.equals(2, viewOfName.entities.length);
 		Assert.isTrue(viewOfName.entities.has(name));
 		Assert.isTrue(viewOfName.entities.has(colorName));
 		
-		var viewOfShape:View<Shape> = Echoes.getView();
+		var viewOfShape:View<Shape> = Echoes.getSingleton();
 		Assert.equals(2, viewOfShape.entities.length);
 		Assert.isTrue(viewOfShape.entities.has(shape));
 		Assert.isTrue(viewOfShape.entities.has(colorShape));
@@ -146,7 +146,7 @@ class AdvancedFunctionalityTest extends Test {
 	private function testViewSignals():Void {
 		var entity:Entity = new Entity();
 		
-		var viewOfShape:View<Shape> = Echoes.getView();
+		var viewOfShape:View<Shape> = Echoes.getSingleton();
 		
 		var signalDispatched:Bool = false;
 		function listener(e:Entity, s:Shape):Void {

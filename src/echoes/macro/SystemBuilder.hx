@@ -103,7 +103,7 @@ class SystemBuilder {
 							if(!linkedViews.contains(viewName)) linkedViews.push(viewName);
 							
 							//Get the view normally, without activating.
-							expr.expr = (macro echoes.Echoes.getView(false)).expr;
+							expr.expr = (macro echoes.Echoes.getSingleton(false)).expr;
 						default:
 					}
 				default:

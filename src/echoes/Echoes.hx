@@ -7,6 +7,7 @@ import echoes.View;
 
 #if macro
 import haxe.macro.Expr;
+import haxe.macro.Printer;
 
 using echoes.macro.MacroTools;
 using echoes.macro.ViewBuilder;
@@ -154,44 +155,47 @@ class Echoes {
 		return activeSystems.contains(system);
 	}
 	
-	//View management
-	//===============
+	//Singleton management
+	//====================
 	
 	/**
-	 * Gets a `View` instance from anywhere, relying on
-	 * `Context.getExpectedType()` to determine which type of view you want.
+	 * Returns the expected `View` or `ComponentStorage` instance. May also work
+	 * for other `@:genericBuild` types, but those aren't officially supported.
 	 * 
-	 * Sample usage:
+	 * To use this function, you must explicitly specify the expected type:
 	 * 
 	 * ```haxe
-	 * var view:View<String> = Echoes.getView();
-	 * var view2 = (Echoes.getView():View<A, B>);
-	 * //var view3 = Echoes.getView(); //Error: getView() called without an expected type.
+	 * var stringView:View<String> = Echoes.getSingleton();
+	 * var colorShapeView = (Echoes.getSingleton():View<Color, Shape>);
+	 * 
+	 * var stringStorage:ComponentStorage<String> = Echoes.getSingleton();
+	 * var colorStorage:ComponentStorage<Color> = Echoes.getSingleton();
+	 * var shapeStorage = (Echoes.getSingleton():ComponentStorage<Shape>);
 	 * ```
-	 * @param activate Whether to activate the view before returning it.
-	 * Defaults to true for convenience.
-	 * @see `System.makeLinkedView()` to attach the view to a system.
+	 * @param activateView Whether to activate the `View` before returning it.
+	 * Has no effect on `ComponentStorage` or any other type.
+	 * @see `System.makeLinkedView()`
 	 */
 	//Tip: macros can call this function too!
-	public static #if !macro macro #end function getView(?activate:Bool = true):Expr {
-		//There's no need to call `ViewBuilder.createViewType()`; Haxe will
-		//automatically do so at least once.
+	public static #if !macro macro #end function getSingleton(?activateView:Bool = true):Expr {
+		//There's no need to invoke the builder; Haxe will automatically do so
+		//at least once.
 		switch(Context.getExpectedType().followMono().toComplexType()) {
-			case TPath({ name: className }):
-				if(className.isView()) {
-					if(activate) {
-						return macro {
-							$i{className}.instance.activate();
-							$i{className}.instance;
-						};
-					} else {
-						return macro $i{className}.instance;
-					}
+			case TPath({ pack: [], name: className, params: [] }):
+				if(className.isView() && activateView) {
+					return macro {
+						$i{ className }.instance.activate();
+						$i{ className }.instance;
+					};
+				} else {
+					return macro $i{ className }.instance;
 				}
+			case TPath(p):
+				Context.error(new Printer().printComplexType(TPath(p)) + " is not a supported type.", Context.currentPos());
 			default:
+				Context.error("getSingleton() called without an expected type", Context.currentPos());
 		}
 		
-		Context.error("getView() called without an expected type.", Context.currentPos());
 		return macro null;
 	}
 }

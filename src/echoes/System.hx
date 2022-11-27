@@ -102,11 +102,11 @@ class System {
 	}
 	
 	/**
-	 * Returns the expected view (functioning like `Echoes.getView()`), except
-	 * the view will activate and deactivate whenever this system does.
+	 * Returns the expected view (functioning like `Echoes.getSingleton()`),
+	 * except the view will activate and deactivate whenever this system does.
 	 */
 	public macro function makeLinkedView(self:Expr):Expr {
-		var view:Expr = Echoes.getView(false);
+		var view:Expr = Echoes.getSingleton(false);
 		return macro {
 			$self.onActivate.push($view.activate);
 			$self.onDeactivate.push($view.deactivate);

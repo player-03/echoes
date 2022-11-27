@@ -153,9 +153,9 @@ class MovementSystem extends System {
 	
 	/**
 	 * This `View` object lists every entity with a `Velocity`. Because the
-	 * `View` constructor is private, you must call `getView()` instead.
+	 * `View` constructor is private, you must call `makeLinkedView()` instead.
 	 */
-	private var velocityView:View<Velocity> = getView();
+	private var velocityView:View<Velocity> = makeLinkedView();
 	
 	/**
 	 * Because `Float` is a special case, this function behaves like

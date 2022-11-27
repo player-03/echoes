@@ -74,17 +74,17 @@ class EdgeCaseTest extends Test {
 		
 		//Certain events should stop propagating after `RecursiveEventSystem`
 		//gets to them.
-		(Echoes.getView():View<One, Two>).onAdded.push((entity, one, two)
+		(Echoes.getSingleton():View<One, Two>).onAdded.push((entity, one, two)
 			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
-		(Echoes.getView():View<Two, Three>).onAdded.push((entity, two, three)
+		(Echoes.getSingleton():View<Two, Three>).onAdded.push((entity, two, three)
 			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
-		(Echoes.getView():View<Brief, One>).onAdded.push((entity, brief, one)
+		(Echoes.getSingleton():View<Brief, One>).onAdded.push((entity, brief, one)
 			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
-		(Echoes.getView():View<Permanent, One>).onRemoved.push((entity, permanent, one)
+		(Echoes.getSingleton():View<Permanent, One>).onRemoved.push((entity, permanent, one)
 			-> Assert.fail("ComponentStorage.remove() didn't stop iterating despite component being re-added."));
-		(Echoes.getView():View<Brief>).onAdded.push((entity, brief)
+		(Echoes.getSingleton():View<Brief>).onAdded.push((entity, brief)
 			-> Assert.fail("ViewBuilder.dispatchAddedCallback() didn't stop iterating despite entity being removed."));
-		(Echoes.getView():View<Permanent>).onRemoved.push((entity, permanent)
+		(Echoes.getSingleton():View<Permanent>).onRemoved.push((entity, permanent)
 			-> Assert.fail("ViewBuilder.dispatchRemovedCallback() didn't stop iterating despite entity being re-added."));
 		
 		//Test components that add/remove other components.
@@ -121,8 +121,8 @@ class EdgeCaseTest extends Test {
 		Assert.isTrue(entity.exists(Permanent));
 		
 		//Clear the permanent listeners before cleaning up.
-		(Echoes.getView():View<Permanent>).onRemoved.pop();
-		(Echoes.getView():View<Permanent, One>).onRemoved.pop();
+		(Echoes.getSingleton():View<Permanent>).onRemoved.pop();
+		(Echoes.getSingleton():View<Permanent, One>).onRemoved.pop();
 	}
 }
 
