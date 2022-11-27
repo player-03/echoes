@@ -99,14 +99,14 @@ class ViewBuilder {
 		 * `[macro entity, macro HueContainer.instance.get(entity), macro SaturationContainer.instance.get(entity)]`.
 		 */
 		var callbackArgs:Array<Expr> = [for(component in components)
-			macro $i{ component.getComponentContainer().followName() }.instance.get(entity)];
+			macro $i{ component.getComponentStorage().followName() }.instance.get(entity)];
 		/**
 		 * The arguments required to dispatch a removed callback event. These
 		 * are the same as `callbackArgs` except for the just-removed component,
 		 * which is stored in the `removedComponent` variable.
 		 */
 		var removedCallbackArgs:Array<Expr> = [for(component in components) macro {
-			var inst = $i{ component.getComponentContainer().followName() }.instance;
+			var inst = $i{ component.getComponentStorage().followName() }.instance;
 			inst == removedComponentStorage ? removedComponent : inst.get(entity);
 		}];
 		
@@ -129,8 +129,8 @@ class ViewBuilder {
 				if(activations == 1) $b{
 					//Each expression adds this `View` to a related list.
 					[for(component in components) {
-						var componentContainer:String = component.getComponentContainer().followName();
-						macro $i{ componentContainer }.instance.relatedViews.push(this);
+						var componentStorage:String = component.getComponentStorage().followName();
+						macro $i{ componentStorage }.instance.relatedViews.push(this);
 					}]
 				}
 			}
@@ -164,8 +164,8 @@ class ViewBuilder {
 				$b{
 					//Each expression removes this `View` from a related list.
 					[for(component in components) {
-						var componentContainer:String = component.getComponentContainer().followName();
-						macro $i{ componentContainer }.instance.relatedViews.remove(this);
+						var componentStorage:String = component.getComponentStorage().followName();
+						macro $i{ componentStorage }.instance.relatedViews.remove(this);
 					}]
 				}
 			}
@@ -185,7 +185,7 @@ class ViewBuilder {
 					//would be `HueContainer.instance.exists(entity)` and
 					//`SaturationContainer.instance.exists(entity)`.
 					var checks:Array<Expr> = [for(component in components)
-						macro $i{ component.getComponentContainer().followName() }.instance.exists(id)];
+						macro $i{ component.getComponentStorage().followName() }.instance.exists(id)];
 					//The checks are joined by `&&` operators.
 					checks.fold((a, b) -> macro $a && $b, checks.shift());
 				}};

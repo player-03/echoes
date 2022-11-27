@@ -15,7 +15,7 @@ class ComponentStorageBuilder {
 	
 	private static var registered:Bool = false;
 	
-	public static function getComponentContainer(componentComplexType:ComplexType):ComplexType {
+	public static function getComponentStorage(componentComplexType:ComplexType):ComplexType {
 		var componentTypeName:String = componentComplexType.followName();
 		switch(componentTypeName) {
 			case "echoes.Entity":

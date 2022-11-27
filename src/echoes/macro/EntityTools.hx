@@ -59,7 +59,7 @@ class EntityTools {
 						"add";
 				};
 				
-				var containerName:String = type.toComplexType().getComponentContainer().followName();
+				var containerName:String = type.toComplexType().getComponentStorage().followName();
 				macro @:privateAccess $i{ containerName }.instance.$operation(entity, $component);
 			}] }
 			
@@ -78,7 +78,7 @@ class EntityTools {
 			var entity:echoes.Entity = $self;
 			
 			$b{ [for(type in types) {
-				var containerName:String = type.getComponentContainer().followName();
+				var containerName:String = type.getComponentStorage().followName();
 				macro @:privateAccess $i{ containerName }.instance.remove(entity);
 			}] }
 			
@@ -93,7 +93,7 @@ class EntityTools {
 	 * @return The component, or `null` if the entity doesn't have it.
 	 */
 	public static function get<T>(self:Expr, complexType:ComplexType):ExprOf<T> {
-		var containerName:String = complexType.getComponentContainer().followName();
+		var containerName:String = complexType.getComponentStorage().followName();
 		
 		return macro $i{ containerName }.instance.get($self);
 	}
@@ -103,7 +103,7 @@ class EntityTools {
 	 * @param type The type to check for.
 	 */
 	public static function exists(self:Expr, complexType:ComplexType):ExprOf<Bool> {
-		var containerName:String = complexType.getComponentContainer().followName();
+		var containerName:String = complexType.getComponentStorage().followName();
 		
 		return macro $i{ containerName }.instance.exists($self);
 	}
