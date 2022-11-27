@@ -50,10 +50,12 @@ class AdvancedFunctionalityTest extends Test {
 		count1 = 0;
 		var count2:Int = 0;
 		
+		#if !hl
 		//Each time you access an instance method, Haxe will create a new
 		//closure, meaning `listener1 != listener1`. The only reliable way to
 		//compare methods is via `Reflect`.
 		Assert.notEquals(listener1, listener1, "Haxe changed how it handles instance methods.");
+		#end
 		Assert.isTrue(Reflect.compareMethods(listener1, listener1));
 		
 		//However, local functions work fine.
