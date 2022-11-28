@@ -41,7 +41,7 @@ class ComponentStorage<T> {
 		
 		if(entity.isActive()) {
 			for(view in relatedViews) {
-				@:privateAccess view.addIfMatched(entity);
+				view.addIfMatched(entity);
 				
 				//Stop dispatching events if a listener removed it.
 				if(!exists(entity)) {
@@ -57,7 +57,7 @@ class ComponentStorage<T> {
 		
 		if(entity.isActive()) {
 			for(view in relatedViews) {
-				@:privateAccess view.removeIfExists(entity, this, removedComponent);
+				view.removeIfExists(entity, this, removedComponent);
 				
 				//Stop dispatching events if a listener added it back.
 				if(exists(entity)) {
