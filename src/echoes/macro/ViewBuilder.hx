@@ -115,7 +115,7 @@ class ViewBuilder {
 		removedCallbackArgs.unshift(macro entity);
 		
 		var def:TypeDefinition = macro class $viewClassName extends echoes.View.ViewBase {
-			public static var instance(default, null):$viewComplexType = new $viewTypePath();
+			public static final instance:$viewComplexType = new $viewTypePath();
 			
 			public var onAdded(default, null) = new echoes.utils.Signal<$callbackType>();
 			public var onRemoved(default, null) = new echoes.utils.Signal<$callbackType>();

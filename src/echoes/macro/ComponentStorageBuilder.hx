@@ -34,7 +34,7 @@ class ComponentStorageBuilder {
 		}
 		
 		var def:TypeDefinition = macro class $storageTypeName extends echoes.ComponentStorage<$componentComplexType> {
-			public static var instance(default, null):$storageType = new $storageTypePath();
+			public static final instance:$storageType = new $storageTypePath();
 			
 			private function new() {
 				super($v{componentTypeName});
