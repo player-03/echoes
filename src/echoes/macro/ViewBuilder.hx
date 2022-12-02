@@ -87,27 +87,44 @@ class ViewBuilder {
 		var viewComplexType:ComplexType = TPath(viewTypePath);
 		
 		/**
-		 * The function signature of the view's event dispatchers and associated
-		 * event listeners. For instance, in a `View<Hue, Saturation>`, this
-		 * would be `macro:(Entity, Hue, Saturation) -> Void`.
+		 * The function signature for any event listeners attached to this view.
+		 * Includes `Entity` as the first argument, meaning that in a
+		 * `View<Hue, Saturation>`, listeners would need to have the signature
+		 * `(Entity, Hue, Saturation) -> Void`.
 		 */
 		var callbackType:ComplexType = TFunction([macro:echoes.Entity].concat(components), macro:Void);
 		
 		/**
-		 * The arguments required to dispatch an event. For instance, in a
-		 * `View<Hue, Saturation>`, this would be
-		 * `[macro entity, macro HueContainer.instance.get(entity), macro SaturationContainer.instance.get(entity)]`.
+		 * The arguments required to dispatch an add or update event. In a
+		 * `View<Hue, Saturation>`, the callback should look like this:
+		 * 
+		 * ```haxe
+		 * callback(entity, HueContainer.instance.get(entity),
+		 *     SaturationContainer.instance.get(entity));
+		 * ```
 		 */
 		var callbackArgs:Array<Expr> = [for(component in components)
 			macro $i{ component.getComponentStorage().followName() }.instance.get(entity)];
+		
 		/**
-		 * The arguments required to dispatch a removed callback event. These
-		 * are the same as `callbackArgs` except for the just-removed component,
-		 * which is stored in the `removedComponent` variable.
+		 * The arguments required to dispatch a remove event. Unlike with
+		 * `callbackArgs`, one of the components will already have been removed
+		 * from storage. We have to check which one was removed and replace its
+		 * value with `removedComponent`.
+		 * 
+		 * In a `View<Hue, Saturation>`, the callback should look like this:
+		 * 
+		 * ```haxe
+		 * callback(entity,
+		 *     HueContainer.instance == removedComponentStorage
+		 *         ? removedComponent : HueContainer.instance.get(entity),
+		 *     SaturationContainer.instance == removedComponentStorage
+		 *         ? removedComponent : SaturationContainer.instance.get(entity));
+		 * ```
 		 */
-		var removedCallbackArgs:Array<Expr> = [for(component in components) macro {
-			var inst = $i{ component.getComponentStorage().followName() }.instance;
-			inst == removedComponentStorage ? removedComponent : inst.get(entity);
+		var removedCallbackArgs:Array<Expr> = [for(component in components) {
+			var inst:Expr = macro $i{ component.getComponentStorage().followName() }.instance;
+			macro $inst == removedComponentStorage ? removedComponent : $inst.get(entity);
 		}];
 		
 		//Pass `entity` as the first argument to both.
