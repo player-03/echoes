@@ -32,21 +32,7 @@ class EntityTools {
 			var entity:echoes.Entity = $self;
 			
 			$b{ [for(component in components) {
-				var type:Type = switch(component.expr) {
-					//Haxe (at least, some versions of it) will interpret
-					//`new TypedefType()` as being the underlying type, but
-					//Echoes wants to respect typedefs.
-					case ENew(tp, _):
-						TPath(tp).toType();
-					//Haxe can overcomplicate type check expressions. There's no
-					//need to parse the inner expression when the user already
-					//told us what type to use.
-					case ECheckType(_, t) | EParenthesis({ expr: ECheckType(_, t) }):
-						t.toType();
-					default:
-						component.typeof();
-				};
-				type = type.followMono();
+				var type:Type = component.parseComponentType();
 				
 				var operation:String = switch(type) {
 					case TEnum(_.get().meta => m, _),
@@ -61,6 +47,32 @@ class EntityTools {
 				
 				var containerName:String = type.toComplexType().getComponentStorage().followName();
 				macro @:privateAccess $i{ containerName }.instance.$operation(entity, $component);
+			}] }
+			
+			entity;
+		};
+	}
+	
+	/**
+	 * Adds one or more components to the entity, but only if those components
+	 * don't already exist. If the entity already has a component of the same
+	 * type, the old component will remain.
+	 * 
+	 * Any side-effects of creating a component will only occur if that
+	 * component is added. For instance, `entity.addIfMissing(array.pop())` will
+	 * only pop an item from `array` if that component was missing.
+	 * @param components Components of `Any` type.
+	 * @return The entity.
+	 */
+	public static function addIfMissing(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
+		return macro {
+			var entity:echoes.Entity = $self;
+			
+			$b{ [for(component in components) {
+				var type:Type = component.parseComponentType();
+				
+				var containerName:String = type.toComplexType().getComponentStorage().followName();
+				macro if(!$i{ containerName }.instance.exists(entity)) @:privateAccess $i{ containerName }.instance.add(entity, $component);
 			}] }
 			
 			entity;

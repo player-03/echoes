@@ -126,6 +126,21 @@ abstract Entity(Int) from Int to Int {
 	}
 	
 	/**
+	 * Adds one or more components to the entity, but only if those components
+	 * don't already exist. If the entity already has a component of the same
+	 * type, the old component will remain.
+	 * 
+	 * Any side-effects of creating a component will only occur if that
+	 * component is added. For instance, `entity.addIfMissing(array.pop())` will
+	 * only pop an item from `array` if that component was missing.
+	 * @param components Components of `Any` type.
+	 * @return This entity.
+	 */
+	public macro function addIfMissing(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
+		return EntityTools.addIfMissing(self, components);
+	}
+	
+	/**
 	 * Removes one or more components from the entity.
 	 * @param types The type(s) of the components to remove. _Not_ the
 	 * components themselves!

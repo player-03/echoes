@@ -43,6 +43,10 @@ class MacroTools {
 		return new Printer().printComplexType(followComplexType(type));
 	}
 	
+	/**
+	 * Given an expression representing a class (the sort of expression passed
+	 * to `entity.remove()`), determines the component type.
+	 */
 	public static function parseClassExpr(e:Expr):ComplexType {
 		switch(e.expr) {
 			case EParenthesis({ expr:ECheckType(_, type) }):
@@ -56,6 +60,27 @@ class MacroTools {
 		
 		Context.error('Failed to parse `${ new Printer().printExpr(e) }`. Try making a typedef or using the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.', e.pos);
 		return macro:Dynamic;
+	}
+	
+	/**
+	 * Given an expression representing a component instance (the sort of
+	 * expression passed to `entity.add()`), determines the component type.
+	 */
+	public static function parseComponentType(e:Expr):Type {
+		return followMono(switch(e.expr) {
+			//Haxe (at least, some versions of it) will interpret
+			//`new TypedefType()` as being the underlying type, but
+			//Echoes wants to respect typedefs.
+			case ENew(tp, _):
+				TPath(tp).toType();
+			//Haxe can overcomplicate type check expressions. There's no
+			//need to parse the inner expression when the user already
+			//told us what type to use.
+			case ECheckType(_, t) | EParenthesis({ expr: ECheckType(_, t) }):
+				t.toType();
+			default:
+				e.typeof();
+		});
 	}
 	
 	/**

@@ -84,8 +84,14 @@ class BasicFunctionalityTest extends Test {
 		Assert.equals(nearBlack, blackSquare.get(Color));
 		Assert.equals(shortName, blackSquare.get(Name));
 		
+		//Don't overwrite existing components.
+		blackSquare.addIfMissing(name, CIRCLE, "string");
+		Assert.equals(shortName, blackSquare.get(Name));
+		Assert.equals(SQUARE, blackSquare.get(Shape));
+		Assert.equals("string", blackSquare.get(String));
+		
 		//Remove components.
-		blackSquare.remove(Shape, Name);
+		blackSquare.remove(Shape, Name, String);
 		Assert.isTrue(blackSquare.exists(Color));
 		Assert.isFalse(blackSquare.exists(Shape));
 		Assert.isFalse(blackSquare.exists(Name));
