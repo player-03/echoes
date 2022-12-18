@@ -15,6 +15,11 @@ import echoes.utils.Clock;
  */
 @:allow(echoes) @:skipBuildMacro
 class SystemList extends System {
+	public var length(get, never):Int;
+	private inline function get_length():Int {
+		return systems.length;
+	}
+	
 	private var name:String;
 	
 	private var systems:Array<System> = [];
@@ -70,6 +75,14 @@ class SystemList extends System {
 		return result;
 	}
 	
+	public inline function iterator():Iterator<System> {
+		return systems.iterator();
+	}
+	
+	public inline function keyValueIterator():KeyValueIterator<Int, System> {
+		return systems.keyValueIterator();
+	}
+	
 	/**
 	 * Adds the given system to this list.
 	 * @param before If any of these `System` subclasses already exist in the
@@ -97,10 +110,17 @@ class SystemList extends System {
 	public function remove(system:System):SystemList {
 		if(exists(system)) {
 			systems.remove(system);
-			if(active) {
-				system.__deactivate__();
-			}
+			system.__deactivate__();
 		}
+		
+		return this;
+	}
+	
+	public function removeAll():SystemList {
+		for(system in systems) {
+			system.__deactivate__();
+		}
+		systems.resize(0);
 		
 		return this;
 	}

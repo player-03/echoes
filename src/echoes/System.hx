@@ -82,7 +82,9 @@ class System {
 			active = true;
 			__dt__ = 0;
 			
+			#if !macro
 			onActivate.dispatch();
+			#end
 		}
 	}
 	
@@ -91,7 +93,9 @@ class System {
 		if(active) {
 			active = false;
 			
+			#if !macro
 			onDeactivate.dispatch();
+			#end
 		}
 	}
 	

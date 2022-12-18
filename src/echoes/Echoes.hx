@@ -34,9 +34,11 @@ class Echoes {
 	public static var activeViews(get, never):ReadOnlyArray<ViewBase>;
 	private static inline function get_activeViews():ReadOnlyArray<ViewBase> return _activeViews;
 	
-	private static var _activeSystems:Array<System> = [];
-	public static var activeSystems(get, never):ReadOnlyArray<System>;
-	private static inline function get_activeSystems():ReadOnlyArray<System> return _activeSystems;
+	public static var activeSystems(default, null):SystemList = {
+		var activeSystems:SystemList = new SystemList();
+		activeSystems.__activate__();
+		activeSystems;
+	};
 	
 	#if echoes_profiling
 	private static var lastUpdateLength:Int = 0;
@@ -84,9 +86,7 @@ class Echoes {
 		var dt:Float = startTime - lastUpdate;
 		lastUpdate = startTime;
 		
-		for(system in activeSystems) {
-			system.__update__(dt);
-		}
+		activeSystems.__update__(dt);
 		
 		#if echoes_profiling
 		lastUpdateLength = Std.int((haxe.Timer.stamp() - startTime) * 1000);
@@ -101,15 +101,14 @@ class Echoes {
 			entity.destroy();
 		}
 		
+		activeSystems.removeAll();
+		
 		//Iterate backwards when removing items from arrays.
-		var i:Int = activeSystems.length;
-		while(--i >= 0) {
-			removeSystem(activeSystems[i]);
-		}
-		i = activeViews.length;
+		var i:Int = activeViews.length;
 		while(--i >= 0) {
 			activeViews[i].reset();
 		}
+		
 		for(storage in componentStorage) {
 			storage.clear();
 		}
@@ -123,21 +122,16 @@ class Echoes {
 	//System management
 	//=================
 	
-	public static function addSystem(system:System):Void {
-		if(!hasSystem(system)) {
-			_activeSystems.push(system);
-			system.__activate__();
-		}
+	public static inline function addSystem(system:System):Void {
+		activeSystems.add(system);
 	}
 	
-	public static function removeSystem(system:System):Void {
-		if(_activeSystems.remove(system)) {
-			system.__deactivate__();
-		}
+	public static inline function removeSystem(system:System):Void {
+		activeSystems.remove(system);
 	}
 	
 	public static inline function hasSystem(system:System):Bool {
-		return activeSystems.contains(system);
+		return activeSystems.exists(system);
 	}
 	
 	//Singleton management
