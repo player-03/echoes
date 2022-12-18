@@ -53,9 +53,7 @@ class ComponentStorage<T> {
 	
 	public function remove(entity:Entity):Void {
 		var removedComponent:T = get(entity);
-		storage.remove(entity);
-		
-		if(entity.isActive()) {
+		if(storage.remove(entity) && entity.isActive()) {
 			for(view in relatedViews) {
 				view.removeIfExists(entity, this, removedComponent);
 				
