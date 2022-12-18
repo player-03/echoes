@@ -118,6 +118,10 @@ abstract Entity(Int) from Int to Int {
 	/**
 	 * Adds one or more components to the entity. If the entity already has a
 	 * component of the same type, the old component will be replaced.
+	 * 
+	 * When a component is replaced this way, no events will be dispatched
+	 * unless the component type is tagged `@:echoes_replace`, in which case
+	 * both events (`@:remove` and `@:add`) will be dispatched.
 	 * @param components Components of `Any` type.
 	 * @return This entity.
 	 */
