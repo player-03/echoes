@@ -77,11 +77,17 @@ class System {
 	public var active(default, null):Bool = false;
 	
 	/**
+	 * Zero or more systems to be placed in the same `SystemList` as this, and
+	 * removed when this is removed. Each should have a different `priority`.
+	 */
+	private var linkedSystems:Null<Array<System>>;
+	
+	/**
 	 * This system's priority. Systems will be sorted in order of decreasing
 	 * priority, meaning that high-priority systems run first. Systems with the
 	 * same priority will be run in the order added.
 	 */
-	public var priority(default, null):Int = 0;
+	private var priority:Int = 0;
 	
 	@:allow(echoes.Echoes)
 	private function __activate__():Void {

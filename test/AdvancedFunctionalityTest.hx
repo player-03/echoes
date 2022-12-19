@@ -26,7 +26,8 @@ class AdvancedFunctionalityTest extends Test {
 	
 	//Tests may be run in any order, but not in parallel.
 	
-	private function testAddBefore():Void {
+	@:access(echoes.System)
+	private function testLinkAndPriority():Void {
 		var list:SystemList = new SystemList();
 		
 		var appearanceSystem:AppearanceSystem = new AppearanceSystem();
@@ -34,19 +35,34 @@ class AdvancedFunctionalityTest extends Test {
 		var optionalComponentSystem:OptionalComponentSystem = new OptionalComponentSystem();
 		var timeCountSystem:TimeCountSystem = new TimeCountSystem();
 		
-		@:privateAccess nameSystem.priority = 1;
-		@:privateAccess timeCountSystem.priority = 2;
+		appearanceSystem.linkedSystems = [nameSystem];
+		nameSystem.linkedSystems = [optionalComponentSystem];
+		optionalComponentSystem.linkedSystems = [timeCountSystem];
 		
 		list.add(appearanceSystem);
-		list.add(nameSystem);
-		list.add(optionalComponentSystem);
-		list.add(timeCountSystem);
+		var systems:Array<System> = list.systems;
+		Assert.equals(appearanceSystem, systems[0]);
+		Assert.equals(nameSystem, systems[1]);
+		Assert.equals(optionalComponentSystem, systems[2]);
+		Assert.equals(timeCountSystem, systems[3]);
 		
-		var systems:Array<System> = @:privateAccess list.systems;
+		list.remove(nameSystem);
+		Assert.equals(1, list.length);
+		
+		list.remove(appearanceSystem);
+		Assert.equals(0, list.length);
+		
+		//By setting priorities, it should be possible to reverse the list.
+		appearanceSystem.priority = -1;
+		nameSystem.priority = 1;
+		timeCountSystem.priority = 2;
+		
+		list.add(appearanceSystem);
+		
 		Assert.equals(timeCountSystem, systems[0]);
 		Assert.equals(nameSystem, systems[1]);
-		Assert.equals(appearanceSystem, systems[2]);
-		Assert.equals(optionalComponentSystem, systems[3]);
+		Assert.equals(optionalComponentSystem, systems[2]);
+		Assert.equals(appearanceSystem, systems[3]);
 	}
 	
 	private function testSignals():Void {

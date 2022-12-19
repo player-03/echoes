@@ -102,6 +102,12 @@ class SystemList extends System {
 			if(active) {
 				system.__activate__();
 			}
+			
+			if(system.linkedSystems != null) {
+				for(linkedSystem in system.linkedSystems) {
+					add(linkedSystem);
+				}
+			}
 		}
 		
 		return this;
@@ -111,6 +117,12 @@ class SystemList extends System {
 		if(exists(system)) {
 			systems.remove(system);
 			system.__deactivate__();
+			
+			if(system.linkedSystems != null) {
+				for(linkedSystem in system.linkedSystems) {
+					remove(linkedSystem);
+				}
+			}
 		}
 		
 		return this;
