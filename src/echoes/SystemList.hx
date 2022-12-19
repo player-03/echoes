@@ -27,6 +27,8 @@ class SystemList extends System {
 	private var clock:Clock;
 	
 	public function new(?name:String = "SystemList", ?clock:Clock) {
+		super();
+		
 		this.name = name;
 		this.clock = clock != null ? clock : new Clock();
 	}
@@ -51,7 +53,7 @@ class SystemList extends System {
 		}
 	}
 	
-	private override function __update__(dt:Float):Void {
+	private override function __update__(dt:Float, priority:Int):Void {
 		#if echoes_profiling
 		var startTime:Float = haxe.Timer.stamp();
 		#end
@@ -60,7 +62,7 @@ class SystemList extends System {
 		clock.addTime(dt);
 		for(step in clock) {
 			for(system in systems) {
-				system.__update__(step);
+				system.__update__(step, system.__priority__);
 			}
 		}
 		
@@ -91,7 +93,7 @@ class SystemList extends System {
 	public function add(system:System):SystemList {
 		if(!exists(system)) {
 			var index:Int = Lambda.findIndex(systems, existingSystem ->
-				existingSystem.priority < system.priority);
+				existingSystem.__priority__ < system.__priority__);
 			
 			if(index >= 0) {
 				systems.insert(index, system);
@@ -103,9 +105,9 @@ class SystemList extends System {
 				system.__activate__();
 			}
 			
-			if(system.helperSystems != null) {
-				for(helperSystem in system.helperSystems) {
-					add(helperSystem);
+			if(system.__children__ != null) {
+				for(child in system.__children__) {
+					add(child);
 				}
 			}
 		}
@@ -118,9 +120,9 @@ class SystemList extends System {
 			systems.remove(system);
 			system.__deactivate__();
 			
-			if(system.helperSystems != null) {
-				for(helperSystem in system.helperSystems) {
-					remove(helperSystem);
+			if(system.__children__ != null) {
+				for(child in system.__children__) {
+					remove(child);
 				}
 			}
 		}

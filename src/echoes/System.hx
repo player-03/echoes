@@ -5,6 +5,7 @@ import echoes.macro.ViewBuilder;
 import echoes.utils.Signal;
 import echoes.View;
 import haxe.macro.Expr;
+import haxe.rtti.Meta;
 
 /**
  * The base class for all systems. Using them requires three steps:
@@ -70,26 +71,15 @@ class System {
 	@:noCompletion private var __updateTime__:Float = 0;
 	#end
 	
+	@:noCompletion private final __children__:Null<Array<ChildSystem>>;
+	
 	@:noCompletion private var __dt__:Float = 0;
+	
+	@:noCompletion private final __priority__:Int;
 	
 	public var onActivate:Signal<() -> Void> = new Signal();
 	public var onDeactivate:Signal<() -> Void> = new Signal();
 	public var active(default, null):Bool = false;
-	
-	/**
-	 * 0-2 small systems to be placed in the same `SystemList` as this. Each
-	 * should have either a positive priority (in order to run first and perform
-	 * pre-update setup), or a negative priority (in order to run last and
-	 * perform post-update cleanup).
-	 */
-	private var helperSystems:Null<Array<System>>;
-	
-	/**
-	 * This system's priority. Systems will be sorted in order of decreasing
-	 * priority, meaning that high-priority systems will run first. Systems with
-	 * the same priority will run in the order added.
-	 */
-	private var priority:Int = 0;
 	
 	@:allow(echoes.Echoes)
 	private function __activate__():Void {
@@ -115,10 +105,19 @@ class System {
 	}
 	
 	@:allow(echoes.Echoes)
-	private function __update__(dt:Float):Void {
+	private function __update__(dt:Float, priority:Int):Void {
 		__dt__ = dt;
 		
 		//Everything else is handled by macro.
+	}
+	
+	/**
+	 * The macro will automatically call this constructor.
+	 */
+	private inline function new(?priority:Int = 0, ?childPriorities:Array<Int>) {
+		__priority__ = priority;
+		__children__ = childPriorities != null ? [for(childPriority in childPriorities)
+			new ChildSystem(this, childPriority)] : null;
 	}
 	
 	/**
@@ -143,5 +142,20 @@ class System {
 	
 	public function toString():String {
 		return Type.getClassName(Type.getClass(this));
+	}
+}
+
+@:skipBuildMacro
+private class ChildSystem extends System {
+	private final parent:System;
+	
+	public inline function new(parent:System, priority:Int) {
+		super(priority);
+		
+		this.parent = parent;
+	}
+	
+	private override function __update__(dt:Float, priority:Int):Void {
+		parent.__update__(dt, priority);
 	}
 }

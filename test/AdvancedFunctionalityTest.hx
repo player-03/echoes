@@ -27,42 +27,44 @@ class AdvancedFunctionalityTest extends Test {
 	//Tests may be run in any order, but not in parallel.
 	
 	@:access(echoes.System)
-	private function testLinkAndPriority():Void {
+	private function testPriority():Void {
 		var list:SystemList = new SystemList();
 		
-		var appearanceSystem:AppearanceSystem = new AppearanceSystem();
-		var nameSystem:NameSystem = new NameSystem();
-		var optionalComponentSystem:OptionalComponentSystem = new OptionalComponentSystem();
-		var timeCountSystem:TimeCountSystem = new TimeCountSystem();
+		var high:HighPrioritySystem = new HighPrioritySystem();
+		var name:NameSystem = new NameSystem();
+		var low:LowPrioritySystem = new LowPrioritySystem();
 		
-		appearanceSystem.helperSystems = [nameSystem];
-		nameSystem.helperSystems = [optionalComponentSystem];
-		optionalComponentSystem.helperSystems = [timeCountSystem];
+		Assert.equals(high.__priority__, 1);
+		Assert.equals(name.__priority__, 0);
+		Assert.equals(low.__priority__, -1);
 		
-		list.add(appearanceSystem);
-		var systems:Array<System> = list.systems;
-		Assert.equals(appearanceSystem, systems[0]);
-		Assert.equals(nameSystem, systems[1]);
-		Assert.equals(optionalComponentSystem, systems[2]);
-		Assert.equals(timeCountSystem, systems[3]);
+		list.add(low);
+		list.add(name);
+		list.add(high);
 		
-		list.remove(nameSystem);
-		Assert.equals(1, list.length);
+		Assert.equals(3, list.length);
+		Assert.equals(high, list.systems[0]);
+		Assert.equals(name, list.systems[1]);
+		Assert.equals(low, list.systems[2]);
 		
-		list.remove(appearanceSystem);
-		Assert.equals(0, list.length);
+		//Also test a system that comes with different-priority children.
+		var parent:UpdateOrderSystem = new UpdateOrderSystem();
+		Assert.equals(parent.__priority__, 0);
 		
-		//By setting priorities, it should be possible to reverse the list.
-		appearanceSystem.priority = -1;
-		nameSystem.priority = 1;
-		timeCountSystem.priority = 2;
+		list.add(parent);
+		Assert.equals(6, list.length);
+		Assert.equals(high, list.systems[0]);
+		Assert.equals(parent.__children__[1], list.systems[1]);
+		Assert.equals(name, list.systems[2]);
+		Assert.equals(parent, list.systems[3]);
+		Assert.equals(low, list.systems[4]);
+		Assert.equals(parent.__children__[0], list.systems[5]);
 		
-		list.add(appearanceSystem);
-		
-		Assert.equals(timeCountSystem, systems[0]);
-		Assert.equals(nameSystem, systems[1]);
-		Assert.equals(optionalComponentSystem, systems[2]);
-		Assert.equals(appearanceSystem, systems[3]);
+		var updateOrder:Array<String> = [];
+		new Entity(true).add(updateOrder);
+		list.__activate__();
+		list.__update__(1, 0);
+		Assert.equals("pre_update, update, post_update", updateOrder.join(", "));
 	}
 	
 	private function testSignals():Void {

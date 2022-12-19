@@ -11,21 +11,14 @@ using echoes.macro.ViewBuilder;
 using StringTools;
 using Lambda;
 
+@:allow(echoes.macro.ListenerFunction)
 class SystemBuilder {
-	private static var ADD_META = "added";
-	private static var REMOVE_META = "removed";
-	private static var UPDATE_META = "updated";
+	private static inline final ADD_META:String = "added";
+	private static inline final REMOVE_META:String = "removed";
+	private static inline final UPDATE_META:String = "updated";
 	
 	private static inline function notNull<T>(e:Null<T>):Bool {
 		return e != null;
-	}
-	
-	/**
-	 * Similar to `getMeta()`, but returns a boolean value indicating presence
-	 * or absence of metadata.
-	 */
-	private static inline function containsMeta(field:Field, searchTerm:String):Bool {
-		return getMeta(field, searchTerm) != null;
 	}
 	
 	/**
@@ -73,6 +66,17 @@ class SystemBuilder {
 		return null;
 	}
 	
+	private static function getPriority(meta:MetadataEntry):Int {
+		if(meta.params != null && meta.params.length > 0) {
+			switch(meta.params[0].expr) {
+				case EConst(CInt(v)):
+					return Std.parseInt(v);
+				default:
+			}
+		}
+		return 0;
+	}
+	
 	public static function build():Array<Field> {
 		var fields:Array<Field> = Context.getBuildFields();
 		
@@ -83,6 +87,11 @@ class SystemBuilder {
 		} else if(classType.meta.has(":skipBuildMacro")) {
 			return fields;
 		}
+		
+		var priorityMeta:Array<MetadataEntry> = classType.meta.has(":priority")
+			? classType.meta.extract(":priority") : classType.meta.extract("priority");
+		var priority:Int = priorityMeta.length > 0
+			? getPriority(priorityMeta[0]) : 0;
 		
 		/**
 		 * Names of views that should activate and deactivate with the system.
@@ -111,13 +120,81 @@ class SystemBuilder {
 		}
 		
 		//Locate marked functions.
-		var updateListeners:Array<ListenerFunction> = fields.filter(containsMeta.bind(_, UPDATE_META)).map(ListenerFunction.fromField).filter(notNull);
-		var addListeners:Array<ListenerFunction> = fields.filter(containsMeta.bind(_, ADD_META)).map(ListenerFunction.fromField).filter(notNull);
-		var removeListeners:Array<ListenerFunction> = fields.filter(containsMeta.bind(_, REMOVE_META)).map(ListenerFunction.fromField).filter(notNull);
+		var updateListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, UPDATE_META)).filter(notNull);
+		var addListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, ADD_META)).filter(notNull);
+		var removeListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, REMOVE_META)).filter(notNull);
 		for(listener in addListeners.concat(removeListeners)) {
 			if(listener.wrapperFunction == null) {
 				Context.error("An @:add or @:remove listener must take at least one component. (Optional arguments don't count.)", listener.pos);
 			}
+		}
+		
+		//Figure out whether there are any extra priorities.
+		var updatePriorities:Array<Int> = [];
+		for(listener in updateListeners) {
+			if(!updatePriorities.contains(listener.priority)) {
+				updatePriorities.push(listener.priority);
+			}
+		}
+		var childPriorities:Array<Int> = updatePriorities.copy();
+		childPriorities.remove(priority);
+		
+		//Define or update the constructor.
+		var constructor:Field = null;
+		var directSubclass:Bool = classType.superClass.t.get().name == "System";
+		var superCall:Expr = macro super($v{ priority }, $a{
+			childPriorities.map(childPriority -> macro $v{ childPriority }) });
+		for(field in fields) {
+			if(field.name != "new") {
+				continue;
+			}
+			
+			constructor = field;
+			var constructorFunc:Function = switch(constructor.kind) {
+				case FFun(f):
+					f;
+				default:
+					Context.fatalError("Constructor must be a function.", constructor.pos);
+			};
+			if(constructorFunc.expr == null) {
+				constructorFunc.expr = macro {};
+			} else if(!constructorFunc.expr.expr.match(EBlock(_))) {
+				constructorFunc.expr = macro {
+					${ constructorFunc.expr }
+				};
+			}
+			
+			//Insert a `super()` call if needed.
+			if(directSubclass) {
+				switch(constructorFunc.expr.expr) {
+					case EBlock(block):
+						var replaced:Bool = false;
+						for(i => expr in block) {
+							if(expr.expr.match(ECall({ expr: EConst(CIdent("super")) }, _))) {
+								replaced = true;
+								block[i] = superCall;
+								Context.warning("super() call will be replaced. Remove this call to suppress this warning.", expr.pos);
+								break;
+							}
+						}
+						
+						if(!replaced) {
+							block.unshift(superCall);
+						}
+					default:
+						Context.fatalError("Expected block expr", constructorFunc.expr.pos);
+				}
+			}
+			
+			break;
+		}
+		if(constructor == null) {
+			constructor = (macro class Constructor {
+				public function new() {
+					$superCall;
+				}
+			}).fields[0];
+			fields.push(constructor);
 		}
 		
 		//Define wrapper functions for each listener.
@@ -133,8 +210,6 @@ class SystemBuilder {
 		
 		//Add useful functions if they aren't already there.
 		var optionalFields:TypeDefinition = macro class OptionalFields {
-			public function new() {}
-			
 			public override function toString():String {
 				return $v{ classType.name };
 			}
@@ -172,14 +247,25 @@ class SystemBuilder {
 				}
 			}
 			
-			private override function __update__(dt:Float):Void {
+			private override function __update__(dt:Float, priority:Int):Void {
 				#if echoes_profiling
 				var __timestamp__ = Date.now().getTime();
 				#end
 				
 				__dt__ = dt;
 				
-				$b{ updateListeners.map(listener -> listener.callDuringUpdate()) }
+				${ {
+					expr: ESwitch(macro priority, [for(priority in updatePriorities)
+						{
+							values: [macro $v{ priority }],
+							expr: macro $b{
+								[for(listener in updateListeners) if(listener.priority == priority)
+									listener.callDuringUpdate()]
+							}
+						}
+					], null),
+					pos: (macro null).pos
+				} }
 				
 				#if echoes_profiling
 				this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__);
@@ -198,6 +284,7 @@ class SystemBuilder {
 	name:String,
 	args:Array<FunctionArg>,
 	pos:Position,
+	priority:Int,
 	?components:Array<ComplexType>,
 	?optionalComponents:Array<ComplexType>,
 	?viewName:String,
@@ -206,10 +293,20 @@ class SystemBuilder {
 
 @:forward
 abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
-	@:from public static function fromField(field:Field):ListenerFunction {
+	public static function fromField(field:Field, listenerType:String):ListenerFunction {
 		switch(field.kind) {
 			case FFun(func):
-				return { name: field.name, args: func.args, pos: field.pos };
+				var meta:MetadataEntry = SystemBuilder.getMeta(field, listenerType);
+				if(meta == null) {
+					return null;
+				}
+				
+				return {
+					name: field.name,
+					args: func.args,
+					pos: field.pos,
+					priority: SystemBuilder.getPriority(meta)
+				};
 			default:
 				return null;
 		}

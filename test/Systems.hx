@@ -19,6 +19,15 @@ class AppearanceSystem extends System implements IMethodCounter {
 	@:removed private function colorAndShapeRemoved(shape:Shape, color:Color):Void {}
 }
 
+@:priority(1)
+class HighPrioritySystem extends System {
+	public function new();
+}
+
+@:priority(-1)
+class LowPrioritySystem extends System {
+}
+
 class NameSystem extends System implements IMethodCounter {
 	@:add private function nameAdded(name:Name):Void {}
 	@:update private function nameUpdated(name:Name):Void {}
@@ -51,5 +60,24 @@ class TimeCountSystem extends System implements IMethodCounter {
 	
 	@:update private function update(time:Float):Void {
 		totalTime += time;
+	}
+}
+
+class UpdateOrderSystem extends System {
+	@:update(-1) private function post_update(order:Array<String>):Void {
+		order.push("post_update");
+	}
+	
+	@:update private function update(order:Array<String>):Void {
+		trace("update");
+		order.push("update");
+	}
+	
+	@:update(1) private function pre_update(order:Array<String>):Void {
+		order.push("pre_update");
+	}
+	
+	@:update private function update2():Void {
+		trace("update2");
 	}
 }
