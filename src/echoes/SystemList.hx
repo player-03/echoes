@@ -15,16 +15,24 @@ import echoes.utils.Clock;
  */
 @:allow(echoes) @:skipBuildMacro
 class SystemList extends System {
+	public final clock:Clock;
+	
 	public var length(get, never):Int;
 	private inline function get_length():Int {
 		return systems.length;
 	}
 	
-	private var name:String;
+	public var name:String;
+	
+	public var paused(get, set):Bool;
+	private inline function get_paused():Bool {
+		return clock.paused;
+	}
+	private inline function set_paused(value:Bool):Bool {
+		return clock.paused = paused;
+	}
 	
 	private var systems:Array<System> = [];
-	
-	private var clock:Clock;
 	
 	public function new(?name:String = "SystemList", ?clock:Clock, ?priority:Int = 0) {
 		super(priority);
