@@ -76,6 +76,13 @@ class System {
 	public var onDeactivate:Signal<() -> Void> = new Signal();
 	public var active(default, null):Bool = false;
 	
+	/**
+	 * This system's priority. Systems will be sorted in order of decreasing
+	 * priority, meaning that high-priority systems run first. Systems with the
+	 * same priority will be run in the order added.
+	 */
+	public var priority(default, null):Int = 0;
+	
 	@:allow(echoes.Echoes)
 	private function __activate__():Void {
 		if(!active) {

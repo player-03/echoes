@@ -34,10 +34,13 @@ class AdvancedFunctionalityTest extends Test {
 		var optionalComponentSystem:OptionalComponentSystem = new OptionalComponentSystem();
 		var timeCountSystem:TimeCountSystem = new TimeCountSystem();
 		
+		@:privateAccess nameSystem.priority = 1;
+		@:privateAccess timeCountSystem.priority = 2;
+		
 		list.add(appearanceSystem);
-		list.add(nameSystem, AppearanceSystem);
+		list.add(nameSystem);
 		list.add(optionalComponentSystem);
-		list.add(timeCountSystem, OptionalComponentSystem, NameSystem);
+		list.add(timeCountSystem);
 		
 		var systems:Array<System> = @:privateAccess list.systems;
 		Assert.equals(timeCountSystem, systems[0]);
