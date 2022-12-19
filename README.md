@@ -306,9 +306,48 @@ class Main {
 }
 ```
 
+Because `SystemList` is itself a system, you can nest lists for finer control.
+
+```haxe
+class Main {
+	public static function main():Void {
+		Echoes.init();
+		
+		var enterFrame:SystemList = new SystemList();
+		enterFrame.add(new EnterFrameSystem());
+		enterFrame.add(new EnterFrameSystem2());
+		Echoes.addSystem(enterFrame);
+		
+		var midFrame:SystemList = new SystemList();
+		midFrame.add(new MidFrameSystem());
+		Echoes.addSystem(midFrame);
+		
+		//Set up `physics` as part of `midFrame`.
+		var physics:SystemList = new SystemList();
+		physics.add(new GravitySystem());
+		physics.add(new MomentumSystem());
+		midFrame.add(physics);
+		
+		//Any later additions to `midFrame` will run after `physics`.
+		midFrame.add(new MidFrameSystem2());
+		
+		//Any later additions to `physics` will still run during `physics`,
+		//which means after `MidFrameSystem2`.
+		physics.add(new CollisionSystem());
+		
+		var exitFrame:SystemList = new SystemList();
+		exitFrame.add(new ExitFrameSystem());
+		exitFrame.add(new ExitFrameSystem2());
+		Echoes.addSystem(exitFrame);
+	}
+}
+```
+
+Also note that each `SystemList` has its own `paused` property, which prevents `@:update` events for any system in that list. So in the above example, you could pause `physics` without pausing anything else. Or you could pause `midFrame` (which implicitly pauses `physics`) while allowing `enterFrame` and `exitFrame` to keep going.
+
 #### Priority
 
-If system lists aren't enough, Echoes allows setting a system's priority using the `@:priority` metadata. Systems with higher priority will run before those with lower priority, no matter what order they're added in. For instance:
+If system lists aren't enough, Echoes allows setting a system's priority using the `@:priority` metadata. Within a `SystemList`, systems with higher priority will run before those with lower priority, no matter what order they're added in. For instance:
 
 ```haxe
 class Main {
@@ -388,12 +427,11 @@ class Main {
 		var parentList:SystemList = new SystemList();
 		parentList.add(new DefaultPrioritySystem());
 		
-		var childList:SystemList = new SystemList();
-		parentList.add(childList);
-		
 		//Because `DefaultPriorityList` and `childList` have the same priority,
 		//they remain in that order. Because `childList` comes second, any
 		//systems in `childList` come after `DefaultPrioritySystem`.
+		var childList:SystemList = new SystemList();
+		parentList.add(childList);
 		
 		//Comes after `DefaultPrioritySystem`, naturally.
 		childList.add(new LowPrioritySystem());
