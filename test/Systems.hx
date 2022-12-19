@@ -66,7 +66,7 @@ class TimeCountSystem extends System implements IMethodCounter {
 }
 
 class UpdateOrderSystem extends System {
-	@:update(-1) private function post_update(order:Array<String>):Void {
+	@:update @:priority(-1) private function post_update(order:Array<String>):Void {
 		order.push("post_update");
 	}
 	
@@ -75,7 +75,7 @@ class UpdateOrderSystem extends System {
 		order.push("update");
 	}
 	
-	@:update(1) private function pre_update(order:Array<String>):Void {
+	@:update @:priority(1) private function pre_update(order:Array<String>):Void {
 		order.push("pre_update");
 	}
 	

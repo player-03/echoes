@@ -16,6 +16,7 @@ class SystemBuilder {
 	private static inline final ADD_META:String = "added";
 	private static inline final REMOVE_META:String = "removed";
 	private static inline final UPDATE_META:String = "updated";
+	private static inline final PRIORITY_META:String = "priority";
 	
 	private static inline function notNull<T>(e:Null<T>):Bool {
 		return e != null;
@@ -41,9 +42,9 @@ class SystemBuilder {
 	 * @param searchTerms A metadata name consisting of lowercase letters (no
 	 * colon, no "echoes_").
 	 */
-	private static function getMeta(field:Field, searchTerm:String):Null<MetadataEntry> {
-		for(meta in field.meta) {
-			var name:String = meta.name;
+	private static function getMeta(meta:Metadata, searchTerm:String):Null<MetadataEntry> {
+		for(entry in meta) {
+			var name:String = entry.name;
 			if(name.startsWith(":")) {
 				name = name.substr(1);
 			}
@@ -53,28 +54,29 @@ class SystemBuilder {
 			
 			if(name.length > 0 && searchTerm.startsWith(name)) {
 				//Encourage users to include a colon in their metadata.
-				if(!meta.name.startsWith(":")) {
-					Context.warning('@${meta.name} is deprecated; use @:${meta.name} instead.'
-						+ (meta.name == "remove" ? " (@:remove does have a reserved meaning when applied to interfaces, but not here.)" : ""),
-						meta.pos);
+				if(!entry.name.startsWith(":")) {
+					Context.warning('@${entry.name} is deprecated; use @:${entry.name} instead.'
+						+ (entry.name == "remove" ? " (@:remove does have a reserved meaning when applied to interfaces, but not here.)" : ""),
+						entry.pos);
 				}
 				
-				return meta;
+				return entry;
 			}
 		}
 		
 		return null;
 	}
 	
-	private static function getPriority(meta:MetadataEntry):Null<Int> {
-		if(meta.params != null && meta.params.length > 0) {
-			switch(meta.params[0].expr) {
+	private static function getPriority(meta:Metadata, defaultPriority:Int):Int {
+		var entry:MetadataEntry = getMeta(meta, PRIORITY_META);
+		if(entry != null && entry.params != null && entry.params.length > 0) {
+			switch(entry.params[0].expr) {
 				case EConst(CInt(v)):
 					return Std.parseInt(v);
 				default:
 			}
 		}
-		return null;
+		return defaultPriority;
 	}
 	
 	public static function build():Array<Field> {
@@ -88,10 +90,7 @@ class SystemBuilder {
 			return fields;
 		}
 		
-		var priorityMeta:Array<MetadataEntry> = classType.meta.has(":priority")
-			? classType.meta.extract(":priority") : classType.meta.extract("priority");
-		var priority:Int = priorityMeta.length > 0
-			? getPriority(priorityMeta[0]) : 0;
+		var priority:Int = getPriority(classType.meta.get(), 0);
 		
 		/**
 		 * Names of views that should activate and deactivate with the system.
@@ -120,9 +119,9 @@ class SystemBuilder {
 		}
 		
 		//Locate marked functions.
-		var updateListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, UPDATE_META)).filter(notNull);
-		var addListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, ADD_META)).filter(notNull);
-		var removeListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, REMOVE_META)).filter(notNull);
+		var updateListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, UPDATE_META, priority)).filter(notNull);
+		var addListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, ADD_META, priority)).filter(notNull);
+		var removeListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, REMOVE_META, priority)).filter(notNull);
 		for(listener in addListeners.concat(removeListeners)) {
 			if(listener.wrapperFunction == null) {
 				Context.error("An @:add or @:remove listener must take at least one component. (Optional arguments don't count.)", listener.pos);
@@ -287,7 +286,7 @@ class SystemBuilder {
 	name:String,
 	args:Array<FunctionArg>,
 	pos:Position,
-	?priority:Int,
+	priority:Int,
 	?components:Array<ComplexType>,
 	?optionalComponents:Array<ComplexType>,
 	?viewName:String,
@@ -296,11 +295,10 @@ class SystemBuilder {
 
 @:forward
 abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
-	public static function fromField(field:Field, listenerType:String):ListenerFunction {
+	public static function fromField(field:Field, listenerType:String, defaultPriority:Int):ListenerFunction {
 		switch(field.kind) {
 			case FFun(func):
-				var meta:MetadataEntry = SystemBuilder.getMeta(field, listenerType);
-				if(meta == null) {
+				if(SystemBuilder.getMeta(field.meta, listenerType) == null) {
 					return null;
 				}
 				
@@ -308,7 +306,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 					name: field.name,
 					args: func.args,
 					pos: field.pos,
-					priority: SystemBuilder.getPriority(meta)
+					priority: SystemBuilder.getPriority(field.meta, defaultPriority)
 				};
 			default:
 				return null;
