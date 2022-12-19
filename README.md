@@ -229,6 +229,48 @@ Echoes also supports the standard "optional argument" syntax.
 }
 ```
 
+#### Update order
+
+To make an app run smoothly, you often need to run updates in a specific order. For the most part, all you need to do is add systems in the correct order (using `Echoes.addSystem()` or `systemList.add()`). And within a system, all you need to do is arrange your `@:update` functions in order.
+
+In case that isn't enough, Echoes allows setting a system's priority using the `@:priority` metadata. Systems with higher priority will run before those with lower priority, no matter what order they're added in. For instance:
+
+```haxe
+//The default priority is 0.
+class DefaultPrioritySystem extends System {
+	@:update private function second():Void {
+		trace("This will run second because it has default priority.");
+	}
+}
+
+@:priority(1)
+class HighPrioritySystem extends System {
+	@:update private function first():Void {
+		trace("This will run first because it has high priority.");
+	}
+}
+```
+
+Sometimes a system needs to run in between two others, but also needs to clean up after the others are done. This can be accomplished by adding the systems in order, then giving the cleanup function a low priority:
+
+```haxe
+class MixedPrioritySystem extends System {
+	@:update private function middle():Void {
+		trace("This will run in the middle because it has default priority.");
+		
+		//Do work here.
+	}
+	
+	@:update @:priority(-1) private function last():Void {
+		trace("This will run last because it has low priority.");
+		
+		//Clean up here.
+	}
+}
+```
+
+If you're using recursive `SystemList`s to keep organized, note that `@:priority` is only used to sort the parent `SystemList`. Once you call `list.add(system)`, `system` and all its functions will run during `list`. Even if `system` has the highest priority of any system in the app, it can't run any sooner than the start of `list`.
+
 ### Compiler flags
 Echoes offers a few ways to customize compilation.
 
