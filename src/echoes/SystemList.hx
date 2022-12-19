@@ -26,8 +26,8 @@ class SystemList extends System {
 	
 	private var clock:Clock;
 	
-	public function new(?name:String = "SystemList", ?clock:Clock) {
-		super();
+	public function new(?name:String = "SystemList", ?clock:Clock, ?priority:Int = 0) {
+		super(priority);
 		
 		this.name = name;
 		this.clock = clock != null ? clock : new Clock();
