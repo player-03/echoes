@@ -103,9 +103,9 @@ class SystemList extends System {
 				system.__activate__();
 			}
 			
-			if(system.linkedSystems != null) {
-				for(linkedSystem in system.linkedSystems) {
-					add(linkedSystem);
+			if(system.helperSystems != null) {
+				for(helperSystem in system.helperSystems) {
+					add(helperSystem);
 				}
 			}
 		}
@@ -118,9 +118,9 @@ class SystemList extends System {
 			systems.remove(system);
 			system.__deactivate__();
 			
-			if(system.linkedSystems != null) {
-				for(linkedSystem in system.linkedSystems) {
-					remove(linkedSystem);
+			if(system.helperSystems != null) {
+				for(helperSystem in system.helperSystems) {
+					remove(helperSystem);
 				}
 			}
 		}

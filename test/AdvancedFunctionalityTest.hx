@@ -35,9 +35,9 @@ class AdvancedFunctionalityTest extends Test {
 		var optionalComponentSystem:OptionalComponentSystem = new OptionalComponentSystem();
 		var timeCountSystem:TimeCountSystem = new TimeCountSystem();
 		
-		appearanceSystem.linkedSystems = [nameSystem];
-		nameSystem.linkedSystems = [optionalComponentSystem];
-		optionalComponentSystem.linkedSystems = [timeCountSystem];
+		appearanceSystem.helperSystems = [nameSystem];
+		nameSystem.helperSystems = [optionalComponentSystem];
+		optionalComponentSystem.helperSystems = [timeCountSystem];
 		
 		list.add(appearanceSystem);
 		var systems:Array<System> = list.systems;

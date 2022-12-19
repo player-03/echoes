@@ -77,15 +77,17 @@ class System {
 	public var active(default, null):Bool = false;
 	
 	/**
-	 * Zero or more systems to be placed in the same `SystemList` as this, and
-	 * removed when this is removed. Each should have a different `priority`.
+	 * 0-2 small systems to be placed in the same `SystemList` as this. Each
+	 * should have either a positive priority (in order to run first and perform
+	 * pre-update setup), or a negative priority (in order to run last and
+	 * perform post-update cleanup).
 	 */
-	private var linkedSystems:Null<Array<System>>;
+	private var helperSystems:Null<Array<System>>;
 	
 	/**
 	 * This system's priority. Systems will be sorted in order of decreasing
-	 * priority, meaning that high-priority systems run first. Systems with the
-	 * same priority will be run in the order added.
+	 * priority, meaning that high-priority systems will run first. Systems with
+	 * the same priority will run in the order added.
 	 */
 	private var priority:Int = 0;
 	
