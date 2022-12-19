@@ -22,6 +22,8 @@ class AppearanceSystem extends System implements IMethodCounter {
 @:priority(1)
 class HighPrioritySystem extends System {
 	public function new();
+	
+	@:update private function update():Void {}
 }
 
 @:priority(-1)

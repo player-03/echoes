@@ -66,7 +66,7 @@ class SystemBuilder {
 		return null;
 	}
 	
-	private static function getPriority(meta:MetadataEntry):Int {
+	private static function getPriority(meta:MetadataEntry):Null<Int> {
 		if(meta.params != null && meta.params.length > 0) {
 			switch(meta.params[0].expr) {
 				case EConst(CInt(v)):
@@ -74,7 +74,7 @@ class SystemBuilder {
 				default:
 			}
 		}
-		return 0;
+		return null;
 	}
 	
 	public static function build():Array<Field> {
@@ -132,6 +132,9 @@ class SystemBuilder {
 		//Figure out whether there are any extra priorities.
 		var updatePriorities:Array<Int> = [];
 		for(listener in updateListeners) {
+			if(listener.priority == null) {
+				listener.priority = priority;
+			}
 			if(!updatePriorities.contains(listener.priority)) {
 				updatePriorities.push(listener.priority);
 			}
@@ -284,7 +287,7 @@ class SystemBuilder {
 	name:String,
 	args:Array<FunctionArg>,
 	pos:Position,
-	priority:Int,
+	?priority:Int,
 	?components:Array<ComplexType>,
 	?optionalComponents:Array<ComplexType>,
 	?viewName:String,
