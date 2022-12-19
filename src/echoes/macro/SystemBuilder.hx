@@ -69,12 +69,11 @@ class SystemBuilder {
 	
 	private static function getPriority(meta:Metadata, defaultPriority:Int):Int {
 		var entry:MetadataEntry = getMeta(meta, PRIORITY_META);
-		if(entry != null && entry.params != null && entry.params.length > 0) {
-			switch(entry.params[0].expr) {
-				case EConst(CInt(v)):
-					return Std.parseInt(v);
-				default:
-			}
+		switch(entry) {
+			case null:
+			case { params: [{ expr: EConst(CInt(v))}] }:
+				return Std.parseInt(v);
+			default:
 		}
 		return defaultPriority;
 	}
