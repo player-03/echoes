@@ -64,6 +64,20 @@ class EdgeCaseTest extends Test {
 		Assert.isNull(entity.get(Color));
 		assertTimesCalled(1, "AppearanceSystem.colorAdded");
 		assertTimesCalled(1, "AppearanceSystem.colorRemoved");
+		
+		//Replace a `Name` with itself.
+		Echoes.addSystem(new NameSystem());
+		entity.add(("name":Name));
+		assertTimesCalled(1, "NameSystem.nameAdded");
+		assertTimesCalled(0, "NameSystem.nameRemoved");
+		
+		entity.add(("name":Name));
+		assertTimesCalled(1, "NameSystem.nameAdded");
+		assertTimesCalled(0, "NameSystem.nameRemoved");
+		
+		entity.add(("otherName":Name));
+		assertTimesCalled(2, "NameSystem.nameAdded");
+		assertTimesCalled(1, "NameSystem.nameRemoved");
 	}
 	
 	private function testRecursiveEvents():Void {

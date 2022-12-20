@@ -37,6 +37,10 @@ class ComponentStorage<T> {
 			return;
 		}
 		
+		if(storage[entity] == component) {
+			return;
+		}
+		
 		storage[entity] = component;
 		
 		if(entity.isActive()) {
@@ -70,8 +74,10 @@ class ComponentStorage<T> {
 	 * To make Echoes use this, tag the component type with `@:echoes_replace`.
 	 */
 	public inline function replace(entity:Entity, component:T):Void {
-		remove(entity);
-		add(entity, component);
+		if(get(entity) != component) {
+			remove(entity);
+			add(entity, component);
+		}
 	}
 	
 	@:allow(echoes.Echoes)
