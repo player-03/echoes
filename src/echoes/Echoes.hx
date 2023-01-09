@@ -9,6 +9,7 @@ import echoes.View;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 
+using echoes.macro.ComponentStorageBuilder;
 using echoes.macro.MacroTools;
 using echoes.macro.ViewBuilder;
 using haxe.macro.Context;
@@ -167,6 +168,13 @@ class Echoes {
 						$i{ className }.instance;
 					};
 				} else {
+					return macro $i{ className }.instance;
+				}
+			case TPath({ pack: ["echoes"], name: "ComponentStorage", params: [
+				TPType(_.getComponentStorage() => TPath({ name: className }))] }):
+				//Bug: VS Code syntax highlighting breaks without some extra
+				//braces. Hopefully this will get fixed.
+				{
 					return macro $i{ className }.instance;
 				}
 			case TPath(p):
