@@ -20,7 +20,6 @@ using Lambda;
  */
 @:allow(echoes.Echoes)
 abstract Entity(Int) from Int to Int {
-	public static inline var INVALID:Entity = -1;
 	private static var nextId:Int = 0;
 	private static var idPool:Array<Int> = [];
 	private static var statuses:Array<Status> = [];
