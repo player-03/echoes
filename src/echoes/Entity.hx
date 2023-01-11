@@ -12,16 +12,50 @@ using Lambda;
 #end
 
 /**
- * The entity part of entity-component-system.
+ * An entity is a collection of components. These components can be managed
+ * using `entity.add()` and `entity.remove()`. Sample usage:
  * 
- * Under the hood, an `Entity` is an integer key, used to look up components in
- * `ComponentStorage`. (Caution: don't use this integer as a unique id, as
- * destroyed entities will be cached and reused!)
+ * ```haxe
+ * var entity:Entity = new Entity();
+ * 
+ * //Almost any Haxe type can be added as a component.
+ * entity.add("string component");
+ * entity.add(["array", "of", "strings", "component"]);
+ * 
+ * //Entities can only have one component of a given type. If you add a
+ * //component that already exists, it will be replaced.
+ * entity.add("a different string");
+ * 
+ * //Components can be retrieved using `get()`.
+ * trace(entity.get(String)); //"a different string"
+ * 
+ * //Components can be removed using `remove()`.
+ * entity.remove(String);
+ * trace(entity.get(String)); //null
+ * 
+ * //`Float` and `Entity` are reserved, and can't be added as components.
+ * //However, `typedef`s of `Float` and `Entity` work fine.
+ * entity.add((1.1:FloatTypedef)); //Instead of `entity.add(1.1);`
+ * entity.add((entity:EntityTypedef)); //Instead of `entity.add(entity);`
+ * ```
  */
 @:allow(echoes.Echoes)
 abstract Entity(Int) from Int to Int {
+	/**
+	 * The next entity ID that will be allocated, if `idPool` is empty.
+	 */
 	private static var nextId:Int = 0;
+	
+	/**
+	 * A destroyed entity's ID will go in this pool, and will then be reassigned
+	 * to the next entity to be created.
+	 */
 	private static var idPool:Array<Int> = [];
+	
+	/**
+	 * The status (`Active`, `Inactive`, or `Destroyed`) of every entity ID
+	 * that has been allocated thus far.
+	 */
 	private static var statuses:Array<Status> = [];
 	
 	/**
@@ -73,7 +107,7 @@ abstract Entity(Int) from Int to Int {
 	}
 	
 	/**
-	 * Returns the status of this entity: Active, Inactive, or Destroyed.
+	 * Returns the status of this entity: `Active`, `Inactive`, or `Destroyed`.
 	 */
 	public inline function status():Status {
 		return statuses[this];
@@ -178,10 +212,12 @@ abstract Entity(Int) from Int to Int {
 	 * updated by systems.
 	 */
 	var Inactive = 0;
+	
 	/**
 	 * Entity will be added to views and updated by systems.
 	 */
 	var Active = 1;
+	
 	/**
 	 * Entity has no components and has been removed from all views. Its ID may
 	 * be reused later, but until then it is unsafe to call any functions beyond
