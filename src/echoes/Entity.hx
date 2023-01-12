@@ -19,24 +19,34 @@ using Lambda;
  * var entity:Entity = new Entity();
  * 
  * //Almost any Haxe type can be added as a component.
- * entity.add("string component");
- * entity.add(["array", "of", "strings", "component"]);
+ * entity.add("String component");
+ * entity.add(new MyComponent("foo"));
  * 
  * //Entities can only have one component of a given type. If you add a
  * //component that already exists, it will be replaced.
- * entity.add("a different string");
+ * entity.add(new MyComponent("bar"));
  * 
  * //Components can be retrieved using `get()`.
- * trace(entity.get(String)); //"a different string"
+ * trace(entity.get(String)); //"String component"
+ * trace(entity.get(MyComponent).name); //"bar"
  * 
  * //Components can be removed using `remove()`.
- * entity.remove(String);
- * trace(entity.get(String)); //null
+ * entity.remove(MyComponent);
+ * trace(entity.get(MyComponent)); //null
  * 
- * //`Float` and `Entity` are reserved, and can't be added as components.
- * //However, `typedef`s of `Float` and `Entity` work fine.
- * entity.add((1.1:FloatTypedef)); //Instead of `entity.add(1.1);`
- * entity.add((entity:EntityTypedef)); //Instead of `entity.add(entity);`
+ * //Types with parameters require a special syntax. Otherwise, Haxe will
+ * //assume the angle brackets mean "less than" and "greater than."
+ * entity.add(["colorless", "green", "ideas"]);
+ * //trace(entity.exists(Array<String>)); //syntax error
+ * trace(entity.exists((_:Array<String>))); //true
+ * 
+ * //`Float` and `Entity` are reserved. To use them as components, you must
+ * //first wrap them in a `typedef` or `abstract`.
+ * typedef MyFloat = Float;
+ * entity.add((1.1:MyFloat));
+ * 
+ * abstract MyEntity(Entity) from Entity to Entity { }
+ * entity.add((entity:MyEntity));
  * ```
  */
 @:allow(echoes.Echoes)
