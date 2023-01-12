@@ -64,7 +64,7 @@ class AdvancedFunctionalityTest extends Test {
 		new Entity(true).add(updateOrder);
 		list.__activate__();
 		list.__update__(1, 0);
-		Assert.equals("pre_update, update, post_update", updateOrder.join(", "));
+		Assert.equals("pre_update, update, update2, post_update", updateOrder.join(", "));
 	}
 	
 	private function testSignals():Void {

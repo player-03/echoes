@@ -71,7 +71,6 @@ class UpdateOrderSystem extends System {
 	}
 	
 	@:update private function update(order:Array<String>):Void {
-		trace("update");
 		order.push("update");
 	}
 	
@@ -79,7 +78,7 @@ class UpdateOrderSystem extends System {
 		order.push("pre_update");
 	}
 	
-	@:update private function update2():Void {
-		trace("update2");
+	@:update private function update2(order:Array<String>):Void {
+		order.push("update2");
 	}
 }
