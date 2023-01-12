@@ -2,6 +2,7 @@ package echoes.macro;
 
 #if macro
 
+import haxe.Exception;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 import haxe.macro.Type;
@@ -51,12 +52,19 @@ class MacroTools {
 		switch(e.expr) {
 			case EParenthesis({ expr:ECheckType(_, type) }):
 				return followComplexType(type);
-			case EConst(CIdent(typeString)):
-				try {
-					return followMono(typeString.getType()).toComplexType();
-				} catch(err:String) {}
 			default:
 		}
+		
+		var fieldChain:Null<String> = printFieldChain(e);
+		if(fieldChain != null) {
+			try {
+				return followMono(fieldChain.getType()).toComplexType();
+			} catch(err:Exception) { }
+		}
+		
+		try {
+			return followMono(e.typeof()).toComplexType();
+		} catch(err:Exception) { }
 		
 		Context.error('Failed to parse `${ new Printer().printExpr(e) }`. Try making a typedef or using the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.', e.pos);
 		return macro:Dynamic;
@@ -81,6 +89,29 @@ class MacroTools {
 			default:
 				e.typeof();
 		});
+	}
+	
+	/**
+	 * Converts a nested `EField` expression to string. If the given expression
+	 * is anything other than a chain of identifiers, returns null.
+	 * 
+	 * ```haxe
+	 * printFieldChain(macro foo); //"foo"
+	 * printFieldChain(macro foo.bar); //"foo.bar"
+	 * printFieldChain(macro foo().bar); //null
+	 * printFieldChain(macro foo.bar[1]); //null
+	 * ```
+	 */
+	public static function printFieldChain(fieldExpr:Expr):Null<String> {
+		switch(fieldExpr.expr) {
+			case EField(e, field):
+				var sub:Null<String> = printFieldChain(e);
+				return sub != null ? '$sub.$field' : null;
+			case EConst(CIdent(s)):
+				return s;
+			default:
+				return null;
+		}
 	}
 	
 	/**

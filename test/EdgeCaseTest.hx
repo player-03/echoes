@@ -5,6 +5,7 @@ import echoes.Echoes;
 import echoes.Entity;
 import echoes.System;
 import echoes.View;
+import haxe.PosInfos;
 import MethodCounter.assertTimesCalled;
 import MethodCounter.IMethodCounter;
 import Systems;
@@ -137,6 +138,16 @@ class EdgeCaseTest extends Test {
 		//Clear the permanent listeners before cleaning up.
 		(Echoes.getSingleton():View<Permanent>).onRemoved.pop();
 		(Echoes.getSingleton():View<Permanent, One>).onRemoved.pop();
+	}
+	
+	private function testTypeParsing():Void {
+		var entity:Entity = new Entity();
+		var infos:PosInfos = ((?infos:PosInfos) -> infos)();
+		entity.add(infos);
+		
+		Assert.equals(infos, entity.get(PosInfos));
+		Assert.equals(infos, entity.get(haxe.PosInfos));
+		Assert.equals(infos, entity.get(infos));
 	}
 }
 
