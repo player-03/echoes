@@ -53,25 +53,40 @@ abstract Entity(Int) from Int to Int {
 	private static var idPool:Array<Int> = [];
 	
 	/**
-	 * The status (`Active`, `Inactive`, or `Destroyed`) of every entity ID
-	 * that has been allocated thus far.
+	 * The status of every entity ID that has been allocated thus far. True
+	 * means the entity is active, false means it's inactive or destroyed.
 	 */
-	private static var statuses:Array<Status> = [];
+	private static var statuses:Array<Bool> = [];
 	
 	/**
-	 * @param activate Whether to activate this entity immediately. Otherwise,
+	 * Whether this entity is active. If false, it may also be destroyed.
+	 */
+	public var active(get, never):Bool;
+	private inline function get_active():Bool {
+		return statuses[this];
+	}
+	
+	/**
+	 * Whether this entity has been destroyed.
+	 */
+	public var destroyed(get, never):Bool;
+	private inline function get_destroyed():Bool {
+		//In most cases it's faster to check `active` than `idPool`.
+		return !active && idPool.contains(this);
+	}
+	
+	/**
+	 * @param active Whether to activate this entity immediately. Otherwise,
 	 * you'll have to call `activate()`.
 	 */
-	public inline function new(?activate:Bool = true) {
+	public inline function new(?active:Bool = true) {
 		var id:Null<Int> = idPool.pop();
 		
 		this = id != null ? id : nextId++;
 		
-		if(activate) {
-			statuses[this] = Active;
+		statuses[this] = active;
+		if(active) {
 			Echoes._activeEntities.add(this);
-		} else {
-			statuses[this] = Inactive;
 		}
 	}
 	
@@ -79,8 +94,8 @@ abstract Entity(Int) from Int to Int {
 	 * Registers this entity so it can be found in views and updated by systems.
 	 */
 	public function activate():Void {
-		if(status() == Inactive) {
-			statuses[this] = Active;
+		if(!active) {
+			statuses[this] = true;
 			Echoes._activeEntities.add(this);
 			for(view in Echoes.activeViews) view.addIfMatched(this);
 		}
@@ -91,26 +106,11 @@ abstract Entity(Int) from Int to Int {
 	 * components. Call `activate()` to restore it.
 	 */
 	public function deactivate():Void {
-		if(status() == Active) {
+		if(active) {
 			Echoes._activeEntities.remove(this);
-			statuses[this] = Inactive;
+			statuses[this] = false;
 			for(view in Echoes.activeViews) view.removeIfExists(this);
 		}
-	}
-	
-	public inline function isActive():Bool {
-		return status() == Active;
-	}
-	
-	public inline function isDestroyed():Bool {
-		return status() == Destroyed;
-	}
-	
-	/**
-	 * Returns the status of this entity: `Active`, `Inactive`, or `Destroyed`.
-	 */
-	public inline function status():Status {
-		return statuses[this];
 	}
 	
 	/**
@@ -126,15 +126,13 @@ abstract Entity(Int) from Int to Int {
 	
 	/**
 	 * Removes all of this entity's components, deactivates it, and frees its id
-	 * for reuse. Do not call any of the entity's functions after this; their
-	 * behavior is unspecified.
+	 * for reuse. Don't save any references to this entity afterwards.
 	 */
 	public function destroy():Void {
-		if(!isDestroyed()) {
+		if(!destroyed) {
+			deactivate();
 			removeAll();
-			Echoes._activeEntities.remove(this);
 			idPool.push(this);
-			statuses[this] = Destroyed;
 		}
 	}
 	
@@ -202,24 +200,4 @@ abstract Entity(Int) from Int to Int {
 	public macro function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
 		return EntityTools.exists(self, type.parseClassExpr());
 	}
-}
-
-@:enum abstract Status(Int) {
-	/**
-	 * Entity exists and has components, but will not be added to views or
-	 * updated by systems.
-	 */
-	var Inactive = 0;
-	
-	/**
-	 * Entity will be added to views and updated by systems.
-	 */
-	var Active = 1;
-	
-	/**
-	 * Entity has no components and has been removed from all views. Its ID may
-	 * be reused later, but until then it is unsafe to call any functions beyond
-	 * `status()` and `isDestroyed()`.
-	 */
-	var Destroyed = 2;
 }

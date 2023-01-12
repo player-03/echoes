@@ -36,15 +36,15 @@ class EdgeCaseTest extends Test {
 		var entity:Entity = new Entity(false);
 		
 		//Deactivate an inactive entity.
-		Assert.equals(Inactive, entity.status());
+		Assert.isFalse(entity.active);
 		
 		entity.deactivate();
-		Assert.equals(Inactive, entity.status());
+		Assert.isFalse(entity.active);
 		
 		//Activate the entity twice.
 		entity.activate();
 		entity.activate();
-		Assert.equals(Active, entity.status());
+		Assert.isTrue(entity.active);
 		Assert.equals(1, Echoes.activeEntities.length);
 		
 		//Add a `Color` twice in a row.

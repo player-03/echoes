@@ -43,7 +43,7 @@ class ComponentStorage<T> {
 		
 		storage[entity] = component;
 		
-		if(entity.isActive()) {
+		if(entity.active) {
 			for(view in relatedViews) {
 				view.addIfMatched(entity);
 				
@@ -57,7 +57,7 @@ class ComponentStorage<T> {
 	
 	public function remove(entity:Entity):Void {
 		var removedComponent:T = get(entity);
-		if(storage.remove(entity) && entity.isActive()) {
+		if(storage.remove(entity) && entity.active) {
 			for(view in relatedViews) {
 				view.removeIfExists(entity, this, removedComponent);
 				

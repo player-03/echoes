@@ -21,15 +21,13 @@ class BasicFunctionalityTest extends Test {
 	private function testEntities():Void {
 		//Make an inactive entity.
 		var entity:Entity = new Entity(false);
-		Assert.equals(Inactive, entity.status());
-		Assert.isFalse(entity.isActive());
-		Assert.isFalse(entity.isDestroyed());
+		Assert.isFalse(entity.active);
 		Assert.equals(0, Echoes.activeEntities.length);
 		
 		//Activate it.
 		entity.activate();
-		Assert.isTrue(entity.isActive());
-		Assert.isFalse(entity.isDestroyed());
+		Assert.isTrue(entity.active);
+		Assert.isFalse(entity.destroyed);
 		Assert.equals(1, Echoes.activeEntities.length);
 		
 		//Add a component.
@@ -43,7 +41,7 @@ class BasicFunctionalityTest extends Test {
 		//Destroy it.
 		entity.destroy();
 		Assert.isFalse(entity.exists(Shape));
-		Assert.equals(Destroyed, entity.status());
+		Assert.isTrue(entity.destroyed);
 		Assert.equals(1, @:privateAccess Entity.idPool.length);
 		
 		//Make a new entity (should use the same ID as the old).
@@ -55,7 +53,7 @@ class BasicFunctionalityTest extends Test {
 	private function testComponents():Void {
 		//Create the entity.
 		var blackSquare:Entity = new Entity();
-		Assert.isTrue(blackSquare.isActive());
+		Assert.isTrue(blackSquare.active);
 		Assert.equals(0, Lambda.count(blackSquare.getComponents()));
 		
 		//Create some interchangeable components.
@@ -106,7 +104,7 @@ class BasicFunctionalityTest extends Test {
 	
 	private function testInactiveEntities():Void {
 		var inactive:Entity = new Entity(false);
-		Assert.isFalse(inactive.isActive());
+		Assert.isFalse(inactive.active);
 		Assert.equals(0, Echoes.activeEntities.length);
 		
 		Echoes.addSystem(new AppearanceSystem());
