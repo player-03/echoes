@@ -178,7 +178,7 @@ class BasicFunctionalityTest extends Test {
 		assertTimesCalled(0, "AppearanceSystem.shapeRemoved");
 		circle.add(SQUARE);
 		circle.add(CIRCLE);
-		assertTimesCalled(2, "AppearanceSystem.shapeAdded");
+		assertTimesCalled(4, "AppearanceSystem.shapeAdded");
 		assertTimesCalled(0, "AppearanceSystem.shapeRemoved");
 		
 		//Deconstruct an entity.

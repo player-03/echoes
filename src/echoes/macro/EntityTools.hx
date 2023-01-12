@@ -18,14 +18,12 @@ using haxe.macro.Context;
  */
 class EntityTools {
 	/**
-	 * Adds one or more components to the entity. If the entity already has a
-	 * component of the same type, the old component will be replaced.
+	 * Adds one or more components to the entity, dispatching an `@:add` event
+	 * for each one. If the entity already has a component of the same type, the
+	 * old component will be replaced.
 	 * 
-	 * When a component is replaced this way, no events will be dispatched
-	 * unless the component type is tagged `@:echoes_replace`, in which case
-	 * both events (`@:remove` and `@:add`) will be dispatched.
-	 * @param components Components of `Any` type.
-	 * @return The entity.
+	 * If a component is replaced and its type is tagged `@:echoes_replace`,
+	 * this will dispatch a `@:remove` event before dispatching `@:add`.
 	 */
 	public static function add(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
 		return macro {

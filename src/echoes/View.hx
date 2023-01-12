@@ -56,8 +56,12 @@ class ViewBase {
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
 	private function addIfMatched(entity:Entity):Void {
-		if(!entities.has(entity) && isMatched(entity)) {
-			_entities.add(entity);
+		if(!entities.has(entity)) {
+			if(isMatched(entity)) {
+				_entities.add(entity);
+				dispatchAddedCallback(entity);
+			}
+		} else {
 			dispatchAddedCallback(entity);
 		}
 	}

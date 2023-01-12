@@ -53,7 +53,7 @@ class EdgeCaseTest extends Test {
 		
 		entity.add((0xFFFFFF:Color));
 		Assert.equals(0xFFFFFF, entity.get(Color));
-		assertTimesCalled(1, "AppearanceSystem.colorAdded");
+		assertTimesCalled(2, "AppearanceSystem.colorAdded");
 		assertTimesCalled(0, "AppearanceSystem.colorRemoved");
 		
 		//Remove the `Color` twice in a row.
@@ -62,7 +62,7 @@ class EdgeCaseTest extends Test {
 		
 		entity.remove(Color);
 		Assert.isNull(entity.get(Color));
-		assertTimesCalled(1, "AppearanceSystem.colorAdded");
+		assertTimesCalled(2, "AppearanceSystem.colorAdded");
 		assertTimesCalled(1, "AppearanceSystem.colorRemoved");
 		
 		//Replace a `Name` with itself.
