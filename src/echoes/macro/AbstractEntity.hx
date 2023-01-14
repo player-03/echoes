@@ -6,16 +6,13 @@ import haxe.macro.Printer;
 import haxe.macro.Type;
 import haxe.macro.TypeTools;
 
-#if macro
 using echoes.macro.ComponentStorageBuilder;
 using echoes.macro.EntityTools;
 using echoes.macro.MacroTools;
 using haxe.EnumTools;
 using haxe.macro.Context;
 using haxe.macro.ExprTools;
-#else
-import echoes.Entity;
-#end
+using Lambda;
 
 /**
  * Enables a way to treat entities more like class instances. Simply create an
@@ -67,480 +64,194 @@ import echoes.Entity;
  * ```
  */
 class AbstractEntity {
-	#if !macro
-	
-	public static function build():Array<Field> {
-		return [];
-	}
-	
-	#else
-	
-	private static var defaultFields:Array<Field> = [
-		{
-			access:[AInline],
-			kind: FFun({
-				args: [],
-				expr: macro return cast this,
-				ret: macro:Int
-			}),
-			name: "toInt",
-			meta: [{name: ":to", pos: (macro null).pos}],
-			pos: (macro null).pos
-		},
-		{
-			access:[AInline],
-			kind: FFun({
-				args: [],
-				expr: macro return cast this,
-				ret: macro:echoes.Entity
-			}),
-			name: "toEntity",
-			meta: [{name: ":to", pos: (macro null).pos}],
-			pos: (macro null).pos
-		}
-	];
-	
-	private static var fieldName:String = null;
-	private static var getField:Expr = null;
-	
 	public static function build():Array<Field> {
 		var fields:Array<Field> = Context.getBuildFields();
 		
-		var name:String = Context.getLocalClass().get().name;
-		function throwNotEntity():Void {
-			Context.fatalError('$name should wrap echoes.Entity.', Context.currentPos());
+		//Information gathering
+		//=====================
+		
+		//Get information about the `abstract` being built.
+		var type:AbstractType = switch(Context.getLocalType()) {
+			case TInst(_.get().kind => KAbstractImpl(_.get() => type), _):
+				type;
+			default:
+				Context.fatalError("Entity.build() only works on abstract types.", Context.currentPos());
+		};
+		
+		if(type.params != null && type.params.length > 0) {
+			Context.fatalError('${ type.name } may not have any parameters.', Context.currentPos());
 		}
 		
-		var nameMatcher:EReg = ~/^(.+)_Impl_$/;
-		if(nameMatcher.match(name)) {
-			name = nameMatcher.matched(1);
-			switch(name.getType()) {
-				case TAbstract(t, _):
-					switch(t.get().type.followWithAbstracts().toComplexType()) {
-						case macro:Int, macro:StdTypes.Int:
-							//Success
-						default:
-							throwNotEntity();
+		//Get information about parent types, and allow converting to each.
+		var parentType:Type = type.type;
+		var parentMakeExpr:Null<Expr> = null;
+		var isEntity:Bool = false;
+		for(i in 0...100) {
+			switch(parentType) {
+				case TInst(_.get().kind => KAbstractImpl(_.get() => parentAbstract), _),
+					TAbstract(_.get() => parentAbstract, _):
+					var name:String = "to" + parentAbstract.name;
+					var complexType:ComplexType = parentType.toComplexType();
+					fields.pushFields(macro class ToParent {
+						@:to private inline function $name():$complexType {
+							return cast this;
+						}
+					});
+					
+					if(parentAbstract.name == "Entity" && parentAbstract.pack.length == 1 && parentAbstract.pack[0] == "echoes") {
+						isEntity = true;
+						break;
+					} else {
+						parentType = parentAbstract.type;
 					}
 				default:
-					throwNotEntity();
-			};
-		} else {
-			throwNotEntity();
+					break;
+			}
 		}
 		
-		var blueprint:BlueprintData = BlueprintData.current();
-		
-		if(!blueprint.type.meta.has(":forward")) {
-			blueprint.type.meta.add(":forward", [], blueprint.type.pos);
+		if(!isEntity) {
+			Context.fatalError('${ type.name } must wrap echoes.Entity.', Context.currentPos());
 		}
 		
-		var reservedFields:Array<String> = [];
-		var newFields:Array<Field> = defaultFields.copy();
-		var fieldNames:Array<String> = [];
+		//Modifications
+		//=============
 		
-		var i:Int = fields.length;
-		while(--i >= 0) {
-			var field:Field = fields[i];
-			var remove:Bool = false;
+		//Forward all parent fields.
+		if(!type.meta.has(":forward")) {
+			type.meta.add(":forward", [], type.pos);
+		}
+		
+		//Process the variables.
+		var initializeVariables:Array<{ name:String, expr:Expr }> = [];
+		for(field in fields) {
+			//Parse the field kind.
+			var componentType:Null<ComplexType>;
+			var expr:Null<Expr>;
+			switch(field.kind) {
+				//Skip static variables, but not static properties.
+				case FVar(_, _) if(field.access != null && field.access.contains(AStatic)):
+					continue;
+				case FVar(t, e), FProp(_, _, t, e):
+					componentType = t;
+					expr = e;
+				default:
+					continue;
+			}
 			
-			if(reservedFields.indexOf(field.name) >= 0) {
-				Context.warning('${field.name} is reserved and will be overwritten', field.pos);
-				fields.splice(i, 1);
-			} else {
-				switch(field.kind) {
-					case FVar(t, e):
-						//Static variables should be left alone.
-						if(field.access.indexOf(AStatic) >= 0) {
-							continue;
-						}
-						
-						//Turn instance variables into properties.
-						field.kind = FProp("get", "set", t, null);
-						
-						for(variable in blueprint.variables) {
-							if(variable.name == field.name) {
-								makeAccessors(variable, newFields);
-								break;
-							}
-						}
-					case FProp(get, set, t, e):
-						//Static properties should be left alone.
-						if(field.access.indexOf(AStatic) >= 0) {
-							continue;
-						}
-						
-						//Properties can mostly be left as-is, as long as they don't have an underlying variable.
-						if(get == "null" || get == "never") {
-							get = "never";
-						} else {
-							get = "get";
-						}
-						if(set == "null" || set == "never") {
-							set = "never";
-						} else {
-							set = "set";
-						}
-						
-						field.kind = FProp(get, set, t, null);
-						
-						for(variable in blueprint.variables) {
-							if(variable.name == field.name) {
-								makeAccessors(variable, get == "get", set == "set", newFields);
-								break;
-							}
-						}
-					case FFun(func):
-						if(func.expr == null) {
-							Context.warning("Missing function body", field.pos);
-							remove = true;
-							break;
-						}
-						
-						//Most functions can be left as-is. They will automatically use any necessary getters and setters.
-						//However, the getters and setters themselves need to access their values differently.
-						else if(StringTools.startsWith(field.name, "get_") || StringTools.startsWith(field.name, "set_")) {
-							var returnType:ComplexType = func.ret;
-							if(returnType == null) {
-								try {
-									returnType = TypeTools.toComplexType(Context.typeof(func.expr).followMono());
-								} catch(e:Dynamic) {}
-								
-								if(returnType == null) {
-									Context.error("Explicit return type required for this function", field.pos);
-									remove = true;
-									break;
-								}
-							}
-							
-							fieldName = field.name.substr(4);
-							getField = (macro this).get(returnType);
-							func.expr = func.expr.map(replaceVariableAccess);
-						}
+			//Infer the component type, if not explicitly specified.
+			if(componentType == null) {
+				if(expr != null) {
+					try {
+						componentType = expr.parseComponentType().toComplexType();
+					} catch(e:haxe.Exception) {
+					}
 				}
 				
-				//Remove @:isVar from anything and everything.
-				if(field.meta != null) {
-					var m:Int = field.meta.length;
-					while(--m >= 0) {
-						if(field.meta[m].name == ":isVar") {
-							Context.warning("Instance variables are not allowed", field.meta[m].pos);
-							field.meta.splice(i, 1);
-						}
-					}
-				}
-			}
-			
-			if(remove) {
-				fields.splice(i, 1);
-			} else {
-				fieldNames.push(field.name);
-			}
-		}
-		
-		//Add conversion functions.
-		var lastType:Type = blueprint.type.type;
-		var parentBlueprint:BlueprintData = blueprint.parentData;
-		while(parentBlueprint != null) {
-			newFields.push({
-				access:[AInline],
-				kind: FFun({
-					args: [],
-					expr: macro return cast this,
-					ret: TypeTools.toComplexType(lastType)
-				}),
-				name: "to" + parentBlueprint.type.name,
-				meta: [{name: ":to", pos: parentBlueprint.type.pos}],
-				pos: parentBlueprint.type.pos
-			});
-			
-			//Instead of trying to make a complex type based on the abstract
-			//declaration, record the type used by the child abstract. This
-			//ensures type parameters are included.
-			lastType = parentBlueprint.type.type;
-			
-			parentBlueprint = parentBlueprint.parentData;
-		}
-		
-		//Make sure not to add any redundant fields.
-		for(newField in newFields) {
-			if(fieldNames.indexOf(newField.name) >= 0) {
-				//Private fields can simply be renamed.
-				if(newField.access.indexOf(APublic) < 0) {
-					var i:Int = 0;
-					while(++i < 100) {
-						if(fieldNames.indexOf(newField.name + i) < 0) {
-							newField.name += i;
-							break;
-						}
-					}
-					
-					if(fieldNames.indexOf(newField.name) >= 0) {
-						continue;
-					}
-				} else {
-					//Public fields must be skipped.
+				if(componentType == null) {
+					Context.fatalError('${ field.name } requires a type.', field.pos);
 					continue;
 				}
 			}
 			
-			fields.push(newField);
-			fieldNames.push(newField.name);
+			//Record the initial value.
+			if(expr != null) {
+				initializeVariables.push({
+					name: switch(componentType) {
+						case TPath({ name: name, sub: null }):
+							name;
+						case TPath({ sub: sub }):
+							sub;
+						default:
+							new Printer().printComplexType(componentType);
+					},
+					expr: macro entity.addIfMissing(($expr:$componentType))
+				});
+			}
+			
+			//Check for reserved types.
+			switch(componentType) {
+				case macro:Entity, macro:echoes.Entity:
+					Context.fatalError("Entity is reserved. Consider using a typedef, abstract, or Int", field.pos);
+				case macro:Float, macro:StdTypes.Float:
+					Context.fatalError("Float is reserved for lengths of time. Consider using a typedef or abstract", field.pos);
+				default:
+			}
+			
+			//Convert the field to a property, and remove the expression.
+			field.kind = FProp("get", "set", componentType, null);
+			
+			var getter:String = "get_" + field.name;
+			var setter:String = "set_" + field.name;
+			
+			fields.pushFields(macro class Accessors {
+				private inline function $getter():$componentType {
+					return this.get((_:$componentType));
+				}
+				
+				private inline function $setter(value:$componentType):$componentType {
+					this.add(value);
+					return value;
+				}
+			});
+		}
+		
+		//Add the `convert()` function.
+		var complexType:ComplexType = TPath({ pack: [], name: type.name });
+		fields.pushFields(macro class Convert {
+			public static function convert(entity:echoes.Entity):$complexType $b{
+				initializeVariables.map(v -> v.expr)
+					.concat([macro return cast entity])
+			}
+		});
+		if(initializeVariables.length > 0) {
+			fields[fields.length - 1].doc = 'Converts an entity to `${ type.name }` by '
+				+ "adding any of the following that don't already exist: `"
+				+ initializeVariables.map(v -> v.name).join("`, `")
+				+ "`.";
+		}
+		
+		//Add a default constructor, if needed.
+		var constructor:Field = fields.find(field -> field.name == "new" || field.name == "_new");
+		if(constructor == null) {
+			var parentTypePath:TypePath = switch(type.type.toComplexType()) {
+				case TPath(p):
+					p;
+				case x:
+					//This shouldn't be possible after the `isEntity` test, but
+					//it's easy enough 
+					Context.error("Can't call new " + new Printer().printComplexType(x) + "().", Context.currentPos());
+			};
+			
+			constructor = (macro class DefaultConstructor {
+				public inline function new() {
+					//Assume the parent type takes no arguments. If it does, the
+					//user will have to define their own constructor.
+					this = new $parentTypePath();
+				}
+			}).fields[0];
+			
+			fields.push(constructor);
+		}
+		
+		//Make sure the constructor calls `convert()`.
+		switch(constructor.kind) {
+			case FFun(func):
+				var block:Array<Expr> = switch(func.expr.expr) {
+					case EBlock(exprs):
+						exprs;
+					default:
+						[func.expr];
+				};
+				
+				for(i => expr in block) {
+					if(expr.expr.match(EBinop(OpAssign, { expr: EConst(CIdent("this")) }, _))) {
+						block.insert(i + 1, macro convert(this));
+						break;
+					}
+				}
+			default:
 		}
 		
 		return fields;
 	}
-	
-	private static function dotAccessExpr(pack:Array<String>, name:String):Expr {
-		var packWithName:Array<String> = pack.copy();
-		packWithName.push(name);
-		return macro $p{packWithName};
-	}
-	
-	private static function replaceVariableAccess(expr:Expr):Expr {
-		switch(expr.expr) {
-			case EReturn({expr: EBinop(OpAssign, {expr: EConst(CIdent(c))}, e)}) if(c == fieldName):
-				//Avoid duplicating $e; it could include a costly function call.
-				return @:pos(expr.pos) macro return { this.add($e); $getField; };
-			case EBinop(OpAssign, {expr: EConst(CIdent(c))}, e) if(c == fieldName):
-				return @:pos(expr.pos) macro this.add($e);
-			case EConst(CIdent(c)) if(c == fieldName):
-				return getField;
-			default:
-				return expr.map(replaceVariableAccess);
-		}
-	}
-	
-	private static function makeAccessors(fieldData:BlueprintVariable, ?getter:Bool = true, ?setter:Bool = true, array:Array<Field>):Void {
-		if(getter) {
-			var get:Expr = (macro this).get(fieldData.type);
-			array.push({
-				access: [AInline],
-				kind: FFun({
-					args: [],
-					expr: @:pos(fieldData.pos) macro return $get,
-					ret: fieldData.type
-				}),
-				name: "get_" + fieldData.name,
-				pos: fieldData.pos
-			});
-		}
-		
-		if(setter) {
-			var type:ComplexType = fieldData.type;
-			array.push({
-				access: [AInline],
-				kind: FFun({
-					//On static platforms, setting opt:true is the
-					//easiest way to allow null values.
-					args: [{name: "value", type: fieldData.type, opt: true}],
-					expr: macro {
-						if(value == null) {
-							this.remove((_:$type));
-						} else {
-							this.add(value);
-						}
-						return value;
-					},
-					ret: fieldData.type
-				}),
-				name: "set_" + fieldData.name,
-				pos: fieldData.pos
-			});
-		}
-	}
-	
-	#end
 }
-
-class BlueprintData {
-	#if macro
-	
-	public static var allData:Array<BlueprintData> = [];
-	
-	private static function typePathToString(path:TypePath):String {
-		var result:String;
-		
-		if(path.pack.length > 0) {
-			result = path.pack.join(".") + "." + path.name;
-		} else {
-			result = path.name;
-		}
-		
-		if(path.sub != null) {
-			result += "." + path.sub;
-		}
-		
-		return result;
-	}
-	
-	private static function baseTypeToString(type:BaseType):String {
-		var result:String;
-		
-		result = type.module;
-		
-		if(!StringTools.endsWith(type.module, "." + type.name)) {
-			result += "." + type.name;
-		}
-		
-		return result;
-	}
-	
-	public static inline function byType(type:BaseType):BlueprintData {
-		return byQualifiedName(baseTypeToString(type));
-	}
-	
-	public static function byQualifiedName(qualifiedName:String):BlueprintData {
-		for(data in allData) {
-			if(data.qualifiedName == qualifiedName) {
-				return data;
-			}
-		}
-		
-		return new BlueprintData(Context.getType(qualifiedName));
-	}
-	
-	public static function current():Null<BlueprintData> {
-		var type:Type = Context.getLocalType();
-		switch(type) {
-			case TInst(_.get().kind => KAbstractImpl(_.get() => abstractType), _):
-				var qualifiedName:String = baseTypeToString(abstractType);
-				var data:BlueprintData = null;
-				for(d in allData) {
-					if(d.qualifiedName == qualifiedName) {
-						data = d;
-						break;
-					}
-				}
-				
-				if(data == null) {
-					data = new BlueprintData(type);
-				}
-				
-				if(data.variables.length == 0) {
-					data.init(Context.getBuildFields());
-				}
-				
-				return data;
-			default:
-				return null;
-		}
-	}
-	
-	public var type:AbstractType;
-	public var qualifiedName:String;
-	
-	/**
-	 * May not be defined unless you accessed this via current().
-	 */
-	public var variables:Array<BlueprintVariable> = [];
-	
-	/**
-	 * Null indicates that this inherits directly from Entity.
-	 */
-	public var parentData:Null<BlueprintData>;
-	
-	private function new(fromType:Type) {
-		switch(fromType) {
-			case TInst(_.get().kind => KAbstractImpl(_.get() => abstractType), _)
-				| TAbstract(_.get() => abstractType, _):
-				type = abstractType;
-			default:
-				throw fromType + " is not abstract";
-		}
-		
-		qualifiedName = baseTypeToString(type);
-		
-		allData.push(this);
-		
-		switch(TypeTools.toComplexType(type.type.followMono())) {
-			case TPath({pack: ["echoes"], name: "Entity"}):
-				parentData = null;
-			case TPath(path):
-				parentData = byQualifiedName(typePathToString(path));
-				if(parentData == this) {
-					Context.error(type.name + " should not be its own parent", type.pos);
-					parentData = null;
-				}
-			case unrecognized:
-				Context.error("Unable to parse underlying type: " + unrecognized, type.pos);
-		}
-	}
-	
-	private function init(fields:Array<Field>):Void {
-		var printer:Printer = new Printer();
-		
-		for(field in fields) {
-			//Skip static variables, but not properties.
-			switch(field.kind) {
-				case FVar(_, _):
-					if(field.access != null && field.access.indexOf(AStatic) >= 0) {
-						continue;
-					}
-				default:
-			}
-			
-			switch(field.kind) {
-				case FVar(type, expr), FProp(_, _, type, expr):
-					var coerce:Bool;
-					
-					if(type == null) {
-						type = TypeTools.toComplexType(Context.typeof(expr).followMono());
-						
-						switch(expr.expr) {
-							case ENew(_, _):
-								coerce = true;
-							case null:
-								Context.error("Please specify a type", field.pos);
-							default:
-								coerce = false;
-						}
-					} else {
-						//Convert back and forth to get a fully-qualified type.
-						type = TypeTools.toComplexType(ComplexTypeTools.toType(type).followMono());
-						coerce = true;
-					}
-					
-					var printedType:String = printer.printComplexType(type);
-					
-					if(printedType == "Entity" || printedType == "echoes.Entity") {
-						Context.error("Entity is reserved - consider using a typedef, abstract, or Int", field.pos);
-					} else if(printedType == "Float" || printedType == "StdTypes.Float") {
-						Context.error("Float is reserved for lengths of time - consider using a typedef or abstract", field.pos);
-					}
-					
-					for(variable in variables) {
-						if(printedType == variable.printedType) {
-							Context.error("Too many " + printedType + " components", field.pos);
-						}
-					}
-					
-					var overwrite:Bool = field.access.indexOf(AOverride) >= 0;
-					
-					variables.push({
-						type:type,
-						printedType:printedType,
-						name:field.name,
-						expr:expr,
-						overwrite:overwrite,
-						coerce:coerce,
-						pos:field.pos
-					});
-				default:
-			}
-		}
-	}
-	
-	#end
-}
-
-typedef BlueprintVariable = {
-	type:ComplexType,
-	printedType:String,
-	name:String,
-	expr:Expr,
-	overwrite:Bool,
-	coerce:Bool,
-	pos:Position
-	//, requestedData:Array<RequestedData>
-};

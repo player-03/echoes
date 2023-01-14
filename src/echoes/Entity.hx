@@ -211,3 +211,11 @@ abstract Entity(Int) from Int to Int {
 		return EntityTools.exists(self, type.parseClassExpr());
 	}
 }
+
+/**
+ * Declares getters and setters for each of an abstract's variables.
+ * @see `echoes.macro.AbstractEntity`
+ */
+macro function build():Array<Field> {
+	return echoes.macro.AbstractEntity.build();
+}

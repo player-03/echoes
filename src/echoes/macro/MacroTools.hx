@@ -9,6 +9,7 @@ import haxe.macro.Type;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
+using Lambda;
 
 @:dce
 class MacroTools {
@@ -111,6 +112,20 @@ class MacroTools {
 				return s;
 			default:
 				return null;
+		}
+	}
+	
+	/**
+	 * Copies fields from `source` to `destination`, skipping any that are
+	 * already present.
+	 */
+	public static function pushFields(destination:Array<Field>, source:TypeDefinition):Void {
+		for(field in source.fields) {
+			if(!destination.exists(f -> f.name == field.name)
+				//Special case: `new` is sometimes renamed `_new`; check both.
+				&& (field.name != "new" || !destination.exists(f -> f.name == "_new"))) {
+				destination.push(field);
+			}
 		}
 	}
 	
