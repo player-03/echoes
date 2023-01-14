@@ -7,6 +7,7 @@ import echoes.System;
 import echoes.SystemList;
 import echoes.utils.Signal;
 import echoes.View;
+import MethodCounter.assertTimesCalled;
 import Systems;
 import utest.Assert;
 import utest.Test;
@@ -25,6 +26,36 @@ class AdvancedFunctionalityTest extends Test {
 	}
 	
 	//Tests may be run in any order, but not in parallel.
+	
+	private function testAbstractEntities():Void {
+		Echoes.addSystem(new NameSystem());
+		Echoes.addSystem(new AppearanceSystem());
+		
+		var entity:Entity = new Entity();
+		entity.add(("John":Name));
+		
+		var namedEntity:NamedEntity = NamedEntity.convert(entity);
+		Assert.equals(entity, namedEntity);
+		Assert.equals("John", namedEntity.name);
+		assertTimesCalled(1, "NameSystem.nameAdded");
+		assertTimesCalled(0, "NameSystem.nameRemoved");
+		
+		namedEntity.name = null;
+		Assert.equals(null, namedEntity.name);
+		assertTimesCalled(1, "NameSystem.nameAdded");
+		assertTimesCalled(1, "NameSystem.nameRemoved");
+		
+		var visualEntity:VisualEntity = VisualEntity.convert(namedEntity);
+		Assert.equals(VisualEntity.DEFAULT_COLOR, visualEntity.color);
+		assertTimesCalled(1, "AppearanceSystem.colorAdded");
+		assertTimesCalled(0, "AppearanceSystem.colorRemoved");
+		
+		Assert.equals(VisualEntity.DEFAULT_SHAPE, (visualEntity:Entity).get(Shape));
+		
+		Assert.equals(NamedEntity.DEFAULT_NAME, new NamedEntity().name);
+		assertTimesCalled(2, "NameSystem.nameAdded");
+		assertTimesCalled(1, "NameSystem.nameRemoved");
+	}
 	
 	@:access(echoes.System)
 	private function testPriority():Void {
@@ -194,3 +225,26 @@ class AdvancedFunctionalityTest extends Test {
 
 typedef IntArray = Array<Int>;
 @:eager typedef EagerIntArray = Array<Int>;
+
+@:build(echoes.Entity.build())
+abstract NamedEntity(Entity) {
+	public static inline final DEFAULT_NAME:Name = "defaultName";
+	
+	public var name:Name = DEFAULT_NAME;
+}
+
+@:build(echoes.Entity.build())
+abstract NameStringEntity(NamedEntity) {
+	public static inline final DEFAULT_STRING:String = "defaultString";
+	
+	public var string:String = DEFAULT_STRING;
+}
+
+@:build(echoes.Entity.build())
+abstract VisualEntity(Entity) {
+	public static inline final DEFAULT_COLOR:Color = 0x123456;
+	public static inline final DEFAULT_SHAPE:Shape = SQUARE;
+	
+	public var color(never, never):Color = DEFAULT_COLOR;
+	public var shape = Shape.SQUARE;
+}
