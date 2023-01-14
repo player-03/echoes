@@ -98,10 +98,12 @@ class Echoes {
 	 * Deactivates all views and systems and destroys all entities.
 	 */
 	public static function reset():Void {
-		for(entity in activeEntities) {
-			entity.destroy();
+		//Deactivate all entities so that no events are dispatched.
+		for(i in 0...Entity.statuses.length) {
+			Entity.statuses[i] = false;
 		}
 		
+		_activeEntities.clear();
 		activeSystems.removeAll();
 		
 		//Iterate backwards when removing items from arrays.
