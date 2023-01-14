@@ -458,6 +458,7 @@ Entities:
 
 - `Entity.print()` is now `Entity.getComponents()`. This returns a `Map`, allowing you to iterate over all of the components.
 - The `isActive()`, `isDestroyed()` and `status()` functions have been condensed into the `active` and `destroyed` properties.
+- When you call `entity.add()`, Echoes will dispatch an `@:add` event whether or not a component of that type already existed. (Previously, it would only do so if it hadn't exist.)
 
 Components:
 
