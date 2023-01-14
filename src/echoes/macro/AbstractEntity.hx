@@ -15,50 +15,78 @@ using haxe.macro.ExprTools;
 using Lambda;
 
 /**
- * Enables a way to treat entities more like class instances. Simply create an
- * `abstract` wrapping `Entity`, and define one or more properties:
+ * An alternate way to define entities, allowing you to access components as
+ * if they were instance variables. Sample usage:
  * 
  * ```haxe
- * typedef Color = Int;
- * @:build(echoes.macro.AbstractEntity.build())
- * abstract ColorfulEntity(Entity) {
- *     public var color:Color;
- * }
- * ```
- * 
- * Instead of acting like normal variables, these will get and set the entity's
- * components. They function the same as `add()`, `get()`, and `remove()` which
- * are also still available.
- * 
- * ```haxe
- * var redBall = new ColorfulEntity();
- * redBall.add((0x990000:Color));
- * trace(StringTools.hex(redBall.color)); //990000
- * redBall.color = 0xFF0000;
- * trace(StringTools.hex(redBall.get(Color))); //FF0000
- * redBall.color = null;
- * trace(redBall.exists(Color)); //false
- * ```
- * 
- * You can add functions to your `abstract` as normal:
- * 
- * ```haxe
- * typedef Color = Int;
- * @:build(echoes.macro.AbstractEntity.build())
- * abstract ColorfulEntity(Entity) {
- *     public var color:Color;
+ * @:build(echoes.Entity.build())
+ * abstract Fighter(Entity) {
+ *     //Each variable represents a different component.
+ *     public var damage:Damage = 1;
+ *     public var health:Health = 10;
+ *     public var hitbox:Hitbox = Hitbox.square(1);
+ *     public var sprite:Sprite;
  *     
- *     public inline function getRed():Int {
- *         return color >> 16;
+ *     //Variables may also be initialized in the constructor, as normal. A
+ *     //default constructor will be created if you leave it out.
+ *     public inline function new(sprite:Sprite) {
+ *         this = new Entity();
+ *         
+ *         //Due to how abstracts work, you can't set `this.sprite = sprite`.
+ *         //Instead, either rename the parameter or use a workaround:
+ *         this.add(sprite);
+ *         set_sprite(sprite);
+ *         var self:Fighter = cast this;
+ *         self.sprite = sprite;
  *     }
- *     public inline function getGreen():Int {
- *         return (color >> 8) & 0xFF;
+ *     
+ *     //Other functions work normally.
+ *     public inline function getDamage(target:Hitbox):Damage {
+ *         if(target.overlapping(hitbox)) {
+ *             return damage;
+ *         } else {
+ *             return 0;
+ *         }
  *     }
- *     public inline function getBlue():Int {
- *         return color & 0xFF;
- *     }
- *     public function setRGB(r:Int, g:Int, b:Int):Void {
- *         color = (r << 16) | (g << 8) | b;
+ * }
+ * 
+ * class Main {
+ *     public static function main():Void {
+ *         var knight:Fighter = new Fighter(SpriteCache.get("knight.png"));
+ *         
+ *         //The variables now act as shortcuts for `add()` and `get()`.
+ *         trace(knight.health); //10
+ *         trace(knight.get(Health)); //10
+ *         
+ *         //Because the variables all have type hints, you don't need to
+ *         //specify which type you mean.
+ *         knight.health = 9;
+ *         knight.damage = 3;
+ *         trace(knight.get(Health)); //9
+ *         trace(knight.get(Damage)); //3
+ *         
+ *         //If using `add()`, the normal rules apply.
+ *         knight.add((8:Health));
+ *         trace(knight.health); //8
+ *         
+ *         //The macro also defines the function `Fighter.convert()`, which
+ *         //turns an already-existing entity into a `Fighter` by adding the
+ *         //necessary components.
+ *         var greenKnight:Entity = new Entity();
+ *         greenKnight.add(Color.GREEN);
+ *         greenKnight.health = 20;
+ *         
+ *         var greenFighter:Fighter = Fighter.convert(greenKnight);
+ *         
+ *         //`convert()` doesn't overwrite already-defined components.
+ *         trace(greenFighter.health); //20
+ *         
+ *         //`convert()` uses the default value for each missing component.
+ *         trace(greenFighter.damage); //1
+ *         trace("0x" + StringTools.hex(greenFighter.get(Color), 6)); //0x00FF00
+ *         
+ *         //Since `sprite` has no default value, `convert()` won't add it.
+ *         trace(greenFighter.sprite); //null
  *     }
  * }
  * ```
