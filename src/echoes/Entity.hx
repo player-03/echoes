@@ -213,9 +213,97 @@ abstract Entity(Int) from Int to Int {
 }
 
 /**
- * Declares getters and setters for each of an abstract's variables.
- * @see `echoes.macro.AbstractEntity`
+ * A build macro for entity templates. An entity template fills a similar role
+ * to a class, allowing a user to easily create entities with pre-defined sets
+ * of components. But unlike classes, it's possible to apply multiple templates
+ * to a single entity.
+ * 
+ * Templates also offer syntax sugar for accessing components. For example,
+ * if the template declares `var component:Component`, the user can then type
+ * `entity.component` instead of `entity.get(Component)`.
+ * 
+ * Sample usage:
+ * 
+ * ```haxe
+ * //`Fighter` is a template for entities involved in combat. A `Fighter` entity
+ * //will always have `Damage`, `Health`, and `Hitbox` components.
+ * @:build(echoes.Entity.build())
+ * abstract Fighter(Entity) {
+ *     //Each variable represents the component of that type. For instance,
+ *     //`fighter.damage` will get/set the entity's `Damage` component.
+ *     public var damage:Damage = 1;
+ *     public var health:Health = 10;
+ *     public var hitbox:Hitbox = Hitbox.square(1);
+ *     
+ *     //Variables without initial values are considered optional.
+ *     public var sprite:Sprite;
+ *     
+ *     //Variables may also be initialized in the constructor, as normal. A
+ *     //default constructor will be created if you leave it out.
+ *     public inline function new(?sprite:Sprite) {
+ *         this = new Entity();
+ *         
+ *         //Due to how abstracts work, you can't set `this.sprite = sprite`.
+ *         //Instead, either rename the parameter or use a workaround:
+ *         this.add(sprite);
+ *         set_sprite(sprite);
+ *         var self:Fighter = cast this; self.sprite = sprite;
+ *     }
+ *     
+ *     //Other functions work normally.
+ *     public inline function getDamage(target:Hitbox):Damage {
+ *         if(target.overlapping(hitbox)) {
+ *             return damage;
+ *         } else {
+ *             return 0;
+ *         }
+ *     }
+ * }
+ * 
+ * class Main {
+ *     public static function main():Void {
+ *         var knight:Fighter = new Fighter(SpriteCache.get("knight.png"));
+ *         
+ *         //The variables now act as shortcuts for `add()` and `get()`.
+ *         trace(knight.health); //10
+ *         trace(knight.get(Health)); //10
+ *         
+ *         //Because the variables all have type hints, you don't need to
+ *         //specify which type you mean.
+ *         knight.health = 9;
+ *         knight.damage = 3;
+ *         trace(knight.get(Health)); //9
+ *         trace(knight.get(Damage)); //3
+ *         
+ *         //If using `add()`, the normal rules apply.
+ *         knight.add((8:Health));
+ *         trace(knight.health); //8
+ *         
+ *         //It's also possible to convert a pre-existing entity to `Fighter`.
+ *         var greenEntity:Entity = new Entity();
+ *         greenEntity.add(Color.GREEN);
+ *         greenEntity.add((20:Health));
+ *         
+ *         //`Fighter.applyTemplateTo()` adds all required components that are
+ *         //currently missing, and returns the same entity as a `Fighter`.
+ *         var greenKnight:Fighter = Fighter.applyTemplateTo(greenEntity);
+ *         
+ *         //`Health` and `Color` remain the same as before.
+ *         trace(greenKnight.health); //20
+ *         trace("0x" + StringTools.hex(greenKnight.get(Color), 6)); //0x00FF00
+ *         
+ *         //`Damage` and `Hitbox` weren't already defined, and so will have
+ *         //their default values.
+ *         trace(greenKnight.damage); //1
+ *         trace(greenKnight.hitbox); //"Square at (0, 0) with width 1"
+ *         
+ *         //Since `Fighter` doesn't define `sprite`'s default value,
+ *         //`applyTemplateTo()` won't add a `Sprite` component.
+ *         trace(greenKnight.sprite); //null
+ *     }
+ * }
+ * ```
  */
 macro function build():Array<Field> {
-	return echoes.macro.AbstractEntity.build();
+	return echoes.macro.EntityTemplateBuilder.build();
 }
