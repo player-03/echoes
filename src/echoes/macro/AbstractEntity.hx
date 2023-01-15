@@ -125,27 +125,24 @@ class AbstractEntity {
 			Context.fatalError('${ type.name } may not have any parameters.', Context.currentPos());
 		}
 		
-		//Get information about parent types, and allow converting to each.
-		var parentType:Type = type.type;
-		var parentMakeExpr:Null<Expr> = null;
+		//Get information about parent types.
+		var parents:Array<{ complexType:ComplexType, abstractType:AbstractType }> = [];
 		var isEntity:Bool = false;
+		var nextParent:Type = type.type;
 		for(i in 0...100) {
-			switch(parentType) {
+			switch(nextParent) {
 				case TInst(_.get().kind => KAbstractImpl(_.get() => parentAbstract), _),
 					TAbstract(_.get() => parentAbstract, _):
-					var name:String = "to" + parentAbstract.name;
-					var complexType:ComplexType = parentType.toComplexType();
-					fields.pushFields(macro class ToParent {
-						@:to private inline function $name():$complexType {
-							return cast this;
-						}
+					parents.push({
+						complexType: nextParent.toComplexType(),
+						abstractType: parentAbstract
 					});
 					
 					if(parentAbstract.name == "Entity" && parentAbstract.pack.length == 1 && parentAbstract.pack[0] == "echoes") {
 						isEntity = true;
 						break;
 					} else {
-						parentType = parentAbstract.type;
+						nextParent = parentAbstract.type;
 					}
 				default:
 					break;
@@ -164,8 +161,19 @@ class AbstractEntity {
 			type.meta.add(":forward", [], type.pos);
 		}
 		
+		//Allow converting to all parent types.
+		for(parent in parents) {
+			var name:String = "to" + parent.abstractType.name;
+			var complexType:ComplexType = parent.complexType;
+			fields.pushFields(macro class ToParent {
+				@:to private inline function $name():$complexType {
+					return cast this;
+				}
+			});
+		}
+		
 		//Process the variables.
-		var initializeVariables:Array<{ name:String, expr:Expr }> = [];
+		var requiredVariables:Array<{ name:String, expr:Expr }> = [];
 		for(field in fields) {
 			//Parse the field kind.
 			var componentType:Null<ComplexType>;
@@ -198,7 +206,7 @@ class AbstractEntity {
 			
 			//Record the initial value.
 			if(expr != null) {
-				initializeVariables.push({
+				requiredVariables.push({
 					name: switch(componentType) {
 						case TPath({ name: name, sub: null }):
 							name;
@@ -207,7 +215,7 @@ class AbstractEntity {
 						default:
 							new Printer().printComplexType(componentType);
 					},
-					expr: macro entity.addIfMissing(($expr:$componentType))
+					expr: macro ($expr:$componentType)
 				});
 			}
 			
@@ -240,16 +248,30 @@ class AbstractEntity {
 		
 		//Add the `applyTemplateTo()` function.
 		var complexType:ComplexType = TPath({ pack: [], name: type.name });
+		var applyParentTemplate:Expr = switch(type.type.toComplexType()) {
+			case TPath({ pack: ["echoes"], name: "Entity" }):
+				macro null;
+			case TPath(p):
+				var parts:Array<String> = p.pack.copy();
+				parts.push(p.name);
+				if(p.sub != null) {
+					parts.push(p.sub);
+				}
+				macro $p{ parts }.applyTemplateTo(entity);
+			default:
+				macro null;
+		};
 		fields.pushFields(macro class Convert {
 			public static function applyTemplateTo(entity:echoes.Entity):$complexType $b{
-				initializeVariables.map(v -> v.expr)
-					.concat([macro return cast entity])
+				requiredVariables.map(v -> macro entity.addIfMissing(${ v.expr }))
+					.concat([applyParentTemplate, macro return cast entity])
 			}
 		});
-		if(initializeVariables.length > 0) {
-			fields[fields.length - 1].doc = 'Converts an entity to `${ type.name }` by '
+		if(requiredVariables.length > 0) {
+			var apply:Field = fields[fields.length - 1];
+			apply.doc = 'Converts an entity to `${ type.name }` by '
 				+ "adding any of the following that don't already exist: `"
-				+ initializeVariables.map(v -> v.name).join("`, `")
+				+ requiredVariables.map(v -> v.name).join("`, `")
 				+ "`.";
 		}
 		
@@ -267,8 +289,8 @@ class AbstractEntity {
 			
 			constructor = (macro class DefaultConstructor {
 				public inline function new() {
-					//Assume the parent type takes no arguments. If it does, the
-					//user will have to define their own constructor.
+					//Assume the parent type takes no arguments. If this fails,
+					//you must write your own constructor.
 					this = new $parentTypePath();
 				}
 			}).fields[0];
@@ -276,22 +298,31 @@ class AbstractEntity {
 			fields.push(constructor);
 		}
 		
-		//Make sure the constructor calls `applyTemplateTo()`.
+		//Make the constructor initialize all required variables.
 		switch(constructor.kind) {
 			case FFun(func):
-				var block:Array<Expr> = switch(func.expr.expr) {
+				var block:Array<Expr>;
+				switch(func.expr.expr) {
 					case EBlock(exprs):
-						exprs;
+						block = exprs;
 					default:
-						[func.expr];
+						block = [func.expr];
 				};
 				
-				for(i => expr in block) {
-					if(expr.expr.match(EBinop(OpAssign, { expr: EConst(CIdent("this")) }, _))) {
-						block.insert(i + 1, macro applyTemplateTo(this));
-						break;
-					}
+				var index:Int = block.findIndex(expr -> expr.expr.match(EBinop(OpAssign, { expr: EConst(CIdent("this")) }, _)));
+				if(index < 0) {
+					//Assume the first expression contains `this = ...`.
+					index = 0;
 				}
+				
+				//Use `add()` rather than `addIfMissing()`. Any existing
+				//components can only come from parents, and if there's a
+				//conflict, the child's defaults should take precedence.
+				block = block.slice(0, index + 1)
+					.concat(requiredVariables.map(v -> macro this.add(${ v.expr })))
+					.concat(block.slice(index + 1));
+				
+				func.expr.expr = EBlock(block);
 			default:
 		}
 		
