@@ -221,7 +221,7 @@ class AbstractEntity {
 			}
 			
 			//Convert the field to a property, and remove the expression.
-			field.kind = FProp("get", "set", componentType, null);
+			field.kind = FProp("get", "set", macro:Null<$componentType>, null);
 			
 			var getter:String = "get_" + field.name;
 			var setter:String = "set_" + field.name;
