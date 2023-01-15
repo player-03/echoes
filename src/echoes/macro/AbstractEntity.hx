@@ -273,6 +273,24 @@ class AbstractEntity {
 				+ "adding any of the following that don't already exist: `"
 				+ requiredVariables.map(v -> v.name).join("`, `")
 				+ "`.";
+			
+			if(parents.length > 1) {
+				apply.doc += "\n\nThe function also adds components specified by `";
+				
+				var parentNames:Array<String> = parents.map(parent -> parent.abstractType.name);
+				//The final parent is always `Entity`, not a template.
+				parentNames.pop();
+				
+				if(parentNames.length <= 2) {
+					apply.doc += parentNames.join("` and `");
+				} else {
+					var finalName:String = parentNames.pop();
+					apply.doc += parentNames.join("`, `");
+					apply.doc += "`, and `" + finalName;
+				}
+				
+				apply.doc += "`.";
+			}
 		}
 		
 		//Add a default constructor, if needed.
