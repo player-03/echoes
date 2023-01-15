@@ -34,7 +34,7 @@ class AdvancedFunctionalityTest extends Test {
 		var entity:Entity = new Entity();
 		entity.add(("John":Name));
 		
-		var namedEntity:NamedEntity = NamedEntity.convert(entity);
+		var namedEntity:NamedEntity = NamedEntity.applyTemplateTo(entity);
 		Assert.equals(entity, namedEntity);
 		Assert.equals("John", namedEntity.name);
 		assertTimesCalled(1, "NameSystem.nameAdded");
@@ -45,7 +45,7 @@ class AdvancedFunctionalityTest extends Test {
 		assertTimesCalled(1, "NameSystem.nameAdded");
 		assertTimesCalled(1, "NameSystem.nameRemoved");
 		
-		var visualEntity:VisualEntity = VisualEntity.convert(namedEntity);
+		var visualEntity:VisualEntity = VisualEntity.applyTemplateTo(namedEntity);
 		Assert.equals(VisualEntity.DEFAULT_COLOR, visualEntity.color);
 		assertTimesCalled(1, "AppearanceSystem.colorAdded");
 		assertTimesCalled(0, "AppearanceSystem.colorRemoved");

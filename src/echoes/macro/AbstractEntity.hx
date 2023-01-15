@@ -15,29 +15,41 @@ using haxe.macro.ExprTools;
 using Lambda;
 
 /**
- * An alternate way to define entities, allowing you to access components as
- * if they were instance variables. Sample usage:
+ * A build macro for entity templates. An entity template fills a similar role
+ * to a class, allowing a user to easily create entities with pre-defined sets
+ * of components. But unlike classes, it's possible to apply multiple templates
+ * to a single entity.
+ * 
+ * Templates also offer syntax sugar for accessing components. For example,
+ * if the template declares `var component:Component`, the user can then type
+ * `entity.component` instead of `entity.get(Component)`.
+ * 
+ * Sample usage:
  * 
  * ```haxe
+ * //`Fighter` is a template for entities involved in combat. A `Fighter` entity
+ * //will always have `Damage`, `Health`, and `Hitbox` components.
  * @:build(echoes.Entity.build())
  * abstract Fighter(Entity) {
- *     //Each variable represents a different component.
+ *     //Each variable represents the component of that type. For instance,
+ *     //`fighter.damage` will get/set the entity's `Damage` component.
  *     public var damage:Damage = 1;
  *     public var health:Health = 10;
  *     public var hitbox:Hitbox = Hitbox.square(1);
+ *     
+ *     //Variables without initial values are considered optional.
  *     public var sprite:Sprite;
  *     
  *     //Variables may also be initialized in the constructor, as normal. A
  *     //default constructor will be created if you leave it out.
- *     public inline function new(sprite:Sprite) {
+ *     public inline function new(?sprite:Sprite) {
  *         this = new Entity();
  *         
  *         //Due to how abstracts work, you can't set `this.sprite = sprite`.
  *         //Instead, either rename the parameter or use a workaround:
  *         this.add(sprite);
  *         set_sprite(sprite);
- *         var self:Fighter = cast this;
- *         self.sprite = sprite;
+ *         var self:Fighter = cast this; self.sprite = sprite;
  *     }
  *     
  *     //Other functions work normally.
@@ -69,24 +81,27 @@ using Lambda;
  *         knight.add((8:Health));
  *         trace(knight.health); //8
  *         
- *         //The macro also defines the function `Fighter.convert()`, which
- *         //turns an already-existing entity into a `Fighter` by adding the
- *         //necessary components.
- *         var greenKnight:Entity = new Entity();
- *         greenKnight.add(Color.GREEN);
- *         greenKnight.health = 20;
+ *         //It's also possible to convert a pre-existing entity to `Fighter`.
+ *         var greenEntity:Entity = new Entity();
+ *         greenEntity.add(Color.GREEN);
+ *         greenEntity.add((20:Health));
  *         
- *         var greenFighter:Fighter = Fighter.convert(greenKnight);
+ *         //`Fighter.applyTemplateTo()` adds all required components that are
+ *         //currently missing, and returns the same entity as a `Fighter`.
+ *         var greenKnight:Fighter = Fighter.applyTemplateTo(greenEntity);
  *         
- *         //`convert()` doesn't overwrite already-defined components.
- *         trace(greenFighter.health); //20
+ *         //`Health` and `Color` remain the same as before.
+ *         trace(greenKnight.health); //20
+ *         trace("0x" + StringTools.hex(greenKnight.get(Color), 6)); //0x00FF00
  *         
- *         //`convert()` uses the default value for each missing component.
- *         trace(greenFighter.damage); //1
- *         trace("0x" + StringTools.hex(greenFighter.get(Color), 6)); //0x00FF00
+ *         //`Damage` and `Hitbox` weren't already defined, and so will have
+ *         //their default values.
+ *         trace(greenKnight.damage); //1
+ *         trace(greenKnight.hitbox); //"Square at (0, 0) with width 1"
  *         
- *         //Since `sprite` has no default value, `convert()` won't add it.
- *         trace(greenFighter.sprite); //null
+ *         //Since `Fighter` doesn't define `sprite`'s default value,
+ *         //`applyTemplateTo()` won't add a `Sprite` component.
+ *         trace(greenKnight.sprite); //null
  *     }
  * }
  * ```
@@ -223,10 +238,10 @@ class AbstractEntity {
 			});
 		}
 		
-		//Add the `convert()` function.
+		//Add the `applyTemplateTo()` function.
 		var complexType:ComplexType = TPath({ pack: [], name: type.name });
 		fields.pushFields(macro class Convert {
-			public static function convert(entity:echoes.Entity):$complexType $b{
+			public static function applyTemplateTo(entity:echoes.Entity):$complexType $b{
 				initializeVariables.map(v -> v.expr)
 					.concat([macro return cast entity])
 			}
@@ -261,7 +276,7 @@ class AbstractEntity {
 			fields.push(constructor);
 		}
 		
-		//Make sure the constructor calls `convert()`.
+		//Make sure the constructor calls `applyTemplateTo()`.
 		switch(constructor.kind) {
 			case FFun(func):
 				var block:Array<Expr> = switch(func.expr.expr) {
@@ -273,7 +288,7 @@ class AbstractEntity {
 				
 				for(i => expr in block) {
 					if(expr.expr.match(EBinop(OpAssign, { expr: EConst(CIdent("this")) }, _))) {
-						block.insert(i + 1, macro convert(this));
+						block.insert(i + 1, macro applyTemplateTo(this));
 						break;
 					}
 				}
