@@ -146,11 +146,11 @@ class EntityTemplateBuilder {
 			var setter:String = "set_" + field.name;
 			
 			fields.pushFields(macro class Accessors {
-				private inline function $getter():$componentType {
+				private inline function $getter():Null<$componentType> {
 					return this.get((_:$componentType));
 				}
 				
-				private inline function $setter(value:$componentType):$componentType {
+				private inline function $setter(value:Null<$componentType>):Null<$componentType> {
 					this.add(value);
 					return value;
 				}
