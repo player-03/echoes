@@ -71,7 +71,7 @@ class Clock {
 		}
 	}
 	
-	public function hasNext():Bool {
+	public inline function hasNext():Bool {
 		return time >= minTickLength;
 	}
 	
@@ -79,5 +79,13 @@ class Clock {
 		var tick:Float = time > maxTickLength ? maxTickLength : time;
 		time -= tick;
 		return tick;
+	}
+	
+	/**
+	 * Sets `minTickLength` and `maxTickLength` to the given value, ensuring
+	 * that every time this clock ticks, the tick will be the same length.
+	 */
+	public inline function setFixedTickLength(fixedTickLength:Float):Void {
+		minTickLength = maxTickLength = fixedTickLength;
 	}
 }
