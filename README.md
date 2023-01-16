@@ -475,7 +475,7 @@ Systems:
 Miscellaneous:
 
 - Haxe 3 is no longer supported.
-- `Echoes.update()` will calculate the elapsed time on its own, and no longer takes an argument. If you need to adjust the rate at which time passes, use a `SystemList` with a `ScaledTimestep`.
+- `Echoes.update()` will calculate the elapsed time on its own, and no longer takes an argument. If you need to adjust the rate at which time passes, adjust `Echoes.activeSystems.clock`.
 - `-Dechoes_array_container` and `-Dechoes_vector_container` have been removed.
 - `Echoes.info()` is now `Echoes.getStatistics()`.
 

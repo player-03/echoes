@@ -1,24 +1,44 @@
 package echoes.utils;
 
 /**
- * A `Clock` determines how to split up chunks of time, and functions something
- * like an egg timer. You can add time to the clock using `addTime()`, at which
- * point it will split that time into smaller chunks (called "ticks"). To access
- * these ticks, iterate over the `Clock`.
+ * A `Clock` determines how to split up chunks of time, allowing you to
+ * customize how many times a `SystemList` will update in a row, and the length
+ * of each update.
+ * 
+ * ```haxe
+ * //`maxTime` limits the length of a single update, which can be useful to
+ * //avoid freezing.
+ * systemList.clock.maxTime = 0.5;
+ * 
+ * //Setting both `minTickLength` and `maxTickLength` to a single value creates
+ * //a fixed timestep, which helps make physics simulations more reliable.
+ * systemList.clock.setFixedTimestep(1 / 60);
+ * 
+ * //While paused, the `SystemList` won't update.
+ * systemList.paused = true; //Equivalent to `systemList.clock.paused = true`.
+ * ```
+ * 
+ * A `SystemList` will update its own clock, but if you create your own
+ * instance, you can add time using `addTime()`. This acts like winding an egg
+ * timer. Once time is added, the clock will "tick" until it runs out.
  * 
  * ```haxe
  * var clock:Clock = new Clock();
  * clock.maxTickLength = 1 / 60;
- * clock.addTime(deltaTime);
+ * clock.addTime(0.75);
  * 
+ * //To make the clock tick, iterate over it.
  * for(tick in clock) {
  *     update(tick);
  * }
  * ```
+ * 
+ * Caution: it's possible to set most variables to negative values, but this is
+ * unsupported and may cause infinite loops or other unwanted behavior.
  */
 class Clock {
 	/**
-	 * The amount of time left on the `Clock`.
+	 * The amount of time left on the `Clock`, in seconds.
 	 */
 	public var time(default, null):Float = 0;
 	
@@ -54,7 +74,6 @@ class Clock {
 	/**
 	 * Multiplies all added time. This can speed time up (if `timeScale > 1`),
 	 * slow it down (if `0 < timeScale < 1`), or pause it (if `timeScale == 0`).
-	 * Caution: negative values are not officially supported.
 	 */
 	public var timeScale:Float = 1;
 	
