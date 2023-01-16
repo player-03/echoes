@@ -157,25 +157,19 @@ class EntityTemplateBuilder {
 			});
 		}
 		
-		//Add the `applyTemplateTo()` function.
+		//Add the `applyTemplateTo()` function. Note: this requires two
+		//functions because the public API should be static but `v.expr` may
+		//need access to `this`.
+		var applyTemplateToSelf:Array<Expr> = requiredVariables.map(v -> macro this.addIfMissing(${ v.expr }));
+		if(parents.length > 1) {
+			applyTemplateToSelf.push(macro @:privateAccess this.applyTemplateToSelf());
+		}
 		var complexType:ComplexType = TPath({ pack: [], name: type.name });
-		var applyParentTemplate:Expr = switch(type.type.toComplexType()) {
-			case TPath({ pack: ["echoes"], name: "Entity" }):
-				macro null;
-			case TPath(p):
-				var parts:Array<String> = p.pack.copy();
-				parts.push(p.name);
-				if(p.sub != null) {
-					parts.push(p.sub);
-				}
-				macro $p{ parts }.applyTemplateTo(entity);
-			default:
-				macro null;
-		};
 		fields.pushFields(macro class Convert {
-			public static function applyTemplateTo(entity:echoes.Entity):$complexType $b{
-				requiredVariables.map(v -> macro entity.addIfMissing(${ v.expr }))
-					.concat([applyParentTemplate, macro return cast entity])
+			@:noCompletion private function applyTemplateToSelf():Void $b{ applyTemplateToSelf }
+			public static inline function applyTemplateTo(entity:echoes.Entity):$complexType {
+				(cast entity:$complexType).applyTemplateToSelf();
+				return cast entity;
 			}
 		});
 		if(requiredVariables.length > 0) {
