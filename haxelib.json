@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": [ "entity", "component", "system", "ecs" ],
   "description": "Macro-based Entity Component System framework, focusing on ease of use.",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "classPath": "src/",
   "releasenote": "Add entity templates, customizable timesteps, and system priorities, and fix bugs.",
-  "contributors": [ "player_03", "deepcake" ]
+  "contributors": [ "player_03" ]
 }
