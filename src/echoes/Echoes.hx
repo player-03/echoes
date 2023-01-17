@@ -45,21 +45,23 @@ class Echoes {
 	private static var lastUpdateLength:Int = 0;
 	#end
 	
-	private static var lastUpdate:Float = 0;
-	private static var initialized:Bool = false;
+	private static var lastUpdate:Float = haxe.Timer.stamp();
+	private static var updateTimer:haxe.Timer;
 	
 	/**
 	 * @param fps The number of updates to perform each second. If this is zero,
 	 * you will need to call `Echoes.update()` yourself.
 	 */
 	public static function init(?fps:Float = 60):Void {
-		if(!initialized) {
-			initialized = true;
-			lastUpdate = haxe.Timer.stamp();
-			
-			if(fps > 0) {
-				new haxe.Timer(Std.int(1000 / fps)).run = update;
-			}
+		lastUpdate = haxe.Timer.stamp();
+		
+		if(updateTimer != null) {
+			updateTimer.stop();
+			updateTimer = null;
+		}
+		if(fps > 0) {
+			updateTimer = new haxe.Timer(Std.int(1000 / fps));
+			updateTimer.run = update;
 		}
 	}
 	
@@ -95,7 +97,8 @@ class Echoes {
 	}
 	
 	/**
-	 * Deactivates all views and systems and destroys all entities.
+	 * Deactivates all views and systems, destroys all entities, and cancels the
+	 * automatic updates started during `init()`.
 	 */
 	public static function reset():Void {
 		//Deactivate all entities so that no events are dispatched.
@@ -120,6 +123,8 @@ class Echoes {
 		Entity.statuses.resize(0);
 		
 		Entity.nextId = 0;
+		
+		init(0);
 	}
 	
 	//System management
