@@ -443,6 +443,89 @@ class Main {
 }
 ```
 
+### Entity templates
+
+Sometimes, a combination of components comes up frequently enough that you want to be able to add them as a batch. For this, you can define an entity template, which is an abstract wrapping `Entity`.
+
+```haxe
+@:build(echoes.Entity.build())
+abstract Fighter(Entity) {
+	public var attack:Attack = 1;
+	public var health:Health = 10;
+}
+```
+
+In this example, the `Fighter` template represents an entity with `Attack` and `Health` components. In other words, it's an entity that can both deal and receive damage.
+
+The build macro (`echoes.Entity.build()`) generates a constructor, as well as getters and setters for each component. This gives you a couple ways to interact with the fighter.
+
+```haxe
+var fighter:Fighter = new Fighter();
+
+//You can treat components like variables.
+trace(fighter.attack); //1
+trace(fighter.health); //10
+trace(fighter.hitbox); //"Square with width 1"
+
+fighter.attack = 2;
+trace(fighter.attack); //2
+
+//Or you can treat `fighter` like a normal entity.
+fighter.add((8:Health));
+trace(fighter.get(Health)); //8
+
+fighter.add(new TemporaryPowerup(7.5));
+trace(fighter.get(TemporaryPowerup).timeLeft); //7.5
+```
+
+It's possible to apply multiple templates to a single entity.
+
+```haxe
+@:build(echoes.Entity.build())
+abstract Fighter(Entity) {
+	public var attack:Attack = 1;
+	public var health:Health = 10;
+}
+
+@:build(echoes.Entity.build())
+abstract Scout(Entity) {
+	public var health:Health = 5;
+	public var stealth:Stealth = 12;
+}
+
+class Main {
+	public static function main():Void {
+		var scout:Scout = new Scout();
+		
+		trace(scout.get(Attack)); //null
+		
+		//Each template provides an `applyTemplateTo()` function, which adds the
+		//template's components to an entity.
+		var scoutFighter:Fighter = Fighter.applyTemplateTo(scout);
+		
+		//It's still the same entity afterwards, just with more components.
+		trace(scout == scoutFighter); //true
+		
+		trace(scout.get(Attack)); //1
+		trace(scoutFighter.attack); //1
+		
+		trace(scout.stealth); //12
+		trace(scoutFighter.get(Stealth)); //12
+		
+		//If a component already exists, `applyTemplateTo()` won't overwrite it.
+		//In this case, `Scout` had already set `Health`.
+		trace(scoutFighter.health); //5
+	}
+}
+```
+
+Additional notes:
+
+- A template can wrap another template, which behaves just like a subclass.
+- If a template's variable doesn't have an initial value, that component is considered optional, and won't be added by `applyTemplateTo()`.
+- Like any other abstract, you can write instance functions. Just remember that most logic belongs in systems, not entities or components.
+- `echoes.Entity.build()` will never overwrite a field you declared. Thus you can declare your own constructor or even a custom getter/setter.
+
 ### Compiler flags
 Echoes offers a few ways to customize compilation.
 

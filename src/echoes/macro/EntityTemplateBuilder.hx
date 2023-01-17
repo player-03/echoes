@@ -172,7 +172,7 @@ class EntityTemplateBuilder {
 				return cast entity;
 			}
 		});
-		if(requiredVariables.length > 0) {
+		if(requiredVariables.length > 0 && fields[fields.length - 1].name == "applyTemplateTo") {
 			var apply:Field = fields[fields.length - 1];
 			apply.doc = 'Converts an entity to `${ type.name }` by '
 				+ "adding any of the following that don't already exist: `"
