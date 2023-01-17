@@ -233,7 +233,7 @@ Echoes also supports the standard "optional argument" syntax.
 ## Installation
 
 ```bash
-haxelib git echoes https://github.com/player-03/echoes.git
+haxelib install echoes
 ```
 
 ## Advanced
