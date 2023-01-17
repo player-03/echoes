@@ -2,6 +2,7 @@ package echoes;
 
 import echoes.ComponentStorage;
 import echoes.Entity;
+import echoes.utils.Clock;
 import echoes.utils.ReadOnlyData;
 import echoes.View;
 
@@ -38,8 +39,13 @@ class Echoes {
 	public static var activeSystems(default, null):SystemList = {
 		var activeSystems:SystemList = new SystemList();
 		activeSystems.__activate__();
+		activeSystems.clock.maxTime = 1;
 		activeSystems;
 	};
+	public static var clock(get, never):Clock;
+	private static inline function get_clock():Clock {
+		return activeSystems.clock;
+	}
 	
 	#if echoes_profiling
 	private static var lastUpdateLength:Int = 0;

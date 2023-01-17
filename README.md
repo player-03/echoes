@@ -443,6 +443,18 @@ class Main {
 }
 ```
 
+### Update length
+
+As Glenn Fielder explains in his article ["Fix Your Timestep!"](https://www.gafferongames.com/post/fix_your_timestep/), games and physics simulations can be very sensitive to the length of each update. `@:update` listeners in Echoes are no exception.
+
+Fix Your Timestep! lists a number of situations you may want to account for, and a couple different approaches. Fortunately, Echoes natively supports all of these solutions.
+
+By default, `Echoes.update()` uses the "semi-fixed timestep" approach. It calculates how much time has passed since the last update, applies a maximum length of one second, and calls each `@:update` listener with that timestep.
+
+If one second is too long, or if you want a fixed timestep, all you need to do is customize `Echoes.clock`. `Echoes.clock.maxTime` controls the maximum length of an update, and `Echoes.clock.setFixedTimestep()` divides each update into a number of fixed timesteps. (Any remaining time after an update will be carried over to the next update.)
+
+In order to ["free the physics,"](https://www.gafferongames.com/post/fix_your_timestep/#free-the-physics) you may want to run physics-related systems at a different rate than everything else. Fortunately, each [`SystemList`](src/echoes/SystemList.hx) ([described above](#systemlist)) has its own [`Clock`](src/echoes/utils/Clock.hx). If you have a `SystemList` for physics systems, you can call `physicsSystemList.clock.setFixedTimestep()` without affecting any of the other systems.
+
 ### Entity templates
 
 Sometimes, a combination of components comes up frequently enough that you want to be able to add them as a batch. For this, you can define an entity template, which is an abstract wrapping `Entity`.

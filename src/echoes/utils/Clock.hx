@@ -7,7 +7,7 @@ package echoes.utils;
  * 
  * ```haxe
  * //`maxTime` limits the length of a single update, which can be useful to
- * //avoid freezing.
+ * //avoid calculating an ultra-long update after the app is suspended.
  * systemList.clock.maxTime = 0.5;
  * 
  * //Setting both `minTickLength` and `maxTickLength` to a single value creates
@@ -39,6 +39,9 @@ package echoes.utils;
 class Clock {
 	/**
 	 * The amount of time left on the `Clock`, in seconds.
+	 * 
+	 * To calculate [the blending factor described in "Fix Your Timestep!"](https://www.gafferongames.com/post/fix_your_timestep/#the-final-touch),
+	 * divide `time` by `minTickLength`.
 	 */
 	public var time(default, null):Float = 0;
 	
