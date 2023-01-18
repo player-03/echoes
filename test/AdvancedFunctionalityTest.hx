@@ -57,6 +57,23 @@ class AdvancedFunctionalityTest extends Test {
 		assertTimesCalled(1, "NameSystem.nameRemoved");
 	}
 	
+	private function testFindSystem():Void {
+		var parent:SystemList = new SystemList();
+		var child:SystemList = new SystemList();
+		var name:NameSystem = new NameSystem();
+		var appearance:AppearanceSystem = new AppearanceSystem();
+		
+		parent.add(child);
+		parent.add(name);
+		child.add(appearance);
+		
+		Assert.equals(name, parent.find(NameSystem));
+		Assert.equals(appearance, parent.find(AppearanceSystem));
+		
+		Assert.equals(null, child.find(NameSystem));
+		Assert.equals(appearance, child.find(AppearanceSystem));
+	}
+	
 	@:access(echoes.System)
 	private function testPriority():Void {
 		var list:SystemList = new SystemList();

@@ -115,8 +115,28 @@ class SystemList extends System {
 		return this;
 	}
 	
-	public function exists(system:System):Bool {
-		return systems.contains(system);
+	/**
+	 * Returns whether this list directly contains the given system.
+	 * @see `find()` if you need to recursively search child lists.
+	 */
+	public inline function exists(system:System):Bool {
+		return system.parent == this;
+	}
+	
+	/**
+	 * Searches this list and all child lists for a system of the given type,
+	 * returning it if found.
+	 */
+	public override function find<T:System>(systemType:Class<T>):Null<T> {
+		for(child in systems) {
+			var result:Null<T> = child.find(systemType);
+			
+			if(result != null) {
+				return result;
+			}
+		}
+		
+		return null;
 	}
 	
 	public override function getStatistics():SystemDetails {

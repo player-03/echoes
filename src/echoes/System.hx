@@ -125,6 +125,14 @@ class System {
 			new ChildSystem(this, childPriority)] : null;
 	}
 	
+	private function find<T:System>(systemType:Class<T>):Null<T> {
+		if(Std.isOfType(this, systemType)) {
+			return cast this;
+		} else {
+			return null;
+		}
+	}
+	
 	public function getStatistics():SystemDetails {
 		return {
 			name: Std.string(this)
