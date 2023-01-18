@@ -347,98 +347,72 @@ Also note that each `SystemList` has its own `paused` property, which prevents `
 
 #### Priority
 
-If system lists aren't enough, Echoes allows setting a system's priority using the `@:priority` metadata. Within a `SystemList`, systems with higher priority will run before those with lower priority, no matter what order they're added in. For instance:
+The `@:priority` metadata is another way to control update order. Raising a system's priority makes it run before lower-priority systems, and lowering its priority makes it run after. Within a priority bracket, systems run in the order they were added, as usual.
 
 ```haxe
+//The default priority is 0.
+class AverageSystem extends System {
+	//...
+}
+
+//The `@:priority` metadata sets a system's priority.
+@:priority(1)
+class HighPrioritySystem extends System {
+	//...
+}
+
 class Main {
 	public static function main():Void {
 		Echoes.init();
 		
-		Echoes.add(new DefaultPrioritySystem());
+		//Priority 1 > priority 0, so `HighPrioritySystem` will run first
+		//despite being added second.
+		Echoes.add(new AverageSystem());
 		Echoes.add(new HighPrioritySystem());
 	}
 }
+```
 
-//The default priority is 0.
-class DefaultPrioritySystem extends System {
-	@:update private function first():Void {
-		trace(3);
-	}
-	@:update private function second():Void {
-		trace(4);
-	}
-}
+Individual `@:update` listeners can have their own priorities. These listeners will run at a different time than the rest of the system.
 
-//Priority 1 means this system will run before all default-priority systems,
-//even if it's added last.
+```haxe
 @:priority(1)
-class HighPrioritySystem extends System {
-	@:update private function first():Void {
-		trace(1);
+class MultiPrioritySystem extends System {
+	//Any listener without a `@:priority` tag will run at the system's priority.
+	//Like the system itself, `first()` will run near the start of an update.
+	@:update private function first(data:Data):Void {
+		//Begin collecting data.
+		data.collectData = true;
 	}
-	@:update private function second():Void {
-		trace(2);
+	
+	//A listener with negative priority will run near the end of the update.
+	@:update @:priority(-1) private function last(data:Data):Void {
+		//Now that the default priority systems are done, analyze their data.
+		data.analyze();
+		
+		//Don't collect data between updates.
+		data.collectData = false;
 	}
 }
 ```
 
-Sometimes a system needs to run in between two others, but also needs to clean up after the others are done. This can be accomplished by adding the systems in order, then giving the cleanup function a low priority:
+If using multiple `SystemList`s, be aware that priority only affects a system's position within its `parent` list. No matter how high or low the priority, the system can't run any earlier than the start of its `parent`, or any later than the end.
 
 ```haxe
 class Main {
 	public static function main():Void {
 		Echoes.init();
 		
-		//Add three systems with default priority (0).
-		Echoes.add(new FirstSystem());
-		Echoes.add(new MiddleSystem());
-		Echoes.add(new LastSystem());
-	}
-}
-
-//...
-
-class MiddleSystem extends System {
-	//Functions without a `@:priority` tag will run as part of `MiddleSystem`.
-	//In this case, that's after `FirstSystem` but before `LastSystem`.
-	@:update private function first():Void {
-		//Do work here.
-	}
-	
-	@:update private function second():Void {
-		//Do other work here.
-	}
-	
-	//Functions with a `@:priority` tag will run at that priority. In this case,
-	//that's after `LastSystem`.
-	@:update @:priority(-1) private function last():Void {
-		//Clean up here.
-	}
-}
-```
-
-Note that `@:priority` is only used to sort the parent `SystemList`. If you have lists within lists, only the bottommost list will take priority into account.
-
-```haxe
-class Main {
-	public static function main():Void {
-		Echoes.init();
+		var list:SystemList = new SystemList();
 		
-		var parentList:SystemList = new SystemList();
-		parentList.add(new DefaultPrioritySystem());
+		//Because `AverageSystem` and `list` both have priority 0, they run in
+		//the order they're added.
+		Echoes.addSystem(new AverageSystem());
+		Echoes.addSystem(childList);
 		
-		//Because `DefaultPriorityList` and `childList` have the same priority,
-		//they remain in that order. Because `childList` comes second, any
-		//systems in `childList` come after `DefaultPrioritySystem`.
-		var childList:SystemList = new SystemList();
-		parentList.add(childList);
-		
-		//Comes after `DefaultPrioritySystem`, naturally.
-		childList.add(new LowPrioritySystem());
-		
-		//No matter how high a system's priority, it can't go any earlier than
-		//the start of its enclosing list, which is exactly where this will go.
-		childList.add(new HighPrioritySystem());
+		//No matter how high a system's priority, if it's added to `list` it
+		//will run during `list`, and will come after `AverageSystem`.
+		list.add(new HighPrioritySystem());
 	}
 }
 ```
