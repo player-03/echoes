@@ -81,6 +81,11 @@ class System {
 	public var onDeactivate:Signal<() -> Void> = new Signal();
 	public var active(default, null):Bool = false;
 	
+	/**
+	 * The list directly containing this system, if any.
+	 */
+	public var parent(default, null):SystemList;
+	
 	@:allow(echoes.Echoes)
 	private function __activate__():Void {
 		if(!active) {
@@ -147,15 +152,15 @@ class System {
 
 @:skipBuildMacro
 private class ChildSystem extends System {
-	private final parent:System;
+	private final parentSystem:System;
 	
-	public inline function new(parent:System, priority:Int) {
+	public inline function new(parentSystem:System, priority:Int) {
 		super(priority);
 		
-		this.parent = parent;
+		this.parentSystem = parentSystem;
 	}
 	
 	private override function __update__(dt:Float, priority:Int):Void {
-		parent.__update__(dt, priority);
+		parentSystem.__update__(dt, priority);
 	}
 }

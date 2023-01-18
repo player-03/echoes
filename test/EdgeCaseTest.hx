@@ -4,6 +4,7 @@ import Components;
 import echoes.Echoes;
 import echoes.Entity;
 import echoes.System;
+import echoes.SystemList;
 import echoes.View;
 import haxe.PosInfos;
 import MethodCounter.assertTimesCalled;
@@ -138,6 +139,20 @@ class EdgeCaseTest extends Test {
 		//Clear the permanent listeners before cleaning up.
 		(Echoes.getSingleton():View<Permanent>).onRemoved.pop();
 		(Echoes.getSingleton():View<Permanent, One>).onRemoved.pop();
+	}
+	
+	private function testSystemLists():Void {
+		var list0:SystemList = new SystemList();
+		var list1:SystemList = new SystemList();
+		var system:NameSystem = new NameSystem();
+		
+		list0.add(system);
+		Assert.equals(list0, system.parent);
+		
+		list1.add(system);
+		Assert.equals(list1, system.parent);
+		Assert.equals(0, list0.length);
+		Assert.equals(1, list1.length);
 	}
 	
 	private function testTypeParsing():Void {

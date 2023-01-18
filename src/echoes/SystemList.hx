@@ -95,28 +95,34 @@ class SystemList extends System {
 	
 	/**
 	 * Adds the given system to this list.
-	 * @param before If any of these `System` subclasses already exist in the
-	 * list, the new system will be inserted before the first.
 	 */
 	public function add(system:System):SystemList {
-		if(!exists(system)) {
-			var index:Int = Lambda.findIndex(systems, existingSystem ->
-				existingSystem.__priority__ < system.__priority__);
-			
-			if(index >= 0) {
-				systems.insert(index, system);
-			} else {
-				systems.push(system);
+		if(system.parent != null) {
+			if(system.parent == this) {
+				return this;
 			}
 			
-			if(active) {
-				system.__activate__();
-			}
-			
-			if(system.__children__ != null) {
-				for(child in system.__children__) {
-					add(child);
-				}
+			system.parent.remove(system);
+		}
+		
+		var index:Int = Lambda.findIndex(systems, existingSystem ->
+			existingSystem.__priority__ < system.__priority__);
+		
+		if(index >= 0) {
+			systems.insert(index, system);
+		} else {
+			systems.push(system);
+		}
+		
+		system.parent = this;
+		
+		if(active) {
+			system.__activate__();
+		}
+		
+		if(system.__children__ != null) {
+			for(child in system.__children__) {
+				add(child);
 			}
 		}
 		
@@ -124,9 +130,10 @@ class SystemList extends System {
 	}
 	
 	public function remove(system:System):SystemList {
-		if(exists(system)) {
-			systems.remove(system);
+		if(systems.remove(system)) {
 			system.__deactivate__();
+			
+			system.parent = null;
 			
 			if(system.__children__ != null) {
 				for(child in system.__children__) {
