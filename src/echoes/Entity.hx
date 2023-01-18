@@ -112,51 +112,6 @@ abstract Entity(Int) from Int to Int {
 	}
 	
 	/**
-	 * Removes this entity from all views and systems, but saves all associated
-	 * components. Call `activate()` to restore it.
-	 */
-	public function deactivate():Void {
-		if(active) {
-			Echoes._activeEntities.remove(this);
-			statuses[this] = false;
-			for(view in Echoes.activeViews) view.removeIfExists(this);
-		}
-	}
-	
-	/**
-	 * Removes all of this entity's components, but does not deactivate or
-	 * destroy it. Caution: if a `@:remove` listener adds a component to the
-	 * entity, that component may remain afterwards.
-	 */
-	public function removeAll():Void {
-		for(storage in Echoes.componentStorage) {
-			storage.remove(this);
-		}
-	}
-	
-	/**
-	 * Removes all of this entity's components, deactivates it, and frees its id
-	 * for reuse. Don't save any references to this entity afterwards.
-	 */
-	public function destroy():Void {
-		if(!destroyed) {
-			deactivate();
-			removeAll();
-			idPool.push(this);
-		}
-	}
-	
-	public function getComponents():Map<String, Dynamic> {
-		var components:Map<String, Dynamic> = new Map();
-		for(storage in Echoes.componentStorage) {
-			if(storage.exists(this)) {
-				components[storage.name] = storage.get(this);
-			}
-		}
-		return components;
-	}
-	
-	/**
 	 * Adds one or more components to the entity, dispatching an `@:add` event
 	 * for each one. If the entity already has a component of the same type, the
 	 * old component will be replaced.
@@ -184,13 +139,35 @@ abstract Entity(Int) from Int to Int {
 	}
 	
 	/**
-	 * Removes one or more components from the entity.
-	 * @param types The type(s) of the components to remove. _Not_ the
-	 * components themselves!
-	 * @return This entity.
+	 * Removes this entity from all views and systems, but saves all associated
+	 * components. Call `activate()` to restore it.
 	 */
-	public macro function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echoes.Entity> {
-		return EntityTools.remove(self, [for(type in types) type.parseClassExpr()]);
+	public function deactivate():Void {
+		if(active) {
+			Echoes._activeEntities.remove(this);
+			statuses[this] = false;
+			for(view in Echoes.activeViews) view.removeIfExists(this);
+		}
+	}
+	
+	/**
+	 * Removes all of this entity's components, deactivates it, and frees its id
+	 * for reuse. Don't save any references to this entity afterwards.
+	 */
+	public function destroy():Void {
+		if(!destroyed) {
+			deactivate();
+			removeAll();
+			idPool.push(this);
+		}
+	}
+	
+	/**
+	 * Returns whether the entity has a component of the given type.
+	 * @param type The type to check for.
+	 */
+	public macro function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
+		return EntityTools.exists(self, type.parseClassExpr());
 	}
 	
 	/**
@@ -203,12 +180,35 @@ abstract Entity(Int) from Int to Int {
 		return EntityTools.get(self, type.parseClassExpr());
 	}
 	
+	public function getComponents():Map<String, Dynamic> {
+		var components:Map<String, Dynamic> = new Map();
+		for(storage in Echoes.componentStorage) {
+			if(storage.exists(this)) {
+				components[storage.name] = storage.get(this);
+			}
+		}
+		return components;
+	}
+	
 	/**
-	 * Returns whether the entity has a component of the given type.
-	 * @param type The type to check for.
+	 * Removes one or more components from the entity.
+	 * @param types The type(s) of the components to remove. _Not_ the
+	 * components themselves!
+	 * @return This entity.
 	 */
-	public macro function exists(self:Expr, type:ExprOf<Class<Any>>):ExprOf<Bool> {
-		return EntityTools.exists(self, type.parseClassExpr());
+	public macro function remove(self:Expr, types:Array<ExprOf<Class<Any>>>):ExprOf<echoes.Entity> {
+		return EntityTools.remove(self, [for(type in types) type.parseClassExpr()]);
+	}
+	
+	/**
+	 * Removes all of this entity's components, but does not deactivate or
+	 * destroy it. Caution: if a `@:remove` listener adds a component to the
+	 * entity, that component may remain afterwards.
+	 */
+	public function removeAll():Void {
+		for(storage in Echoes.componentStorage) {
+			storage.remove(this);
+		}
 	}
 }
 

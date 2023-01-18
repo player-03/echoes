@@ -23,14 +23,6 @@ class ComponentStorage<T> {
 		Echoes.componentStorage.push(this);
 	}
 	
-	public inline function get(entity:Entity):Null<T> {
-		return storage[entity];
-	}
-	
-	public inline function exists(entity:Entity):Bool {
-		return storage.exists(entity);
-	}
-	
 	public function add(entity:Entity, component:T):Void {
 		if(component == null) {
 			remove(entity);
@@ -53,6 +45,19 @@ class ComponentStorage<T> {
 				}
 			}
 		}
+	}
+	
+	@:allow(echoes.Echoes)
+	private inline function clear():Void {
+		storage.clear();
+	}
+	
+	public inline function exists(entity:Entity):Bool {
+		return storage.exists(entity);
+	}
+	
+	public inline function get(entity:Entity):Null<T> {
+		return storage[entity];
 	}
 	
 	public function remove(entity:Entity):Void {
@@ -78,11 +83,6 @@ class ComponentStorage<T> {
 			remove(entity);
 			add(entity, component);
 		}
-	}
-	
-	@:allow(echoes.Echoes)
-	private inline function clear():Void {
-		storage.clear();
 	}
 }
 

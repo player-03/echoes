@@ -125,6 +125,13 @@ class System {
 			new ChildSystem(this, childPriority)] : null;
 	}
 	
+	public function getStatistics():SystemDetails {
+		return {
+			name: Std.string(this)
+			#if echoes_profiling , deltaTime: __updateTime__ #end
+		};
+	}
+	
 	/**
 	 * Returns the expected view (functioning like `Echoes.getSingleton()`),
 	 * except the view will activate and deactivate whenever this system does.
@@ -135,13 +142,6 @@ class System {
 			$self.onActivate.push($view.activate);
 			$self.onDeactivate.push($view.deactivate);
 			$view;
-		};
-	}
-	
-	public function getStatistics():SystemDetails {
-		return {
-			name: Std.string(this)
-			#if echoes_profiling , deltaTime: __updateTime__ #end
 		};
 	}
 	

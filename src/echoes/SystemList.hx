@@ -79,20 +79,6 @@ class SystemList extends System {
 		#end
 	}
 	
-	public override function getStatistics():SystemDetails {
-		var result:SystemDetails = super.getStatistics();
-		result.children = [for(system in systems) system.getStatistics()];
-		return result;
-	}
-	
-	public inline function iterator():Iterator<System> {
-		return systems.iterator();
-	}
-	
-	public inline function keyValueIterator():KeyValueIterator<Int, System> {
-		return systems.keyValueIterator();
-	}
-	
 	/**
 	 * Adds the given system to this list.
 	 */
@@ -129,6 +115,24 @@ class SystemList extends System {
 		return this;
 	}
 	
+	public function exists(system:System):Bool {
+		return systems.contains(system);
+	}
+	
+	public override function getStatistics():SystemDetails {
+		var result:SystemDetails = super.getStatistics();
+		result.children = [for(system in systems) system.getStatistics()];
+		return result;
+	}
+	
+	public inline function iterator():Iterator<System> {
+		return systems.iterator();
+	}
+	
+	public inline function keyValueIterator():KeyValueIterator<Int, System> {
+		return systems.keyValueIterator();
+	}
+	
 	public function remove(system:System):SystemList {
 		if(systems.remove(system)) {
 			system.__deactivate__();
@@ -152,10 +156,6 @@ class SystemList extends System {
 		systems.resize(0);
 		
 		return this;
-	}
-	
-	public function exists(system:System):Bool {
-		return systems.contains(system);
 	}
 	
 	public override function toString():String {

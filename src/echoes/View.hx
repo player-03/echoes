@@ -31,29 +31,6 @@ class ViewBase {
 		}
 	}
 	
-	public function deactivate():Void {
-		activations--;
-		if(activations <= 0) {
-			reset();
-		}
-	}
-	
-	/**
-	 * Returns whether the entity has all of the view's required components.
-	 */
-	private function isMatched(entity:Entity):Bool {
-		//Overridden by `ViewBuilder`.
-		return false;
-	}
-	
-	private function dispatchAddedCallback(entity:Entity):Void {
-		//Overridden by `ViewBuilder`.
-	}
-	
-	private function dispatchRemovedCallback(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
-		//Overridden by `ViewBuilder`.
-	}
-	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
 	private function addIfMatched(entity:Entity):Void {
 		if(!entities.has(entity)) {
@@ -64,6 +41,29 @@ class ViewBase {
 		} else {
 			dispatchAddedCallback(entity);
 		}
+	}
+	
+	public function deactivate():Void {
+		activations--;
+		if(activations <= 0) {
+			reset();
+		}
+	}
+	
+	private function dispatchAddedCallback(entity:Entity):Void {
+		//Overridden by `ViewBuilder`.
+	}
+	
+	private function dispatchRemovedCallback(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
+		//Overridden by `ViewBuilder`.
+	}
+	
+	/**
+	 * Returns whether the entity has all of the view's required components.
+	 */
+	private function isMatched(entity:Entity):Bool {
+		//Overridden by `ViewBuilder`.
+		return false;
 	}
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
