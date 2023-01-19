@@ -10,7 +10,7 @@ class ComponentStorage<T> {
 	/**
 	 * All components of this type.
 	 */
-	private var storage:Map<Int, T> = new Map();
+	private var storage:Map<Entity, T> = new Map();
 	
 	/**
 	 * All views that include this type of component.

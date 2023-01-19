@@ -194,7 +194,7 @@ class ViewBuilder {
 				}
 			}
 			
-			private override function isMatched(id:Int):Bool {
+			private override function isMatched(entity:echoes.Entity):Bool {
 				//Insert a single long expression.
 				return ${{
 					//The expression consists of several `exists()` checks. For
@@ -202,7 +202,7 @@ class ViewBuilder {
 					//would be `HueContainer.instance.exists(entity)` and
 					//`SaturationContainer.instance.exists(entity)`.
 					var checks:Array<Expr> = [for(component in components)
-						macro $i{ component.getComponentStorage().followName() }.instance.exists(id)];
+						macro $i{ component.getComponentStorage().followName() }.instance.exists(entity)];
 					//The checks are joined by `&&` operators.
 					checks.fold((a, b) -> macro $a && $b, checks.shift());
 				}};

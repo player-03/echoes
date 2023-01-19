@@ -50,7 +50,7 @@ using Lambda;
  * ```
  */
 @:allow(echoes.Echoes)
-abstract Entity(Int) from Int to Int {
+abstract Entity(Int) {
 	/**
 	 * The next entity ID that will be allocated, if `idPool` is empty.
 	 */
@@ -96,7 +96,7 @@ abstract Entity(Int) from Int to Int {
 		
 		statuses[this] = active;
 		if(active) {
-			Echoes._activeEntities.add(this);
+			Echoes._activeEntities.add(cast this);
 		}
 	}
 	
@@ -106,8 +106,8 @@ abstract Entity(Int) from Int to Int {
 	public function activate():Void {
 		if(!active) {
 			statuses[this] = true;
-			Echoes._activeEntities.add(this);
-			for(view in Echoes.activeViews) view.addIfMatched(this);
+			Echoes._activeEntities.add(cast this);
+			for(view in Echoes.activeViews) view.addIfMatched(cast this);
 		}
 	}
 	
@@ -144,9 +144,9 @@ abstract Entity(Int) from Int to Int {
 	 */
 	public function deactivate():Void {
 		if(active) {
-			Echoes._activeEntities.remove(this);
+			Echoes._activeEntities.remove(cast this);
 			statuses[this] = false;
-			for(view in Echoes.activeViews) view.removeIfExists(this);
+			for(view in Echoes.activeViews) view.removeIfExists(cast this);
 		}
 	}
 	
@@ -183,8 +183,8 @@ abstract Entity(Int) from Int to Int {
 	public function getComponents():Map<String, Dynamic> {
 		var components:Map<String, Dynamic> = new Map();
 		for(storage in Echoes.componentStorage) {
-			if(storage.exists(this)) {
-				components[storage.name] = storage.get(this);
+			if(storage.exists(cast this)) {
+				components[storage.name] = storage.get(cast this);
 			}
 		}
 		return components;
@@ -207,7 +207,7 @@ abstract Entity(Int) from Int to Int {
 	 */
 	public function removeAll():Void {
 		for(storage in Echoes.componentStorage) {
-			storage.remove(this);
+			storage.remove(cast this);
 		}
 	}
 }
