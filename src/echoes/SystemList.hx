@@ -12,6 +12,10 @@ import echoes.utils.Clock;
  * physics.add(new CollisionSystem());
  * Echoes.add(physics);
  * ```
+ * 
+ * Because `SystemList` extends `System`, you can add one `SystemList` to
+ * another. However, `@:add`, `@:update`, and `@:remove` events are disabled for
+ * `SystemList` and its subclasses.
  */
 @:allow(echoes) @:skipBuildMacro
 class SystemList extends System {

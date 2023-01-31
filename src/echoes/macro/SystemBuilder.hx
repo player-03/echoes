@@ -85,8 +85,19 @@ class SystemBuilder {
 		if(classType == null) {
 			Context.warning("SystemBuilder only acts on classes.", Context.currentPos());
 			return fields;
-		} else if(classType.meta.has(":skipBuildMacro")) {
-			return fields;
+		} else {
+			var parentType:ClassType = classType;
+			while(true) {
+				if(parentType.meta.has(":skipBuildMacro")) {
+					return fields;
+				}
+				
+				if(parentType.superClass != null) {
+					parentType = parentType.superClass.t.get();
+				} else {
+					break;
+				}
+			}
 		}
 		
 		var priority:Int = getPriority(classType.meta.get(), 0);
