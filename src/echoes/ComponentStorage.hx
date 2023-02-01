@@ -4,6 +4,12 @@ import echoes.Entity;
 import echoes.Echoes;
 import echoes.View;
 
+/**
+ * A central location to store all components of a given type. For example, the
+ * `ComponentStorage<String>` singleton stores every `String` components,
+ * indexed by entity ID. `entity.get(String)` is actually shorthand for
+ * `Echoes.getComponentStorage(String).get(entity)`.
+ */
 class ComponentStorage<T> {
 	public var name(default, null):String;
 	

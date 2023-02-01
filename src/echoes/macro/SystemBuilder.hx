@@ -6,6 +6,7 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 
+using echoes.Echoes;
 using echoes.macro.MacroTools;
 using echoes.macro.ViewBuilder;
 using StringTools;
@@ -112,16 +113,25 @@ class SystemBuilder {
 		//view a different way.
 		for(field in fields) {
 			switch(field.kind) {
-				case FVar(_.followComplexType() => TPath({ name: viewName }), expr),
-						FProp(_, _, _.followComplexType() => TPath({ name: viewName }), expr)
-						if(viewName.isView()):
-					switch(expr) {
-						case macro makeLinkedView(), macro this.makeLinkedView():
+				case FVar(_, expr), FProp(_, _, _, expr) if(expr != null):
+					switch(expr.expr) {
+						case ECall(macro getLinkedView | macro this.getLinkedView, params):
+							var view:Expr = Echoes.getInactiveView(params);
+							
+							var viewName:String = switch(view.expr) {
+								case EField(_.expr => EConst(CIdent(name)), "instance"):
+									name;
+								default:
+									throw "Echoes.getInactiveView() returned an unexpected format. Please report this change.";
+							};
+							
 							//Save the view to link later.
-							if(!linkedViews.contains(viewName)) linkedViews.push(viewName);
+							if(!linkedViews.contains(viewName)) {
+								linkedViews.push(viewName);
+							}
 							
 							//Get the view normally, without activating.
-							expr.expr = (macro echoes.Echoes.getSingleton(false)).expr;
+							expr.expr = view.expr;
 						default:
 					}
 				default:

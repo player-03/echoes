@@ -1,6 +1,6 @@
 package echoes;
 
-import echoes.Echoes.SystemDetails;
+import echoes.Echoes;
 import echoes.macro.ViewBuilder;
 import echoes.utils.Signal;
 import echoes.View;
@@ -141,14 +141,14 @@ class System {
 	}
 	
 	/**
-	 * Returns the expected view (functioning like `Echoes.getSingleton()`),
-	 * except the view will activate and deactivate whenever this system does.
+	 * Returns a view that will activate and deactivate when the system does.
 	 */
-	public macro function makeLinkedView(self:Expr):Expr {
-		var view:Expr = Echoes.getSingleton(false);
+	public macro function getLinkedView(self:Expr, componentTypes:Array<ExprOf<Class<Any>>>):Expr {
+		var view:Expr = Echoes.getInactiveView(componentTypes);
 		return macro {
-			$self.onActivate.push($view.activate);
-			$self.onDeactivate.push($view.deactivate);
+			var self = $self;
+			self.onActivate.push($view.activate);
+			self.onDeactivate.push($view.deactivate);
 			$view;
 		};
 	}

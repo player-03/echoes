@@ -148,55 +148,65 @@ class Echoes {
 		return activeSystems.exists(system);
 	}
 	
-	//Singleton management
-	//====================
+	//Singleton getters
+	//=================
 	
 	/**
-	 * Returns the expected `View` or `ComponentStorage` instance. May also work
-	 * for other `@:genericBuild` types, but those aren't officially supported.
+	 * Returns the `ComponentStorage` singleton for the given component.
 	 * 
-	 * To use this function, you must explicitly specify the expected type:
+	 * Sample usage:
 	 * 
 	 * ```haxe
-	 * var stringView:View<String> = Echoes.getSingleton();
-	 * var colorShapeView = (Echoes.getSingleton():View<Color, Shape>);
+	 * var stringStorage:ComponentStorage<String> = Echoes.getComponentStorage(String);
 	 * 
-	 * var stringStorage:ComponentStorage<String> = Echoes.getSingleton();
-	 * var colorStorage:ComponentStorage<Color> = Echoes.getSingleton();
-	 * var shapeStorage = (Echoes.getSingleton():ComponentStorage<Shape>);
+	 * if(stringStorage.exists(entity)) {
+	 *     trace(stringStorage.get(entity));
+	 * } else {
+	 *     stringStorage.add(entity, "string");
+	 * }
 	 * ```
-	 * @param activateView Whether to activate the `View` before returning it.
-	 * Has no effect on `ComponentStorage` or any other type.
-	 * @see `System.makeLinkedView()`
 	 */
-	//Tip: macros can call this function too!
-	public static #if !macro macro #end function getSingleton(?activateView:Bool = true):Expr {
-		//There's no need to invoke the builder; Haxe will automatically do so
-		//at least once.
-		switch(Context.getExpectedType().followMono().toComplexType()) {
-			case TPath({ pack: [], name: className, params: [] }):
-				if(className.isView() && activateView) {
-					return macro {
-						$i{ className }.instance.activate();
-						$i{ className }.instance;
-					};
-				} else {
-					return macro $i{ className }.instance;
-				}
-			case TPath({ pack: ["echoes"], name: "ComponentStorage", params: [
-				TPType(_.getComponentStorage() => TPath({ name: className }))] }):
-				//Bug: VS Code syntax highlighting breaks without some extra
-				//braces. Hopefully this will get fixed.
-				{
-					return macro $i{ className }.instance;
-				}
-			case TPath(p):
-				Context.error(new Printer().printComplexType(TPath(p)) + " is not a supported type.", Context.currentPos());
+	public static #if !macro macro #end function getComponentStorage(componentType:ExprOf<Class<Any>>):Expr {
+		switch(componentType.parseClassExpr().getComponentStorage()) {
+			case TPath({ name: className }):
+				return macro $i{ className }.instance;
 			default:
-				Context.error("getSingleton() called without an expected type", Context.currentPos());
-		}
+				throw "ComponentStorageBuilder failed to return a TPath.";
+		};
+	}
+	
+	/**
+	 * Gets an inactive `View` of the given components. The calling class should
+	 * call `activate()` before attempting to use it.
+	 * @see `getView()` to automatically activate the view.
+	 */
+	public static #if !macro macro #end function getInactiveView(componentTypes:Array<ExprOf<Class<Any>>>):Expr {
+		var componentComplexTypes:Array<ComplexType> = [for(type in componentTypes) type.parseClassExpr()];
+		var viewName:String = componentComplexTypes.getViewName();
+		componentComplexTypes.createViewType();
 		
-		return macro null;
+		return macro $i{ viewName }.instance;
+	}
+	
+	/**
+	 * Gets an active `View` of the given components. The calling class should
+	 * call `deactivate()` once done using it.
+	 * 
+	 * Sample usage:
+	 * 
+	 * ```haxe
+	 * var view:View<A, B, C> = Echoes.getView(A, B, C);
+	 * trace(view.entities.length);
+	 * view.onAdded.push((entity:Entity, a:A, b:B, c:C) -> trace(a + b * c));
+	 * ```
+	 */
+	public static #if !macro macro #end function getView(componentTypes:Array<ExprOf<Class<Any>>>):Expr {
+		var view:Expr = getInactiveView(componentTypes);
+		
+		return macro {
+			$view.activate();
+			$view;
+		};
 	}
 }
 

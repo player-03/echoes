@@ -37,7 +37,7 @@ class ComponentStorageBuilder {
 			public static final instance:$storageType = new $storageTypePath();
 			
 			private function new() {
-				super($v{componentTypeName});
+				super($v{ componentTypeName });
 			}
 		};
 		

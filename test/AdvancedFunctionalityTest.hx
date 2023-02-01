@@ -174,12 +174,12 @@ class AdvancedFunctionalityTest extends Test {
 		var colorShape:Entity = new Entity().add((0xFFFFFF:Color), STAR);
 		
 		//Make some views; each should see a different selection of entities.
-		var viewOfName:View<Name> = Echoes.getSingleton();
+		var viewOfName:View<Name> = Echoes.getView(Name);
 		Assert.equals(2, viewOfName.entities.length);
 		Assert.isTrue(viewOfName.entities.has(name));
 		Assert.isTrue(viewOfName.entities.has(colorName));
 		
-		var viewOfShape:View<Shape> = Echoes.getSingleton();
+		var viewOfShape:View<Shape> = Echoes.getView(Shape);
 		Assert.equals(2, viewOfShape.entities.length);
 		Assert.isTrue(viewOfShape.entities.has(shape));
 		Assert.isTrue(viewOfShape.entities.has(colorShape));
@@ -196,7 +196,7 @@ class AdvancedFunctionalityTest extends Test {
 		
 		//Make a view that's linked to a system.
 		var nameSystem:NameSystem = new NameSystem();
-		var viewOfColor:View<Color> = nameSystem.makeLinkedView();
+		var viewOfColor:View<Color> = nameSystem.getLinkedView(Color);
 		Assert.isFalse(viewOfColor.active);
 		Assert.equals(0, viewOfColor.entities.length);
 		
@@ -215,7 +215,7 @@ class AdvancedFunctionalityTest extends Test {
 	private function testViewSignals():Void {
 		var entity:Entity = new Entity();
 		
-		var viewOfShape:View<Shape> = Echoes.getSingleton();
+		var viewOfShape:View<Shape> = Echoes.getView(Shape);
 		
 		var signalDispatched:Bool = false;
 		function listener(e:Entity, s:Shape):Void {
@@ -234,7 +234,6 @@ class AdvancedFunctionalityTest extends Test {
 		//Test onRemoved.
 		viewOfShape.onRemoved.push(listener);
 		signalDispatched = false;
-		
 		entity.removeAll();
 		Assert.isTrue(signalDispatched);
 	}
