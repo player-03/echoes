@@ -526,7 +526,7 @@ Echoes offers a few ways to customize compilation.
 - `Echoes.getSingleton()` is now `Echoes.getView()`, `Echoes.getInactiveView()`, and `Echoes.getComponentStorage()`, all of which take arguments instead of using `getExpectedType()`.
 - `System.makeLinkedView()` is now `System.getLinkedView()`, which takes arguments instead of using `getExpectedType()`.
 
-### Since v0.1.0
+### Since deepcake/echo
 
 Entities:
 
