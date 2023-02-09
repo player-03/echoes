@@ -164,8 +164,11 @@ class SystemBuilder {
 		//Define or update the constructor.
 		var constructor:Field = null;
 		var directSubclass:Bool = classType.superClass.t.get().name == "System";
-		var superCall:Expr = macro super($v{ priority }, $a{
-			childPriorities.map(childPriority -> macro $v{ childPriority }) });
+		var superCall:Expr = macro super();
+		if(directSubclass) {
+			superCall = macro super($v{ priority }, $a{
+				childPriorities.map(childPriority -> macro $v{ childPriority }) });
+		}
 		for(field in fields) {
 			if(field.name != "new") {
 				continue;
@@ -212,7 +215,7 @@ class SystemBuilder {
 		}
 		if(constructor == null) {
 			constructor = (macro class Constructor {
-				public function new() {
+				public inline function new() {
 					$superCall;
 				}
 			}).fields[0];

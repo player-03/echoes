@@ -22,6 +22,28 @@ class EdgeCaseTest extends Test {
 	
 	//Tests may be run in any order, but not in parallel.
 	
+	private function testChildSystems():Void {
+		Echoes.addSystem(new NameSubsystem());
+		
+		var entity:Entity = new Entity();
+		entity.add(("Name":Name));
+		assertTimesCalled(0, "NameSystem.nameAdded");
+		assertTimesCalled(1, "NameSubsystem.nameAdded");
+		
+		Echoes.addSystem(new NameSystem());
+		assertTimesCalled(1, "NameSystem.nameAdded");
+		assertTimesCalled(0, "NameSystem.nameRemoved");
+		assertTimesCalled(0, "NameSubsystem.nameRemoved");
+		
+		entity.add(("Other Name":Name));
+		assertTimesCalled(2, "NameSystem.nameAdded");
+		assertTimesCalled(2, "NameSubsystem.nameAdded");
+		
+		//`nameRemoved` isn't overridden.
+		assertTimesCalled(2, "NameSystem.nameRemoved");
+		assertTimesCalled(0, "NameSubsystem.nameRemoved");
+	}
+	
 	private function testNullComponents():Void {
 		var entity:Entity = new Entity();
 		
@@ -172,6 +194,10 @@ typedef Three = Int;
 
 typedef Brief = Float;
 typedef Permanent = Float;
+
+class NameSubsystem extends NameSystem {
+	private override function nameAdded(name:Name):Void {}
+}
 
 class RecursiveEventSystem extends System implements IMethodCounter {
 	@:add private function twoRemovesOne(two:Two, entity:Entity):Void {
