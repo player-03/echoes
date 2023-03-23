@@ -23,9 +23,6 @@ jobs:
         with:
           haxe-version: ${{ matrix.haxe-version }}
       
-      - name: Set HAXEPATH
-        run: echo "HAXEPATH=$HAXE_STD_PATH/.." >> $GITHUB_ENV
-      
       - run: haxelib install utest
       
       - name: Run tests
