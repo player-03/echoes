@@ -121,6 +121,10 @@ class ViewBuilder {
 		 *     SaturationContainer.instance == removedComponentStorage
 		 *         ? removedComponent : SaturationContainer.instance.get(entity));
 		 * ```
+		 * 
+		 * Note: these tests will be performed inside a `for` loop. While this
+		 * may sound inefficient, in practice many (if not most) views will only
+		 * run the loop for 0-1 iterations.
 		 */
 		var removedCallbackArgs:Array<Expr> = [for(component in components) {
 			var inst:Expr = macro $i{ component.getComponentStorage().followName() }.instance;
