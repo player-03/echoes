@@ -163,7 +163,7 @@ class AdvancedFunctionalityTest extends Test {
 		entity.add([1, 2, 3]);
 		Assert.isFalse(entity.exists(IntArray)); //Regular typedef
 		Assert.isTrue(entity.exists(EagerIntArray)); //@:eager typedef
-		Assert.isTrue(entity.exists((_:Array<Int>)));
+		Assert.isTrue(entity.exists((_:Array<Int>)), null);
 	}
 	
 	private function testViews():Void {
