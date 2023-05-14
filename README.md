@@ -5,19 +5,22 @@ This framework was [designed and implemented by deepcake](https://github.com/dee
 
 ## Overview
 
-- A component is an individual piece of data. It can be a string, a class, an abstract, or any other valid Haxe type.
-  - Usage: Components can be any type, but you need to make sure they're distinct. For instance, instead of storing a name as a plain `String`, define `typedef CharacterName = String` or `abstract CharacterName(String) {}`. Later, you'll be able to assign a unique meaning to `CharacterName`, separate from other strings.
-- An [entity](src/echoes/Entity.hx) is a collection of data. It fills a similar role to object instances in object-oriented programming, but functions differently. Its components aren't pre-defined the way an object's variables are; in fact, you can mix and match them at runtime.
-  - Usage: Create an entity with `new echoes.Entity()`. From here you can call `entity.add(new Component())` for all the components it needs.
+- A component is an individual piece of data. It can be a string, a class, an abstract, or any other type.
+- An [entity](src/echoes/Entity.hx) is a collection of components. It fills a similar role to object instances in object-oriented programming, but functions differently. Its components aren't pre-defined the way an object's variables are; in fact, you can mix and match them at runtime.
+  - Usage: Create an entity with `entity = new echoes.Entity()`. Next, call `entity.add(new Component())` for each component you want to add.
 - A [system](src/echoes/System.hx) updates and modifies entities. Whereas in object-oriented programming, objects usually have instance methods to update themselves, here that job is reserved for systems.
   - Systems use [views](src/echoes/View.hx) to filter entities. `View<A, B>` lists all entities with both the `A` component and the `B` component, which is convenient when a system wants to modify that specific data.
-  - For usage instructions, [see "usage example"](#usage-example).
+  - Usage: Create a class that extends `echoes.System`, and write functions that take components as arguments. Echoes will automatically find entities with those components, allowing you to modify the data. See [usage](#usage) for details.
 - The [`Echoes` class](src/echoes/Echoes.hx) tracks all active entities and systems.
-  - Usage: Call `Echoes.init()` to begin, then call `Echoes.addSystem()` to activate each of your systems.
+  - Usage: Call `Echoes.init()` when the app loads, then call `Echoes.addSystem()` to activate each of your systems.
 
-### Usage example
+## Usage
 
-A single system with a single entity:
+To install Echoes, run `haxelib install echoes` or `haxelib git https://github.com/player-03/echoes.git`.
+
+### One system
+
+In this example, we create a single system and use it to manage a single entity. This system's only job is to render an entity's `DisplayObject` at that entity's `Position`. For now, we'll hard-code those two components.
 
 ```haxe
 import echoes.Entity;
@@ -28,11 +31,11 @@ class EchoesExample {
 	public static function main():Void {
 		Echoes.init();
 		
-		//To use a system, you need to register an instance.
-		Echoes.addSystem(new RenderSystem());
+		//Create and activate an instance of our system.
+		Echoes.addSystem(new RenderSystem()); //Details below.
 		
-		//To use an entity, create a new instance and add the components your
-		//systems will use.
+		//Create an entity with the components our system will use. Entities are
+		//activated automatically unless `false` is passed.
 		var appleTree:Entity = new Entity();
 		appleTree.add(loadImage("assets/AppleTree.png"));
 		appleTree.add(new Position(100, 0));
@@ -40,17 +43,25 @@ class EchoesExample {
 	}
 	
 	private static function loadImage(path:String):DisplayObject {
-		//...
+		//[Details omitted for brevity.]
 	}
 }
 
 class RenderSystem extends System {
+	public final scene:Scene;
+	
+	public function new(scene:Scene) {
+		super();
+		
+		this.scene = scene;
+	}
+	
 	/**
 	 * This function is called whenever any entity gains a `DisplayObject`
 	 * component, and it adds the `DisplayObject` to the scene.
 	 */
 	@:add private function onDisplayObjectAdded(displayObject:DisplayObject):Void {
-		Lib.current.addChild(displayObject);
+		scene.addChild(displayObject);
 	}
 	
 	/**
@@ -58,13 +69,13 @@ class RenderSystem extends System {
 	 * component, and it removes the `DisplayObject` from the scene.
 	 */
 	@:remove private function onDisplayObjectRemoved(displayObject:DisplayObject):Void {
-		Lib.current.removeChild(displayObject);
+		scene.removeChild(displayObject);
 	}
 	
 	/**
-	 * This function is called several times per frame, once for every entity with
-	 * **both** a `DisplayObject` and a `Position`. It keeps the two components in
-	 * sync, moving the former to match the latter.
+	 * This function is called several times per frame, once for every entity
+	 * with **both** a `DisplayObject` and a `Position`. It keeps the two
+	 * components in sync, moving the former to match the latter.
 	 */
 	@:update private function updatePosition(displayObject:DisplayObject, position:Position):Void {
 		displayObject.x = position.x;
@@ -82,7 +93,9 @@ class RenderSystem extends System {
 }
 ```
 
-Multiple systems with multiple entites:
+### Two systems
+
+This example adds a second system that move entities around.
 
 ```haxe
 import echoes.Entity;
@@ -94,18 +107,18 @@ class EchoesExample {
 	public static function main():Void {
 		Echoes.init();
 		
-		//Using a `SystemList` helps keep related systems organized.
+		//Use a `SystemList` to group related systems.
 		var physicsSystems:SystemList = new SystemList("Physics");
-		physicsSystems.add(new MovementSystem());
-		physicsSystems.add(new CollisionSystem());
+		physicsSystems.add(new MovementSystem()); //Details below.
+		physicsSystems.add(new CollisionSystem()); //Not shown.
 		
-		//Adding `physicsSystems` first means that all physics systems will run
-		//before `RenderSystem`. (Even if new physics systems are added later
-		//on, they will still run first.)
+		//Adding `physicsSystems` first means that entire group will run before
+		//`RenderSystem`, even if more systems are added later.
 		Echoes.addSystem(physicsSystems);
-		Echoes.addSystem(new RenderSystem());
+		Echoes.addSystem(new RenderSystem()); //Details in previous example.
 		
-		//Create entities: one tree and two rabbits.
+		//Create entities: one tree and two rabbits. The rabbits will race
+		//towards the tree.
 		var appleTree:Entity = new Entity();
 		appleTree.add(loadImage("assets/AppleTree.png"));
 		appleTree.add(new Position(100, 0));
@@ -129,7 +142,15 @@ class EchoesExample {
 		trace(jack.get(Position).x); //150
 		trace(jack.get(Name)); //"Jack"
 	}
+	
+	private static function loadImage(path:String):DisplayObject {
+		//[Details omitted for brevity.]
+	}
 }
+
+//[RenderSystem omitted for brevity.]
+
+//[Position and Velocity omitted for brevity.]
 
 //Using typedefs allows you to assign meaning to common types. `Name` is now its
 //own component type, distinct from `String`. An entity will be able to have
@@ -147,23 +168,24 @@ class MovementSystem extends System {
 	 */
 	@:update private function updatePosition(position:Position, velocity:Velocity, time:Float):Void {
 		//Changing the entity's position a small amount each frame produces the
-		//appearance of smooth motion.
+		//appearance of smooth motion. Later on, `RenderSystem` will update each
+		//entity's `DisplayObject` to match this position.
 		position.x += velocity.x * time;
 		position.y += velocity.y * time;
 	}
 	
 	/**
 	 * This `View` object lists every entity with a `Velocity`. Because the
-	 * `View` constructor is private, you must call `makeLinkedView()` instead.
+	 * `View` constructor is private, you must call `getLinkedView()` instead.
 	 */
-	private var velocityView:View<Velocity> = makeLinkedView();
+	private var velocityView:View<Velocity> = getLinkedView(Velocity);
 	
 	/**
 	 * Because `Float` is a special case, this function behaves like
 	 * `RenderSystem.finalize()`, being called only once per update.
 	 */
 	@:update private function countTime(time:Float):Void {
-		if(timeElapsed < 0) {
+		if(timeElapsed >= 20) {
 			return;
 		}
 		
@@ -172,7 +194,8 @@ class MovementSystem extends System {
 		if(timeElapsed >= 20) {
 			trace("Race over!");
 			
-			//Iterate through all entities with `Velocity` components.
+			//Iterate through all entities with `Velocity` components, and make
+			//them all stop moving.
 			for(entity in velocityView.entities) {
 				var velocity:Velocity = entity.get(Velocity);
 				velocity.x = 0;
@@ -183,7 +206,7 @@ class MovementSystem extends System {
 }
 ```
 
-#### Special arguments
+### Special arguments
 Certain argument types have special meanings, for easy access to information. `Float` refers to the duration of this update, in seconds, and `Entity` refers to the entity being processed.
 
 When you take an argument of either type, instead of getting a component as normal, you get the special value. Plus, the function will be called even though the entity doesn't have corresponding components. (In fact, entities aren't allowed to have those components.)
@@ -228,12 +251,6 @@ Echoes also supports the standard "optional argument" syntax.
 		}
 	}
 }
-```
-
-## Installation
-
-```bash
-haxelib install echoes
 ```
 
 ## Advanced
@@ -543,7 +560,7 @@ Components:
 
 Systems:
 
-- Systems no longer initialize `View` variables automatically. You must now call `makeLinkedView()` for the same behavior.
+- Systems no longer initialize `View` variables automatically. You must now call `getLinkedView()` for the same behavior.
 - `@rm` is no longer a valid way to shorten `@:remove`. You may now omit any number of letters from the end, but not from the middle. (Thus, `@:rem` is now valid.)
 - As far as listener functions are concerned, `Int` no longer means anything special. To get a reference to the entity, take an argument of type `Entity`.
 

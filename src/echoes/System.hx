@@ -12,7 +12,7 @@ import haxe.rtti.Meta;
  * 
  * 1. Extend `System`.
  * 2. Add instance functions with the appropriate metadata (see below).
- * 3. Create a new instance of your system, and add it to the `Echoes`.
+ * 3. Create a new instance of your system, and add it to `Echoes`.
  * 
  * Instance functions marked with `@:update`, `@:add`, or `@:remove` (or a
  * variant thereof) will automatically become listener functions, listening for
