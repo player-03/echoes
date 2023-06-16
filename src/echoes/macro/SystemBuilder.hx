@@ -108,14 +108,14 @@ class SystemBuilder {
 		 */
 		var linkedViews:Array<String> = [];
 		
-		//Locate `makeLinkedView()` calls in variable initializers. These will
+		//Locate `getLinkedView()` calls in variable initializers. These will
 		//cause compile errors when they access `this`, so we have to link the
 		//view a different way.
 		for(field in fields) {
 			switch(field.kind) {
 				case FVar(_, expr), FProp(_, _, _, expr) if(expr != null):
 					switch(expr.expr) {
-						case ECall(macro getLinkedView | macro this.getLinkedView, params):
+						case ECall(_.expr => EConst(CIdent("getLinkedView")) | EField(_, "getLinkedView"), params):
 							var view:Expr = Echoes.getInactiveView(params);
 							
 							var viewName:String = switch(view.expr) {
