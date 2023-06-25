@@ -44,7 +44,7 @@ class EntityTools {
 				};
 				
 				var storage:Expr = type.toComplexType().getComponentStorage();
-				macro $storage.instance.$operation(entity, $component);
+				macro $storage.$operation(entity, $component);
 			}] }
 			
 			entity;
