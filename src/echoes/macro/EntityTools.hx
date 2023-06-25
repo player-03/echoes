@@ -43,8 +43,8 @@ class EntityTools {
 						"add";
 				};
 				
-				var containerName:String = type.toComplexType().getComponentStorage().followName();
-				macro @:privateAccess $i{ containerName }.instance.$operation(entity, $component);
+				var storage:Expr = type.toComplexType().getComponentStorage();
+				macro $storage.instance.$operation(entity, $component);
 			}] }
 			
 			entity;
@@ -69,8 +69,8 @@ class EntityTools {
 			$b{ [for(component in components) {
 				var type:Type = component.parseComponentType();
 				
-				var containerName:String = type.toComplexType().getComponentStorage().followName();
-				macro if(!$i{ containerName }.instance.exists(entity)) @:privateAccess $i{ containerName }.instance.add(entity, $component);
+				var storage:Expr = type.toComplexType().getComponentStorage();
+				macro if(!$storage.exists(entity)) $storage.add(entity, $component);
 			}] }
 			
 			entity;
@@ -88,8 +88,8 @@ class EntityTools {
 			var entity:echoes.Entity = $self;
 			
 			$b{ [for(type in types) {
-				var containerName:String = type.getComponentStorage().followName();
-				macro @:privateAccess $i{ containerName }.instance.remove(entity);
+				var storage:Expr = type.getComponentStorage();
+				macro $storage.remove(entity);
 			}] }
 			
 			entity;
@@ -103,9 +103,8 @@ class EntityTools {
 	 * @return The component, or `null` if the entity doesn't have it.
 	 */
 	public static function get<T>(self:Expr, complexType:ComplexType):ExprOf<T> {
-		var containerName:String = complexType.getComponentStorage().followName();
-		
-		return macro $i{ containerName }.instance.get($self);
+		var storage:Expr = complexType.getComponentStorage();
+		return macro $storage.get($self);
 	}
 	
 	/**
@@ -113,9 +112,8 @@ class EntityTools {
 	 * @param type The type to check for.
 	 */
 	public static function exists(self:Expr, complexType:ComplexType):ExprOf<Bool> {
-		var containerName:String = complexType.getComponentStorage().followName();
-		
-		return macro $i{ containerName }.instance.exists($self);
+		var storage:Expr = complexType.getComponentStorage();
+		return macro $storage.exists($self);
 	}
 }
 

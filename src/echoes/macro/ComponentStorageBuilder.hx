@@ -15,7 +15,11 @@ class ComponentStorageBuilder {
 	
 	private static var registered:Bool = false;
 	
-	public static function getComponentStorage(componentComplexType:ComplexType):ComplexType {
+	public static inline function getComponentStorage(componentComplexType:ComplexType):Expr {
+		return macro $i{ getComponentStorageName(componentComplexType) }.instance;
+	}
+	
+	public static function getComponentStorageName(componentComplexType:ComplexType):String {
 		var componentTypeName:String = componentComplexType.followName();
 		switch(componentTypeName) {
 			case "echoes.Entity":
@@ -26,13 +30,12 @@ class ComponentStorageBuilder {
 		}
 		
 		var storageTypeName:String = "ComponentStorage_" + componentComplexType.toIdentifier();
-		var storageTypePath:TypePath = { pack: [], name: storageTypeName };
-		var storageType:ComplexType = TPath(storageTypePath);
-		
 		if(storageCache.exists(storageTypeName)) {
-			return storageType;
+			return storageTypeName;
 		}
 		
+		var storageTypePath:TypePath = { pack: [], name: storageTypeName };
+		var storageType:ComplexType = TPath(storageTypePath);
 		var def:TypeDefinition = macro class $storageTypeName extends echoes.ComponentStorage<$componentComplexType> {
 			public static final instance:$storageType = new $storageTypePath();
 			
@@ -50,7 +53,7 @@ class ComponentStorageBuilder {
 		Report.componentNames.push(componentTypeName);
 		Report.gen();
 		
-		return storageType;
+		return storageTypeName;
 	}
 }
 

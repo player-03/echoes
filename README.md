@@ -538,7 +538,11 @@ Echoes offers a few ways to customize compilation.
 
 ## Breaking changes
 
-### Since v1.0.0-rc2
+### Since v1.0.0-rc.3
+
+- Macro users only: `ComponentStorageBuilder.getComponentStorage()` now returns the full `StorageType.instance` expression, not just a value that can be parsed to find `StorageType`. If you need this value, use `getComponentStorageName()`. None of this affects `Echoes.getComponentStorage()`, which continues to work as before.
+
+### Since v1.0.0-rc.2
 
 - `Echoes.getSingleton()` is now `Echoes.getView()`, `Echoes.getInactiveView()`, and `Echoes.getComponentStorage()`, all of which take arguments instead of using `getExpectedType()`.
 - `System.makeLinkedView()` is now `System.getLinkedView()`, which takes arguments instead of using `getExpectedType()`.

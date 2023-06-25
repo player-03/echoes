@@ -104,7 +104,7 @@ class ViewBuilder {
 		 * ```
 		 */
 		var callbackArgs:Array<Expr> = [for(component in components)
-			macro $i{ component.getComponentStorage().followName() }.instance.get(entity)];
+			macro ${ component.getComponentStorage() }.get(entity)];
 		
 		/**
 		 * The arguments required to dispatch a remove event. Unlike with
@@ -127,7 +127,7 @@ class ViewBuilder {
 		 * run the loop for 0-1 iterations.
 		 */
 		var removedCallbackArgs:Array<Expr> = [for(component in components) {
-			var inst:Expr = macro $i{ component.getComponentStorage().followName() }.instance;
+			var inst:Expr = macro ${ component.getComponentStorage() };
 			macro $inst == removedComponentStorage ? removedComponent : $inst.get(entity);
 		}];
 		
@@ -150,8 +150,8 @@ class ViewBuilder {
 				if(activations == 1) $b{
 					//Each expression adds this `View` to a related list.
 					[for(component in components) {
-						var componentStorage:String = component.getComponentStorage().followName();
-						macro $i{ componentStorage }.instance.relatedViews.push(this);
+						var storage:Expr = component.getComponentStorage();
+						macro $storage.relatedViews.push(this);
 					}]
 				}
 			}
@@ -185,8 +185,8 @@ class ViewBuilder {
 				$b{
 					//Each expression removes this `View` from a related list.
 					[for(component in components) {
-						var componentStorage:String = component.getComponentStorage().followName();
-						macro $i{ componentStorage }.instance.relatedViews.remove(this);
+						var storage:Expr = component.getComponentStorage();
+						macro ${ storage }.relatedViews.remove(this);
 					}]
 				}
 			}
@@ -206,7 +206,7 @@ class ViewBuilder {
 					//would be `HueContainer.instance.exists(entity)` and
 					//`SaturationContainer.instance.exists(entity)`.
 					var checks:Array<Expr> = [for(component in components)
-						macro $i{ component.getComponentStorage().followName() }.instance.exists(entity)];
+						macro ${ component.getComponentStorage() }.exists(entity)];
 					//The checks are joined by `&&` operators.
 					checks.fold((a, b) -> macro $a && $b, checks.shift());
 				}};

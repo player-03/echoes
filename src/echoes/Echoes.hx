@@ -167,12 +167,7 @@ class Echoes {
 	 * ```
 	 */
 	public static #if !macro macro #end function getComponentStorage(componentType:ExprOf<Class<Any>>):Expr {
-		switch(componentType.parseClassExpr().getComponentStorage()) {
-			case TPath({ name: className }):
-				return macro $i{ className }.instance;
-			default:
-				throw "ComponentStorageBuilder failed to return a TPath.";
-		};
+		return macro $i{ componentType.parseClassExpr().getComponentStorageName() }.instance;
 	}
 	
 	/**
