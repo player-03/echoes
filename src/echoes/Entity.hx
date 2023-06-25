@@ -219,39 +219,40 @@ abstract Entity(Int) {
  * to a single entity.
  * 
  * Templates also offer syntax sugar for accessing components. For example,
- * if the template declares `var component:Component`, the user can then type
- * `entity.component` instead of `entity.get(Component)`.
+ * if the template declares `var component:Component`, the user can then refer
+ * to `entity.component` instead of `entity.get(Component)`.
  * 
  * Sample usage:
  * 
  * ```haxe
  * //`Fighter` is a template for entities involved in combat. A `Fighter` entity
  * //will always have `Damage`, `Health`, and `Hitbox` components.
- * @:build(echoes.Entity.build())
+ * @:build(echoes.Entity.build()) @:arguments(Hitbox)
  * abstract Fighter(Entity) {
  *     //Each variable represents the component of that type. For instance,
  *     //`fighter.damage` will get/set the entity's `Damage` component.
  *     public var damage:Damage = 1;
  *     public var health:Health = 10;
- *     public var hitbox:Hitbox = Hitbox.square(1);
  *     
- *     //Variables without initial values are considered optional.
+ *     //Components listed in `@:arguments` (see above) don't need a value.
+ *     //Instead, their value is passed to the constructor.
+ *     public var hitbox:Hitbox;
+ *     
+ *     //Components without a value that aren't listed in `@:arguments` are
+ *     //considered optional, and default to null.
  *     public var sprite:Sprite;
  *     
- *     //Variables may also be initialized in the constructor, as normal. A
- *     //default constructor will be created if you leave it out.
- *     public inline function new(?sprite:Sprite) {
- *         this = new Entity();
- *         
- *         //Due to how abstracts work, you can't set `this.sprite = sprite`.
- *         //Instead, either rename the parameter or use a workaround:
- *         this.add(sprite);
- *         set_sprite(sprite);
- *         var self:Fighter = cast this; self.sprite = sprite;
+ *     //The constructor is generated automatically, but you can declare
+ *     //`onApplyTemplate()` to run code afterwards. As the name indicates, this
+ *     //also runs after `applyTemplateTo()`.
+ *     private inline function onApplyTemplate():Void {
+ *         if(health <= 0) {
+ *             health = 1;
+ *         }
  *     }
  *     
- *     //Other functions work normally.
- *     public inline function getDamage(target:Hitbox):Damage {
+ *     //You may add any other function as normal.
+ *     public inline function getDamageDealt(target:Hitbox):Damage {
  *         if(target.overlapping(hitbox)) {
  *             return damage;
  *         } else {
@@ -260,22 +261,33 @@ abstract Entity(Int) {
  *     }
  * }
  * 
+ * //Templates may inherit from one another. The `@:forward` metadata will be
+ * //automatically added if not present.
+ * @:build(echoes.Entity.build())
+ * abstract RangedFighter(Fighter) {
+ *     public var fireRate:FireRate = 1;
+ *     public var range:Range = 2;
+ *     
+ *     //Components set in the child template override those from the parent.
+ *     public var health:Health = 5;
+ * }
+ * 
  * class Main {
  *     public static function main():Void {
- *         var knight:Fighter = new Fighter(SpriteCache.get("knight.png"));
+ *         var knight:Fighter = new Fighter(new SquareHitbox(1), new Sprite("fighter.png"));
  *         
  *         //The variables now act as shortcuts for `add()` and `get()`.
  *         trace(knight.health); //10
  *         trace(knight.get(Health)); //10
  *         
- *         //Because the variables all have type hints, you don't need to
+ *         //Because each variable has a different type, you don't need to
  *         //specify which type you mean.
  *         knight.health = 9;
  *         knight.damage = 3;
  *         trace(knight.get(Health)); //9
  *         trace(knight.get(Damage)); //3
  *         
- *         //If using `add()`, the normal rules apply.
+ *         //If using `add()`, you still have to specify types.
  *         knight.add((8:Health));
  *         trace(knight.health); //8
  *         
@@ -285,20 +297,17 @@ abstract Entity(Int) {
  *         greenEntity.add((20:Health));
  *         
  *         //`Fighter.applyTemplateTo()` adds all required components that are
- *         //currently missing, and returns the same entity as a `Fighter`.
- *         var greenKnight:Fighter = Fighter.applyTemplateTo(greenEntity);
+ *         //currently missing, and casts the entity to `Fighter`.
+ *         var greenKnight:Fighter = Fighter.applyTemplateTo(greenEntity, new RectHitbox(1, 2));
  *         
  *         //`Health` and `Color` remain the same as before.
  *         trace(greenKnight.health); //20
  *         trace("0x" + StringTools.hex(greenKnight.get(Color), 6)); //0x00FF00
  *         
- *         //`Damage` and `Hitbox` weren't already defined, and so will have
- *         //their default values.
+ *         //`Damage` wasn't already defined, so it has its default value.
  *         trace(greenKnight.damage); //1
- *         trace(greenKnight.hitbox); //"Square at (0, 0) with width 1"
  *         
- *         //Since `Fighter` doesn't define `sprite`'s default value,
- *         //`applyTemplateTo()` won't add a `Sprite` component.
+ *         //Since `sprite` is optional, `applyTemplateTo()` won't add one.
  *         trace(greenKnight.sprite); //null
  *     }
  * }

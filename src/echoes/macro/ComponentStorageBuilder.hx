@@ -11,6 +11,8 @@ using haxe.macro.Context;
 using haxe.macro.ComplexTypeTools;
 
 class ComponentStorageBuilder {
+	public static inline final PREFIX:String = "ComponentStorage_";
+
 	private static var storageCache:Map<String, TypeDefinition> = new Map();
 	
 	private static var registered:Bool = false;
@@ -29,7 +31,7 @@ class ComponentStorageBuilder {
 			default:
 		}
 		
-		var storageTypeName:String = "ComponentStorage_" + componentComplexType.toIdentifier();
+		var storageTypeName:String = PREFIX + componentComplexType.toIdentifier();
 		if(storageCache.exists(storageTypeName)) {
 			return storageTypeName;
 		}

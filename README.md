@@ -522,12 +522,38 @@ class Main {
 }
 ```
 
+You can also take components as arguments using the `@:arguments` tag, or `@:optionalArguments` for components with values.
+
+```haxe
+@:build(echoes.Entity.build()) @:arguments(Sprite)
+abstract Fighter(Entity) {
+	public var attack:Attack = 1;
+	public var health:Health = 10;
+	public var sprite:Sprite;
+}
+
+class Main {
+	public static function main():Void {
+		//To construct a `Fighter`, you must pass a `Sprite`.
+		var fighter:Fighter = new Fighter(new Sprite("meleeFighter.png"));
+		
+		//This also applies when calling `applyTemplateTo()`.
+		var entity:Entity = new Entity();
+		Fighter.applyTemplateTo(entity, new Sprite("rangedFighter.png"));
+		
+		//Note: if the entity already has a `Sprite`, the old one will be kept.
+		Fighter.applyTemplateTo(entity, new Sprite("meleeFighter.png"));
+		trace(entity.get(Sprite).path); //"rangedFighter.png"
+	}
+}
+```
+
 Additional notes:
 
-- A template can wrap another template, which behaves just like a subclass.
-- If a template's variable doesn't have an initial value, that component is considered optional, and won't be added by `applyTemplateTo()`.
-- Like any other abstract, you can write instance functions. Just remember that most logic belongs in systems, not entities or components.
-- `echoes.Entity.build()` will never overwrite a field you declared. Thus you can declare your own constructor or even a custom getter/setter.
+- Like any other abstract, you can write instance functions. However, keep in mind that templates are meant to be optional, so these functions should be for convenience only. Important logic belongs in a system instead.
+- A template can wrap another template, which behaves just like a subclass. All components and functions are inherited, unless re-declared.
+- If a component lacks an initial value and isn't listed in `@:arguments`, it will default to null.
+- You may not declare a constructor, but if you declare an `onApplyTemplate()` function, it will run when the template is constructed or applied.
 
 ### Compiler flags
 Echoes offers a few ways to customize compilation.
@@ -541,6 +567,9 @@ Echoes offers a few ways to customize compilation.
 ### Since v1.0.0-rc.3
 
 - Macro users only: `ComponentStorageBuilder.getComponentStorage()` now returns the full `StorageType.instance` expression, not just a value that can be parsed to find `StorageType`. If you need this value, use `getComponentStorageName()`. None of this affects `Echoes.getComponentStorage()`, which continues to work as before.
+- Entity templates may no longer define their own constructor, and should instead declare an `onApplyTemplate()` function that takes no arguments.
+- In an entity template, you must now use variables (not properties) to declare components. Properties now have their default Haxe behavior.
+- In an entity template, only variables marked `@:optional` or `Null<>` are considered optional. If a non-optional variable lacks a value, it must now be set via constructor argument.
 
 ### Since v1.0.0-rc.2
 

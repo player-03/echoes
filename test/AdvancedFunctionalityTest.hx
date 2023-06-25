@@ -53,7 +53,12 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals(VisualEntity.DEFAULT_SHAPE, (visualEntity:Entity).get(Shape));
 		
 		Assert.equals(NamedEntity.DEFAULT_NAME, new NamedEntity().name);
-		assertTimesCalled(2, "NameSystem.nameAdded");
+		Assert.notEquals(NamedEntity.DEFAULT_NAME, new NamedEntity("not default").name);
+		assertTimesCalled(3, "NameSystem.nameAdded");
+		assertTimesCalled(1, "NameSystem.nameRemoved");
+		
+		Assert.equals(NameStringEntity.DEFAULT_NAME, new NameStringEntity().name);
+		assertTimesCalled(4, "NameSystem.nameAdded");
 		assertTimesCalled(1, "NameSystem.nameRemoved");
 	}
 	
@@ -242,7 +247,7 @@ class AdvancedFunctionalityTest extends Test {
 typedef IntArray = Array<Int>;
 @:eager typedef EagerIntArray = Array<Int>;
 
-@:build(echoes.Entity.build())
+@:build(echoes.Entity.build()) @:optionalArguments(Name)
 abstract NamedEntity(Entity) {
 	public static inline final DEFAULT_NAME:Name = "defaultName";
 	
@@ -252,7 +257,9 @@ abstract NamedEntity(Entity) {
 @:build(echoes.Entity.build())
 abstract NameStringEntity(NamedEntity) {
 	public static inline final DEFAULT_STRING:String = "defaultString";
+	public static inline final DEFAULT_NAME:String = "name";
 	
+	public var name:Name = DEFAULT_NAME;
 	public var string:String = DEFAULT_STRING;
 }
 
@@ -261,6 +268,10 @@ abstract VisualEntity(Entity) {
 	public static inline final DEFAULT_COLOR:Color = 0x123456;
 	public static inline final DEFAULT_SHAPE:Shape = SQUARE;
 	
-	public var color(never, never):Color = DEFAULT_COLOR;
-	public var shape = Shape.SQUARE;
+	public var color:Color = DEFAULT_COLOR;
+	public var shape = Shape.CIRCLE;
+	
+	private inline function onTemplateApplied():Void {
+		shape = DEFAULT_SHAPE;
+	}
 }

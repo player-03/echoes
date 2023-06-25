@@ -47,7 +47,7 @@ class MacroTools {
 	
 	/**
 	 * Given an expression representing a class (the sort of expression passed
-	 * to `entity.remove()`), determines the component type.
+	 * to `entity.get()`), determines the component type.
 	 */
 	public static function parseClassExpr(e:Expr):ComplexType {
 		switch(e.expr) {
