@@ -167,7 +167,7 @@ class Echoes {
 	 * ```
 	 */
 	public static #if !macro macro #end function getComponentStorage(componentType:ExprOf<Class<Any>>):Expr {
-		return macro $i{ componentType.parseClassExpr().getComponentStorageName() }.instance;
+		return componentType.parseClassExpr().getComponentStorage();
 	}
 	
 	/**
