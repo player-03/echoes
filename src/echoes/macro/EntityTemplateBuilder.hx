@@ -209,8 +209,7 @@ class EntityTemplateBuilder {
 			var expr:Null<Expr>;
 			switch(field.kind) {
 				case FVar(t, e):
-					//Fully qualify the type to avoid "not found" errors.
-					componentType = t.toType().toComplexType();
+					componentType = t;
 					expr = e;
 				default:
 					continue;
@@ -229,6 +228,9 @@ class EntityTemplateBuilder {
 					Context.fatalError('${ field.name } requires a type.', field.pos);
 					continue;
 				}
+			} else {
+				//Fully qualify the type to avoid "not found" errors.
+				componentType = componentType.toType().toComplexType();
 			}
 			
 			//Record the initial/default value.
