@@ -6,6 +6,6 @@
   "description": "Macro-based Entity Component System framework, focusing on ease of use.",
   "version": "1.0.0-rc.4",
   "classPath": "src/",
-  "releasenote": "Allow entity templates to take arguments.",
+  "releasenote": "Allow entity templates to take arguments. To use this, tag the template with `@:arguments(Component1, Component2, ...)`.",
   "contributors": [ "player_03" ]
 }
