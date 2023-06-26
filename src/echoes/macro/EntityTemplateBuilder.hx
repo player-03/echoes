@@ -10,6 +10,7 @@ using echoes.macro.ComponentStorageBuilder;
 using echoes.macro.EntityTools;
 using echoes.macro.MacroTools;
 using haxe.EnumTools;
+using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using haxe.macro.ExprTools;
 using Lambda;
@@ -107,7 +108,7 @@ class EntityTemplateBuilder {
 		 * Adds the given value to `parameters` and `arguments` unless it's
 		 * redundant. Also adds it to `superArguments` if the flag is set.
 		 */
-		inline function addParams(params:Array<Expr>, superArgument:Bool, optional:Bool):Void {
+		inline function addParams(params:Array<Expr>, inherited:Bool, optional:Bool):Void {
 			for(param in params) {
 				var name:String = null;
 				var type:ComplexType = null;
@@ -151,7 +152,7 @@ class EntityTemplateBuilder {
 					}
 				}
 				
-				if(superArgument) {
+				if(inherited) {
 					superArguments.push(macro $i{ existingName });
 				}
 			}
@@ -208,7 +209,8 @@ class EntityTemplateBuilder {
 			var expr:Null<Expr>;
 			switch(field.kind) {
 				case FVar(t, e):
-					componentType = t;
+					//Fully qualify the type to avoid "not found" errors.
+					componentType = t.toType().toComplexType();
 					expr = e;
 				default:
 					continue;
