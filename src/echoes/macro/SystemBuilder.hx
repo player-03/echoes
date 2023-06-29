@@ -3,6 +3,7 @@ package echoes.macro;
 #if macro
 
 import haxe.macro.Expr;
+import haxe.macro.Printer;
 import haxe.macro.Type;
 
 using echoes.macro.MacroTools;
@@ -92,10 +93,15 @@ class SystemBuilder {
 		//=====================
 		
 		var substitutions:TypeSubstitutions = null;
+		var nameWithParams:String;
 		var classType:ClassType = switch(Context.getLocalType()) {
 			case TInst(_.get() => inst, types):
+				nameWithParams = inst.name;
+				
 				if(types.length > 0) {
 					substitutions = new TypeSubstitutions(inst.name, inst.params, types);
+					
+					nameWithParams += "<" + [for(type in types) new Printer().printComplexType(type.toComplexType())].join(", ") + ">";
 				}
 				
 				inst;
@@ -314,7 +320,7 @@ class SystemBuilder {
 		//Add useful functions if they aren't already there.
 		fields.pushFields(macro class OptionalFields {
 			public override function toString():String {
-				return $v{ classType.name };
+				return $v{ nameWithParams };
 			}
 		});
 		
