@@ -189,19 +189,37 @@ class TypeSubstitutions {
 		};
 	}
 	
-	public inline function substituteTypePath(typePath:TypePath):TypePath {
-		if(typePath.sub == null && substitutions.exists(typePath.name)
-			&& (typePath.pack == null || typePath.pack.length == 0
-				|| typePath.pack[typePath.pack.length - 1] == className)) {
-			return switch(substitutions[typePath.name]) {
-				case TPath(p):
-					p;
+	public function substituteTypePath(typePath:TypePath):TypePath {
+		if(substitutions.exists(typePath.name)) {
+			switch(typePath) {
+				case { pack: null | [], name: name, sub: null }:
+					switch(substitutions[typePath.name]) {
+						case TPath(p):
+							return p;
+						default:
+					}
+				case { pack: [packEntry], name: name, sub: null }
+					if(packEntry == className):
+					switch(substitutions[typePath.name]) {
+						case TPath(p):
+							return p;
+						default:
+					}
 				default:
-					typePath;
-			};
-		} else {
-			return typePath;
+			}
 		}
+		
+		return {
+			pack: typePath.pack,
+			name: typePath.name,
+			sub: typePath.sub,
+			params: [for(param in typePath.params) switch(param) {
+				case TPType(t):
+					TPType(substituteType(t));
+				case TPExpr(e):
+					TPExpr(substituteExpr(e));
+			}]
+		};
 	}
 }
 
