@@ -79,6 +79,41 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals(appearance, child.find(AppearanceSystem));
 	}
 	
+	private function testGenerics():Void {
+		var system:GenericSystem<String, Int> = new GenericSystem<String, Int>();
+		Echoes.addSystem(system);
+		
+		var entity:Entity = new Entity();
+		entity.add("string");
+		entity.add(0);
+		switch(system.record) {
+			case ["string0"]:
+				Assert.pass();
+			default:
+				Assert.fail("Incorrect record: " + system.record);
+		}
+		
+		entity.add(3);
+		switch(system.record) {
+			case ["string0", "string3"]:
+				Assert.pass();
+			default:
+				Assert.fail("Incorrect record: " + system.record);
+		}
+		
+		var system:GenericSystem<Name, Color> = new GenericSystem<Name, Color>();
+		Echoes.addSystem(system);
+		
+		entity.add(("name":Name));
+		entity.add(Color.fromRGB(0, 0, 255));
+		switch(system.record) {
+			case ["name255"]:
+				Assert.pass();
+			default:
+				Assert.fail("Incorrect record: " + system.record);
+		}
+	}
+	
 	@:access(echoes.System)
 	private function testPriority():Void {
 		var list:SystemList = new SystemList();

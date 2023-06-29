@@ -19,6 +19,15 @@ class AppearanceSystem extends System implements IMethodCounter {
 	@:removed private function colorAndShapeRemoved(shape:Shape, color:Color):Void {}
 }
 
+@:genericBuild(echoes.macro.SystemBuilder.genericBuild())
+class GenericSystem<S:String, I:Int> extends System {
+	public final record:Array<String> = [];
+	
+	@:add private function onAdded(s:S, i:I):Void {
+		record.push(s + i);
+	}
+}
+
 @:priority(1)
 class HighPrioritySystem extends System {
 	public function new();

@@ -2,15 +2,15 @@ package echoes.macro;
 
 #if macro
 
-import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 
-using echoes.Echoes;
 using echoes.macro.MacroTools;
 using echoes.macro.ViewBuilder;
-using StringTools;
+using haxe.macro.ComplexTypeTools;
+using haxe.macro.Context;
 using Lambda;
+using StringTools;
 
 @:allow(echoes.macro.ListenerFunction)
 class SystemBuilder {
@@ -18,6 +18,8 @@ class SystemBuilder {
 	private static inline final REMOVE_META:String = "removed";
 	private static inline final UPDATE_META:String = "updated";
 	private static inline final PRIORITY_META:String = "priority";
+	
+	private static final genericSystemCache:Map<String, Type> = new Map();
 	
 	private static inline function notNull<T>(e:Null<T>):Bool {
 		return e != null;
@@ -80,13 +82,35 @@ class SystemBuilder {
 	}
 	
 	public static function build():Array<Field> {
+		return buildInternal(false);
+	}
+	
+	private static function buildInternal(isGenericBuild:Bool):Array<Field> {
 		var fields:Array<Field> = Context.getBuildFields();
 		
-		var classType:ClassType = Context.getLocalClass().get();
-		if(classType == null) {
-			Context.warning("SystemBuilder only acts on classes.", Context.currentPos());
-			return fields;
-		} else {
+		//Information gathering
+		//=====================
+		
+		var substitutions:TypeSubstitutions = null;
+		var classType:ClassType = switch(Context.getLocalType()) {
+			case TInst(_.get() => inst, types):
+				if(types.length > 0) {
+					substitutions = new TypeSubstitutions(inst.name, inst.params, types);
+				}
+				
+				inst;
+			default:
+				Context.warning("SystemBuilder only acts on classes.", Context.currentPos());
+				return fields;
+		}
+		
+		//Non-generic builds may be skipped.
+		if(!isGenericBuild) {
+			if(classType.meta.has(":genericBuild") && classType.params.length > 0) {
+				//We'll come back later and do a generic build.
+				return fields;
+			}
+			
 			var parentType:ClassType = classType;
 			while(true) {
 				if(parentType.meta.has(":skipBuildMacro")) {
@@ -101,7 +125,29 @@ class SystemBuilder {
 			}
 		}
 		
-		var priority:Int = getPriority(classType.meta.get(), 0);
+		if(classType.meta.has(":genericBuildDone")) {
+			return fields;
+		}
+		
+		//Type substitutions
+		//==================
+		
+		if(substitutions != null) {
+			if(!isGenericBuild) {
+				return Context.fatalError("Systems with type parameters must be tagged `@:genericBuild(echoes.macro.SystemBuilder.genericBuild())`.", Context.currentPos());
+			}
+			
+			fields = fields.map(substitutions.substituteField);
+		} else {
+			//Haxe tries not to run the generic build macro if there are no
+			//parameters, but check anyway in case this ever changes.
+			if(isGenericBuild) {
+				Context.error("Expected one or more type parameters.", Context.currentPos());
+			}
+		}
+		
+		//Link views
+		//==========
 		
 		/**
 		 * Names of views that should activate and deactivate with the system.
@@ -131,14 +177,24 @@ class SystemBuilder {
 							}
 							
 							//Get the view normally, without activating.
-							expr.expr = view.expr;
+							expr.expr = (macro $i{ viewName }.instance).expr;
 						default:
 					}
 				default:
 			}
 		}
 		
-		//Locate marked functions.
+		//More information gathering
+		//==========================
+		
+		//Listener functions
+		//------------------
+		
+		/**
+		 * The system's default priority. May be overridden per function.
+		 */
+		var priority:Int = getPriority(classType.meta.get(), 0);
+		
 		var updateListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, UPDATE_META, priority)).filter(notNull);
 		var addListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, ADD_META, priority)).filter(notNull);
 		var removeListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, REMOVE_META, priority)).filter(notNull);
@@ -148,7 +204,13 @@ class SystemBuilder {
 			}
 		}
 		
-		//Figure out whether there are any extra priorities.
+		//Non-default priorities
+		//----------------------
+		
+		/**
+		 * All update listener priorities found in this system. For a default
+		 * system, this will have length 1, with the one entry being 0.
+		 */
 		var updatePriorities:Array<Int> = [];
 		for(listener in updateListeners) {
 			if(listener.priority == null) {
@@ -158,17 +220,27 @@ class SystemBuilder {
 				updatePriorities.push(listener.priority);
 			}
 		}
+		
+		/**
+		 * All non-default update listener priorities found in this system.
+		 */
 		var childPriorities:Array<Int> = updatePriorities.copy();
 		childPriorities.remove(priority);
 		
-		//Define or update the constructor.
+		//Done gathering information, time to start making changes.
+		
+		//Constructor
+		//===========
+		
 		var constructor:Field = null;
-		var directSubclass:Bool = classType.superClass.t.get().name == "System";
+		var isDirectSubclass:Bool = classType.superClass.t.get().name == "System";
 		var superCall:Expr = macro super();
-		if(directSubclass) {
+		if(isDirectSubclass) {
 			superCall = macro super($v{ priority }, $a{
 				childPriorities.map(childPriority -> macro $v{ childPriority }) });
 		}
+		
+		//Find and update an existing constructor.
 		for(field in fields) {
 			if(field.name != "new") {
 				continue;
@@ -190,7 +262,7 @@ class SystemBuilder {
 			}
 			
 			//Insert a `super()` call if needed.
-			if(directSubclass) {
+			if(isDirectSubclass) {
 				switch(constructorFunc.expr.expr) {
 					case EBlock(block):
 						var replaced:Bool = false;
@@ -213,6 +285,8 @@ class SystemBuilder {
 			
 			break;
 		}
+		
+		//Add a constructor if none was found.
 		if(constructor == null) {
 			constructor = (macro class Constructor {
 				public inline function new() {
@@ -221,6 +295,9 @@ class SystemBuilder {
 			}).fields[0];
 			fields.push(constructor);
 		}
+		
+		//Listener wrappers
+		//=================
 		
 		//Define wrapper functions for each listener.
 		for(listener in addListeners.concat(removeListeners).concat(updateListeners)) {
@@ -233,17 +310,15 @@ class SystemBuilder {
 			}
 		}
 		
+		//New functions
+		//=============
+		
 		//Add useful functions if they aren't already there.
-		var optionalFields:TypeDefinition = macro class OptionalFields {
+		fields.pushFields(macro class OptionalFields {
 			public override function toString():String {
 				return $v{ classType.name };
 			}
-		};
-		for(optionalField in optionalFields.fields) {
-			if(!fields.exists(field -> field.name == optionalField.name)) {
-				fields.push(optionalField);
-			}
-		}
+		});
 		
 		//Add lifecycle functions no matter what.
 		var requiredFields:TypeDefinition = macro class RequiredFields {
@@ -302,6 +377,57 @@ class SystemBuilder {
 		fields = requiredFields.fields.concat(fields);
 		
 		return fields;
+	}
+	
+	public static function genericBuild():Type {
+		var classType:ClassType;
+		var name:String;
+		switch(Context.getLocalType()) {
+			case TInst(_.get() => inst, params):
+				classType = inst;
+				
+				name = inst.name;
+				for(param in params) {
+					name += "_" + param.toComplexType().toIdentifier(false);
+				}
+			default:
+				return Context.fatalError("SystemBuilder only acts on classes.", Context.currentPos());
+		}
+		
+		var qualifiedName:String = classType.pack.join(".") + "." + name;
+		if(genericSystemCache.exists(qualifiedName)) {
+			return genericSystemCache[qualifiedName];
+		}
+		
+		if(classType.superClass == null) {
+			return Context.fatalError(classType.name + " must extend System.", Context.currentPos());
+		}
+		
+		var superClass:ClassType = classType.superClass.t.get();
+		var superClassModule:String = superClass.module.split(".").pop();
+		
+		Context.defineType({
+			pack: classType.pack,
+			fields: buildInternal(true),
+			kind: TDClass({
+				pack: superClass.pack,
+				name: superClassModule,
+				sub: superClassModule != superClass.name ? superClass.name : null
+			}, null, null, null, null),
+			pos: Context.currentPos(),
+			name: name,
+			meta: [{
+				name: ":genericBuildDone",
+				pos: Context.currentPos()
+			}]
+		});
+		
+		var type:Type = TPath({
+			pack: classType.pack,
+			name: name
+		}).toType();
+		genericSystemCache[qualifiedName] = type;
+		return type;
 	}
 }
 
