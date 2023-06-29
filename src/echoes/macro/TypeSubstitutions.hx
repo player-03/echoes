@@ -8,6 +8,7 @@ import haxe.macro.Type;
 
 using echoes.Echoes;
 using echoes.macro.MacroTools;
+using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using haxe.macro.ExprTools;
 
@@ -168,7 +169,7 @@ class TypeSubstitutions {
 		
 		return switch(type) {
 			case TPath(p):
-				TPath(substituteTypePath(p));
+				TPath(substituteTypePath(p)).toType().toComplexType();
 			case TFunction(args, ret):
 				TFunction(args.map(substituteType), substituteType(ret));
 			case TAnonymous(fields):
