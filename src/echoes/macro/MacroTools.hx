@@ -22,7 +22,7 @@ class MacroTools {
 		return switch(type) {
 			case TMono(_.get() => innerType):
 				followMono(innerType);
-			case TAbstract(_.get() => { name:"Null" }, [innerType]):
+			case TAbstract(_.get() => { name: "Null" }, [innerType]):
 				followMono(innerType);
 			case TAbstract(_.get() => { type: innerType, meta: meta }, _)
 				| TType(_.get() => { type: innerType, meta: meta }, _)
@@ -43,6 +43,21 @@ class MacroTools {
 	
 	public static function followName(type:ComplexType):String {
 		return new Printer().printComplexType(followComplexType(type));
+	}
+	
+	/**
+	 * @param type A type for which you've already called `followMono()`.
+	 * @return An error message if `type` is reserved, or null otherwise.
+	 */
+	public static function getReservedComponentMessage(type:ComplexType):Null<String> {
+		return switch(type) {
+			case TPath({ pack: [] | ["echoes"], name: "Entity"}):
+				"Entity is not an allowed component type. Try using a typedef, an abstract, or Int instead.";
+			case TPath({ pack: [] | ["StdTypes"], name: "Float" }):
+				"Float is not an allowed component type. Try using a typedef or an abstract instead.";
+			default:
+				null;
+		};
 	}
 	
 	/**

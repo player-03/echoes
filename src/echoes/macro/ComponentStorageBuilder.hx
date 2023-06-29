@@ -22,13 +22,11 @@ class ComponentStorageBuilder {
 	}
 	
 	public static function getComponentStorageName(componentComplexType:ComplexType):String {
-		var componentTypeName:String = componentComplexType.followName();
-		switch(componentTypeName) {
-			case "echoes.Entity":
-				Context.error("Entity is not an allowed component type. Try using a typedef, an abstract, or Int instead.", Context.currentPos());
-			case "StdTypes.Float":
-				Context.error("Float is not an allowed component type. Try using a typedef or an abstract instead.", Context.currentPos());
-			default:
+		componentComplexType = componentComplexType.followComplexType();
+		
+		var error:String = componentComplexType.getReservedComponentMessage();
+		if(error != null) {
+			Context.error(error, Context.currentPos());
 		}
 		
 		var storageTypeName:String = PREFIX + componentComplexType.toIdentifier();
@@ -36,6 +34,7 @@ class ComponentStorageBuilder {
 			return storageTypeName;
 		}
 		
+		var componentTypeName:String = new Printer().printComplexType(componentComplexType);
 		var storageTypePath:TypePath = { pack: [], name: storageTypeName };
 		var storageType:ComplexType = TPath(storageTypePath);
 		var def:TypeDefinition = macro class $storageTypeName extends echoes.ComponentStorage<$componentComplexType> {
