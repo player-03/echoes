@@ -21,10 +21,18 @@ class AppearanceSystem extends System implements IMethodCounter {
 
 @:genericBuild(echoes.macro.SystemBuilder.genericBuild())
 class GenericSystem<S:String, I:Int> extends System {
-	public final record:Array<String> = [];
+	public var record:Array<S>;
 	
-	@:add private function onAdded(s:S, i:I):Void {
-		record.push(s + i);
+	@:add private function onAdded(s:S, i:I, entity:Entity):Void {
+		if(record == null) {
+			record = new Array<S>();
+		}
+		
+		record.push((cast s + i:S));
+		
+		if(!entity.exists((_:Array<S>))) {
+			entity.add(record);
+		}
 	}
 }
 
