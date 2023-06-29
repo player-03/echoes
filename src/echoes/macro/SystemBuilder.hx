@@ -139,10 +139,8 @@ class SystemBuilder {
 			
 			fields = fields.map(substitutions.substituteField);
 		} else {
-			//Haxe tries not to run the generic build macro if there are no
-			//parameters, but check anyway in case this ever changes.
-			if(isGenericBuild) {
-				Context.error("Expected one or more type parameters.", Context.currentPos());
+			if(classType.meta.has(":genericBuild")) {
+				return Context.fatalError("@:genericBuild requires type parameters.", Context.currentPos());
 			}
 		}
 		
