@@ -46,8 +46,22 @@ class TypeSubstitutions {
 	
 	private final substitutionExprs:Map<String, Expr> = new Map();
 	
-	public inline function new(className:String, params:Array<TypeParameter>, types:Array<Type>) {
+	public inline function new(className:String, params:Array<TypeParameter>, ?types:Array<Type>) {
 		this.className = className;
+		
+		var codeCompletionMode:Bool = types == null;
+		if(codeCompletionMode) {
+			//Replace each param with its constraint type. If multiple
+			//constraints are specified, pick one.
+			types = [for(param in params)
+				switch(param.t) {
+					case TInst(_.get() => { kind: KTypeParameter(constraints) }, _) if(constraints.length > 0):
+						pickEitherType(constraints[0]);
+					default:
+						Context.fatalError('Expected type constraint for $className.${ param.name }.', Context.currentPos());
+				}
+			];
+		}
 		
 		if(params.length != types.length) {
 			Context.fatalError('$className requires ${ params.length } '
@@ -61,7 +75,7 @@ class TypeSubstitutions {
 			
 			//Check for `Entity` and `Float`.
 			var error:String = type.getReservedComponentMessage();
-			if(error != null) {
+			if(error != null && !codeCompletionMode) {
 				Context.error('$className.${ param.name }: ' + error, Context.currentPos());
 			}
 		}
@@ -80,6 +94,19 @@ class TypeSubstitutions {
 				substitutions[field];
 			default:
 				expr.parseClassExpr();
+		};
+	}
+	
+	/**
+	 * If `type` is `haxe.ds.EitherType`, picks one of the choices. Otherwise
+	 * returns `type`.
+	 */
+	private static function pickEitherType(type:Type):Type {
+		return switch(type) {
+			case TAbstract(_.get().name => "EitherType", [t1, _]):
+				pickEitherType(t1);
+			default:
+				type;
 		};
 	}
 	

@@ -21,15 +21,15 @@ class AppearanceSystem extends System implements IMethodCounter {
 }
 
 @:genericBuild(echoes.macro.SystemBuilder.genericBuild())
-class GenericSystem<S:String, I:EitherType<Int, String>> extends System {
+class GenericSystem<S:String, F:EitherType<Float, String>> extends System {
 	public var record:Array<S>;
 	
-	@:add private function onAdded(s:S, i:I, entity:Entity):Void {
+	@:add private function onAdded(s:S, f:F, entity:Entity):Void {
 		if(record == null) {
 			record = new Array<S>();
 		}
 		
-		record.push(s + i);
+		record.push(s + f);
 		
 		if(!entity.exists((_:Array<S>))) {
 			entity.add(record);

@@ -99,6 +99,7 @@ class SystemBuilder {
 				nameWithParams = inst.name;
 				
 				if(types.length > 0) {
+					//Apply the given substitutions.
 					substitutions = new TypeSubstitutions(inst.name, inst.params, types);
 					
 					nameWithParams += "<" + [for(type in types) new Printer().printComplexType(type.toComplexType())].join(", ") + ">";
@@ -113,8 +114,8 @@ class SystemBuilder {
 		//Non-generic builds may be skipped.
 		if(!isGenericBuild) {
 			if(classType.meta.has(":genericBuild") && classType.params.length > 0) {
-				//We'll come back later and do a generic build.
-				return [];
+				//Apply some default substitutions to improve completion.
+				substitutions = new TypeSubstitutions(classType.name, classType.params);
 			}
 			
 			var parentType:ClassType = classType;
@@ -139,7 +140,7 @@ class SystemBuilder {
 		//==================
 		
 		if(substitutions != null) {
-			if(!isGenericBuild) {
+			if(!classType.meta.has(":genericBuild")) {
 				return Context.fatalError("Systems with type parameters must be tagged `@:genericBuild(echoes.macro.SystemBuilder.genericBuild())`.", Context.currentPos());
 			}
 			

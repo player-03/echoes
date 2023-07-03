@@ -53,7 +53,7 @@ class MacroTools {
 		return switch(type) {
 			case TPath({ pack: [] | ["echoes"], name: "Entity"}):
 				"Entity is not an allowed component type. Try using a typedef, an abstract, or Int instead.";
-			case TPath({ pack: [] | ["StdTypes"], name: "Float" }):
+			case TPath({ pack: [], name: "Float" } | { name: "StdTypes", sub: "Float" }):
 				"Float is not an allowed component type. Try using a typedef or an abstract instead.";
 			default:
 				null;
