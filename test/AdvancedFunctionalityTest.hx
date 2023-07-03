@@ -101,13 +101,12 @@ class AdvancedFunctionalityTest extends Test {
 				Assert.fail("Incorrect record: " + system.record);
 		}
 		
-		var system:GenericSystem<Name, Color> = new GenericSystem<Name, Color>();
+		var system:GenericSystem<Name, String> = new GenericSystem<Name, String>();
 		Echoes.addSystem(system);
 		
 		entity.add(("name":Name));
-		entity.add(Color.fromRGB(0, 0, 255));
 		switch(system.record) {
-			case ["name255"]:
+			case ["namestring"]:
 				Assert.pass();
 			default:
 				Assert.fail("Incorrect record: " + system.record);

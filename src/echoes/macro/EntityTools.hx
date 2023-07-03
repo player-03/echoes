@@ -26,10 +26,6 @@ class EntityTools {
 	 * this will dispatch a `@:remove` event before dispatching `@:add`.
 	 */
 	public static function add(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
-		if(skip()) {
-			return self;
-		}
-		
 		return macro {
 			var entity:echoes.Entity = $self;
 			
@@ -67,10 +63,6 @@ class EntityTools {
 	 * @return The entity.
 	 */
 	public static function addIfMissing(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
-		if(skip()) {
-			return self;
-		}
-		
 		return macro {
 			var entity:echoes.Entity = $self;
 			
@@ -92,10 +84,6 @@ class EntityTools {
 	 * @return The entity.
 	 */
 	public static function remove(self:Expr, types:Array<ComplexType>):ExprOf<echoes.Entity> {
-		if(skip()) {
-			return self;
-		}
-		
 		return macro {
 			var entity:echoes.Entity = $self;
 			
@@ -115,10 +103,6 @@ class EntityTools {
 	 * @return The component, or `null` if the entity doesn't have it.
 	 */
 	public static function get<T>(self:Expr, complexType:ComplexType):ExprOf<T> {
-		if(skip()) {
-			return macro false;
-		}
-		
 		var storage:Expr = complexType.getComponentStorage();
 		return macro $storage.get($self);
 	}
@@ -128,23 +112,8 @@ class EntityTools {
 	 * @param type The type to check for.
 	 */
 	public static function exists(self:Expr, complexType:ComplexType):ExprOf<Bool> {
-		if(skip()) {
-			return macro false;
-		}
-		
 		var storage:Expr = complexType.getComponentStorage();
 		return macro $storage.exists($self);
-	}
-	
-	private static inline function skip():Bool {
-		switch(Context.getLocalClass()) {
-			case null:
-				return false;
-			case _.get().meta => meta:
-				return meta.has(":genericBuild");
-			default:
-				return false;
-		}
 	}
 }
 

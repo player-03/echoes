@@ -1,5 +1,6 @@
 package;
 
+import haxe.extern.EitherType;
 import Components;
 import echoes.Entity;
 import echoes.System;
@@ -20,7 +21,7 @@ class AppearanceSystem extends System implements IMethodCounter {
 }
 
 @:genericBuild(echoes.macro.SystemBuilder.genericBuild())
-class GenericSystem<S:String, I:Int> extends System {
+class GenericSystem<S:String, I:EitherType<Int, String>> extends System {
 	public var record:Array<S>;
 	
 	@:add private function onAdded(s:S, i:I, entity:Entity):Void {
@@ -28,7 +29,7 @@ class GenericSystem<S:String, I:Int> extends System {
 			record = new Array<S>();
 		}
 		
-		record.push((cast s + i:S));
+		record.push(s + i);
 		
 		if(!entity.exists((_:Array<S>))) {
 			entity.add(record);

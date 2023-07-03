@@ -114,7 +114,7 @@ class SystemBuilder {
 		if(!isGenericBuild) {
 			if(classType.meta.has(":genericBuild") && classType.params.length > 0) {
 				//We'll come back later and do a generic build.
-				return fields;
+				return [];
 			}
 			
 			var parentType:ClassType = classType;
