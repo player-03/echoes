@@ -1,10 +1,12 @@
 package;
 
-import haxe.extern.EitherType;
 import Components;
 import echoes.Entity;
 import echoes.System;
+import haxe.extern.EitherType;
 import MethodCounter;
+
+using StringTools;
 
 class AppearanceSystem extends System implements IMethodCounter {
 	@:a private function colorAdded(color:Color):Void {}
@@ -29,7 +31,7 @@ class GenericSystem<S:String, F:EitherType<Float, String>> extends System {
 			record = new Array<S>();
 		}
 		
-		record.push(s + f);
+		record.push(s.toLowerCase() + f);
 		
 		if(!entity.exists((_:Array<S>))) {
 			entity.add(record);

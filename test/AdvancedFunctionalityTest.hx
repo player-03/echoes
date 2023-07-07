@@ -84,7 +84,7 @@ class AdvancedFunctionalityTest extends Test {
 		Echoes.addSystem(system);
 		
 		var entity:Entity = new Entity();
-		entity.add("string");
+		entity.add("STRING");
 		entity.add(0);
 		switch(system.record) {
 			case ["string0"]:
@@ -104,9 +104,10 @@ class AdvancedFunctionalityTest extends Test {
 		var system:GenericSystem<Name, String> = new GenericSystem<Name, String>();
 		Echoes.addSystem(system);
 		
-		entity.add(("name":Name));
+		entity.add(("NAME":Name));
 		switch(system.record) {
-			case ["namestring"]:
+			//Only the first component should be converted to lowercase.
+			case ["nameSTRING"]:
 				Assert.pass();
 			default:
 				Assert.fail("Incorrect record: " + system.record);

@@ -1,5 +1,6 @@
 package echoes.macro;
 
+import haxe.Exception;
 #if macro
 
 import haxe.macro.Expr;
@@ -100,7 +101,7 @@ class SystemBuilder {
 				
 				if(types.length > 0) {
 					//Apply the given substitutions.
-					substitutions = new TypeSubstitutions(inst.name, inst.params, types);
+					substitutions = new TypeSubstitutions(inst, types);
 					
 					nameWithParams += "<" + [for(type in types) new Printer().printComplexType(type.toComplexType())].join(", ") + ">";
 				}
@@ -109,13 +110,13 @@ class SystemBuilder {
 			default:
 				Context.warning("SystemBuilder only acts on classes.", Context.currentPos());
 				return fields;
-		}
+		};
 		
 		//Non-generic builds may be skipped.
 		if(!isGenericBuild) {
 			if(classType.meta.has(":genericBuild") && classType.params.length > 0) {
 				//Apply some default substitutions to improve completion.
-				substitutions = new TypeSubstitutions(classType.name, classType.params);
+				substitutions = new TypeSubstitutions(classType);
 			}
 			
 			var parentType:ClassType = classType;
@@ -399,7 +400,7 @@ class SystemBuilder {
 				return Context.fatalError("SystemBuilder only acts on classes.", Context.currentPos());
 		}
 		
-		var qualifiedName:String = classType.pack.join(".") + "." + name;
+		var qualifiedName:String = classType.pack.concat([name]).join(".");
 		if(genericSystemCache.exists(qualifiedName)) {
 			return genericSystemCache[qualifiedName];
 		}
@@ -410,8 +411,10 @@ class SystemBuilder {
 		
 		var superClass:ClassType = classType.superClass.t.get();
 		var superClassModule:String = superClass.module.split(".").pop();
+		var importsAndUsings:{ imports: Array<ImportExpr>, usings: Array<TypePath> }
+			= TypeSubstitutions.getCachedImports(classType);
 		
-		Context.defineType({
+		Context.defineModule(qualifiedName, [{
 			pack: classType.pack,
 			fields: buildInternal(true),
 			kind: TDClass({
@@ -425,7 +428,7 @@ class SystemBuilder {
 				name: ":genericBuildDone",
 				pos: Context.currentPos()
 			}]
-		});
+		}], importsAndUsings.imports, importsAndUsings.usings);
 		
 		var type:Type = TPath({
 			pack: classType.pack,

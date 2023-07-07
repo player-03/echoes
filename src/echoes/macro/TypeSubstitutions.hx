@@ -32,11 +32,20 @@ using haxe.macro.ExprTools;
  * ```
  */
 class TypeSubstitutions {
+	private static final cache:Map<String, CachedImports> = new Map();
+	
+	public static inline function getCachedImports(classType:ClassType):CachedImports {
+		var qualifiedClassName:String = classType.pack.join(".") + "." + classType.name;
+		return cache[qualifiedClassName];
+	}
+	
 	/**
 	 * The name of the class that defined the type parameters. Necessary in case
 	 * the user types `ClassName.T` instead of just `T`.
 	 */
 	public final className:String;
+	
+	private final classType:ClassType;
 	
 	/**
 	 * Maps type parameter names onto the user's specified types. For
@@ -44,11 +53,17 @@ class TypeSubstitutions {
 	 */
 	private final substitutions:Map<String, ComplexType> = new Map();
 	
-	private final substitutionExprs:Map<String, Expr> = new Map();
+	private final substitutionExprs:Map<String, ExprDef> = new Map();
 	
-	public inline function new(className:String, params:Array<TypeParameter>, ?types:Array<Type>) {
-		this.className = className;
+	/**
+	 * @param types Omit this to perform default substitutions instead, based on
+	 * type constraints.
+	 */
+	public inline function new(classType:ClassType, ?types:Array<Type>) {
+		className = classType.name;
+		this.classType = classType;
 		
+		var params:Array<TypeParameter> = classType.params;
 		var codeCompletionMode:Bool = types == null;
 		if(codeCompletionMode) {
 			//Replace each param with its constraint type. If multiple
@@ -70,13 +85,63 @@ class TypeSubstitutions {
 		
 		for(i => param in params) {
 			var type:ComplexType = types[i].followMono().toComplexType();
-			substitutions[param.name] = type;
-			substitutionExprs[param.name] = new Printer().printComplexType(type).parse(Context.currentPos());
+			addSubstitution(param.name, type);
 			
 			//Check for `Entity` and `Float`.
 			var error:String = type.getReservedComponentMessage();
 			if(error != null && !codeCompletionMode) {
 				Context.error('$className.${ param.name }: ' + error, Context.currentPos());
+			}
+		}
+		
+		//Local imports and usings become inaccessible during a generic build,
+		//so save them for future reference.
+		var qualifiedClassName:String = classType.pack.join(".") + "." + className;
+		if(!cache.exists(qualifiedClassName) && Context.getLocalModule() == classType.module) {
+			cache[qualifiedClassName] = {
+				imports: Context.getLocalImports(),
+				usings: [for(u in Context.getLocalUsing()) if(u != null) {
+					var usingType:ClassType = u.get();
+					var parts:Array<String> = usingType.module.split(".");
+					if(parts[parts.length - 1] != usingType.name) {
+						parts.push(usingType.name);
+					}
+					parts.makeTypePath();
+				}]
+			};
+		}
+		
+		//Substitute imported types as well, or Haxe probably won't find them.
+		if(cache.exists(qualifiedClassName)) {
+			for(i in cache.get(qualifiedClassName).imports) {
+				switch(i.mode) {
+					case INormal:
+						addSubstitution(i.path[i.path.length - 1].name,
+							TPath([for(p in i.path) p.name].makeTypePath()));
+					case IAsName(alias):
+						addSubstitution(alias,
+							TPath([for(p in i.path) p.name].makeTypePath()));
+					case IAll:
+				}
+			}
+			
+			for(u in cache.get(qualifiedClassName).usings) {
+				if(u.sub != null) {
+					addSubstitution(u.sub, TPath(u));
+				} else {
+					addSubstitution(u.name, TPath(u));
+				}
+			}
+		}
+	}
+	
+	public inline function addSubstitution(identifier:String, type:ComplexType):Void {
+		if(!substitutions.exists(identifier)) {
+			substitutions[identifier] = type;
+			
+			var printedType:String = new Printer().printComplexType(type);
+			if(printedType.indexOf("<") < 0) {
+				substitutionExprs[identifier] = printedType.parse(Context.currentPos()).expr;
 			}
 		}
 	}
@@ -119,10 +184,10 @@ class TypeSubstitutions {
 			pos: expr.pos,
 			expr: switch(expr.expr) {
 				case EConst(CIdent(s)) if(substitutionExprs.exists(s)):
-					substitutionExprs[s].expr;
+					substitutionExprs[s];
 				case EField(_.expr => EConst(CIdent(s)), field)
 					if(s == className && substitutionExprs.exists(field)):
-					substitutionExprs[field].expr;
+					substitutionExprs[field];
 				case ENew(t, params):
 					ENew(substituteTypePath(t), params.map(substituteExpr));
 				case EVars(vars):
@@ -196,7 +261,12 @@ class TypeSubstitutions {
 		
 		return switch(type) {
 			case TPath(p):
-				TPath(substituteTypePath(p)).toType().toComplexType();
+				var p:TypePath = substituteTypePath(p);
+				if(p.isResolvable()) {
+					TPath(p).toType().toComplexType();
+				} else {
+					TPath(p);
+				}
 			case TFunction(args, ret):
 				TFunction(args.map(substituteType), substituteType(ret));
 			case TAnonymous(fields):
@@ -216,20 +286,43 @@ class TypeSubstitutions {
 		};
 	}
 	
+	public inline function substituteTypeParams(params:Null<Array<TypeParam>>):Null<Array<TypeParam>> {
+		if(params == null) {
+			return null;
+		} else {
+			return [for(param in params) switch(param) {
+				case TPType(t):
+					TPType(substituteType(t));
+				case TPExpr(e):
+					TPExpr(substituteExpr(e));
+			}];
+		}
+	}
+	
 	public function substituteTypePath(typePath:TypePath):TypePath {
 		if(substitutions.exists(typePath.name)) {
 			switch(typePath) {
-				case { pack: null | [], name: name, sub: null }:
-					switch(substitutions[typePath.name]) {
+				case { pack: [], name: name, sub: null, params: params }:
+					switch(substitutions[name]) {
 						case TPath(p):
-							return p;
+							return {
+								pack: p.pack,
+								name: p.name,
+								sub: p.sub,
+								params: substituteTypeParams(params)
+							};
 						default:
 					}
-				case { pack: [packEntry], name: name, sub: null }
+				case { pack: [packEntry], name: name, sub: null, params: params }
 					if(packEntry == className):
-					switch(substitutions[typePath.name]) {
+					switch(substitutions[name]) {
 						case TPath(p):
-							return p;
+							return {
+								pack: p.pack,
+								name: p.name,
+								sub: p.sub,
+								params: substituteTypeParams(params)
+							};
 						default:
 					}
 				default:
@@ -249,5 +342,10 @@ class TypeSubstitutions {
 		};
 	}
 }
+
+private typedef CachedImports = {
+	imports: Array<ImportExpr>,
+	usings: Array<TypePath>
+};
 
 #end

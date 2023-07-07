@@ -60,6 +60,27 @@ class MacroTools {
 		};
 	}
 	
+	public static inline function isResolvable(p:TypePath):Bool {
+		return try {
+			TPath(p).toType();
+			true;
+		} catch(e:Exception) {
+			false;
+		};
+	}
+	
+	public static function makeTypePath(parts:Array<String>):TypePath {
+		var typePath:TypePath = {
+			pack: parts,
+			name: parts.pop()
+		};
+		if(parts.length > 0 && ~/^[A-Z]/.match(parts[parts.length - 1])) {
+			typePath.sub = typePath.name;
+			typePath.name = parts.pop();
+		}
+		return typePath;
+	}
+	
 	/**
 	 * Given an expression representing a class (the sort of expression passed
 	 * to `entity.get()`), determines the component type.
