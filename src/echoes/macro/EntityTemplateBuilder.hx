@@ -245,7 +245,7 @@ class EntityTemplateBuilder {
 							new Printer().printComplexType(componentType);
 					},
 					type: componentType,
-					value: macro ($expr:$componentType)
+					value: macro @:pos(expr.pos) ($expr:$componentType)
 				});
 				
 				//Check for incompatabilities with the metadata. (We could also
