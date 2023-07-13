@@ -101,10 +101,10 @@ class AdvancedFunctionalityTest extends Test {
 				Assert.fail("Incorrect record: " + system.record);
 		}
 		
-		var system:GenericSystem<Name, String> = new GenericSystem<Name, String>();
+		var system = new GenericSystem<Alias<Name>, String>();
 		Echoes.addSystem(system);
 		
-		entity.add(("NAME":Name));
+		entity.add(("NAME":Alias<Name>));
 		switch(system.record) {
 			//Only the first component should be converted to lowercase.
 			case ["nameSTRING"]:
@@ -279,6 +279,7 @@ class AdvancedFunctionalityTest extends Test {
 	}
 }
 
+typedef Alias<T> = T;
 typedef IntArray = Array<Int>;
 @:eager typedef EagerIntArray = Array<Int>;
 

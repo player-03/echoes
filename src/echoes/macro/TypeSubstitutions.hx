@@ -300,31 +300,31 @@ class TypeSubstitutions {
 	}
 	
 	public function substituteTypePath(typePath:TypePath):TypePath {
-		if(substitutions.exists(typePath.name)) {
-			switch(typePath) {
-				case { pack: [], name: name, sub: null, params: params }:
-					switch(substitutions[name]) {
-						case TPath(p):
-							return {
-								pack: p.pack,
-								name: p.name,
-								sub: p.sub,
-								params: substituteTypeParams(params)
-							};
-						default:
+		var substitute:Bool = switch(typePath) {
+			case { pack: [], name: name, sub: null }:
+				true;
+			case { pack: [module], name: name, sub: null },
+				{ pack: [], name: module, sub: name }
+				if(module == className):
+				true;
+			default:
+				false;
+		};
+		
+		if(substitute) {
+			switch(substitutions[typePath.name]) {
+				case TPath(p):
+					var params:Null<Array<TypeParam>> = p.params;
+					if(typePath.params != null
+						&& (params == null || typePath.params.length >= params.length)) {
+						params = substituteTypeParams(typePath.params);
 					}
-				case { pack: [packEntry], name: name, sub: null, params: params }
-					if(packEntry == className):
-					switch(substitutions[name]) {
-						case TPath(p):
-							return {
-								pack: p.pack,
-								name: p.name,
-								sub: p.sub,
-								params: substituteTypeParams(params)
-							};
-						default:
-					}
+					return {
+						pack: p.pack,
+						name: p.name,
+						params: params,
+						sub: p.sub
+					};
 				default:
 			}
 		}
@@ -333,12 +333,7 @@ class TypeSubstitutions {
 			pack: typePath.pack,
 			name: typePath.name,
 			sub: typePath.sub,
-			params: [for(param in typePath.params) switch(param) {
-				case TPType(t):
-					TPType(substituteType(t));
-				case TPExpr(e):
-					TPExpr(substituteExpr(e));
-			}]
+			params: substituteTypeParams(typePath.params)
 		};
 	}
 }

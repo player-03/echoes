@@ -26,16 +26,13 @@ class AppearanceSystem extends System implements IMethodCounter {
 class GenericSystem<S:String, F:EitherType<Float, String>> extends System {
 	public var record:Array<S>;
 	
-	@:add private function onAdded(s:S, f:F, entity:Entity):Void {
+	@:add private function onAdded(s:S, f:F, ?record:Array<S>, entity:Entity):Void {
 		if(record == null) {
-			record = new Array<S>();
+			this.record = record = new Array<S>();
+			entity.add(record);
 		}
 		
 		record.push(s.toLowerCase() + f);
-		
-		if(!entity.exists((_:Array<S>))) {
-			entity.add(record);
-		}
 	}
 }
 
