@@ -202,8 +202,6 @@ class TypeSubstitutions {
 					EFunction(kind, substituteFunction(f));
 				case ECast(e, t):
 					ECast(substituteExpr(e), substituteType(t));
-				case EDisplayNew(t):
-					EDisplayNew(substituteTypePath(t));
 				case ECheckType(e, t):
 					ECheckType(substituteExpr(e), substituteType(t));
 				case EIs(e, t):

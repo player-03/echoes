@@ -8,7 +8,7 @@ jobs:
     
     strategy:
       matrix:
-        haxe-version: [4.2.0, 4.2.5]
+        haxe-version: [4.2.5, 4.3.1]
     
     steps:
       - uses: actions/checkout@v3
