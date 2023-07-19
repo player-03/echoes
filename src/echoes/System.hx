@@ -77,8 +77,8 @@ class System {
 	
 	@:noCompletion private final __priority__:Int;
 	
-	public var onActivate:Signal<() -> Void> = new Signal();
-	public var onDeactivate:Signal<() -> Void> = new Signal();
+	public final onActivate:Signal<() -> Void> = new Signal();
+	public final onDeactivate:Signal<() -> Void> = new Signal();
 	public var active(default, null):Bool = false;
 	
 	/**
