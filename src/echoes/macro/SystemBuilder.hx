@@ -58,7 +58,6 @@ class SystemBuilder {
 			}
 			
 			if(name.length > 0 && searchTerm.startsWith(name)) {
-				//Encourage users to include a colon in their metadata.
 				if(!entry.name.startsWith(":")) {
 					Context.warning('@${entry.name} is deprecated; use @:${entry.name} instead.'
 						+ (entry.name == "remove" ? " (@:remove does have a reserved meaning when applied to interfaces, but not here.)" : ""),
@@ -76,7 +75,7 @@ class SystemBuilder {
 		var entry:MetadataEntry = getMeta(meta, PRIORITY_META);
 		switch(entry) {
 			case null:
-			case { params: [{ expr: EConst(CInt(v))}] }:
+			case _.params => [_.expr => EConst(CInt(v))]:
 				return Std.parseInt(v);
 			default:
 		}
@@ -142,51 +141,54 @@ class SystemBuilder {
 		
 		if(substitutions != null) {
 			if(!classType.meta.has(":genericBuild")) {
-				return Context.fatalError("Systems with type parameters must be tagged `@:genericBuild(echoes.macro.SystemBuilder.genericBuild())`.", Context.currentPos());
+				Context.fatalError("Systems with type parameters must be tagged `@:genericBuild(echoes.macro.SystemBuilder.genericBuild())`.", Context.currentPos());
 			}
 			
 			fields = fields.map(substitutions.substituteField);
 		} else {
 			if(classType.meta.has(":genericBuild")) {
-				return Context.fatalError("@:genericBuild requires type parameters.", Context.currentPos());
+				Context.fatalError("@:genericBuild requires type parameters.", Context.currentPos());
 			}
 		}
 		
-		//Link views
-		//==========
+		//Linked views
+		//============
 		
 		/**
 		 * Names of views that should activate and deactivate with the system.
 		 */
 		var linkedViews:Array<String> = [];
 		
-		//Locate `getLinkedView()` calls in variable initializers. These will
-		//cause compile errors when they access `this`, so we have to link the
-		//view a different way.
+		//Variable initializers can't actually call `getLinkedView()`, so locate
+		//and replace such calls.
 		for(field in fields) {
-			switch(field.kind) {
+			var expr:Expr = switch(field.kind) {
 				case FVar(_, expr), FProp(_, _, _, expr) if(expr != null):
-					switch(expr.expr) {
-						case ECall(_.expr => EConst(CIdent("getLinkedView")) | EField(_, "getLinkedView"), params):
-							var view:Expr = Echoes.getInactiveView(params);
-							
-							var viewName:String = switch(view.expr) {
-								case EField(_.expr => EConst(CIdent(name)), "instance"):
-									name;
-								default:
-									throw "Echoes.getInactiveView() returned an unexpected format. Please report this change.";
-							};
-							
-							//Save the view to link later.
-							if(!linkedViews.contains(viewName)) {
-								linkedViews.push(viewName);
-							}
-							
-							//Get the view normally, without activating.
-							expr.expr = (macro $i{ viewName }.instance).expr;
-						default:
-					}
+					expr;
 				default:
+					continue;
+			};
+			
+			var params:Array<Expr> = switch(expr.expr) {
+				case ECall(_.expr => EConst(CIdent("getLinkedView")) | EField(_, "getLinkedView"), params):
+					params;
+				default:
+					continue;
+			};
+			
+			//Get the inactive view for now.
+			expr.expr = Echoes.getInactiveView(params).expr;
+			
+			var viewName:String = switch(expr.expr) {
+				case EField(_.expr => EConst(CIdent(name)), "instance"):
+					name;
+				default:
+					throw "Echoes.getInactiveView() returned an unexpected format. Please report this change.";
+			};
+			
+			//Save the view to link later.
+			if(!linkedViews.contains(viewName)) {
+				linkedViews.push(viewName);
 			}
 		}
 		
