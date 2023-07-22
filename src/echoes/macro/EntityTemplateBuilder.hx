@@ -173,7 +173,7 @@ class EntityTemplateBuilder {
 			}
 			
 			//Currently, don't inherit optional parameters.
-			/* for(entry in parent.abstractType.meta.extract(ARGUMENTS_TAG)) {
+			/* for(entry in parent.abstractType.meta.extract(OPTIONAL_ARGUMENTS_TAG)) {
 				addParams(entry.params, true, false);
 			} */
 		}
