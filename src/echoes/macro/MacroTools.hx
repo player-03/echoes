@@ -13,6 +13,20 @@ using Lambda;
 
 @:dce
 class MacroTools {
+	public static function compareStrings(a:String, b:String):Int {
+		a = a.toLowerCase();
+		b = b.toLowerCase();
+		return (a < b) ? -1 : (a > b) ? 1 : 0;
+	}
+	
+	/**
+	 * Adds package information and finds the type underlying an `Unknown<0>`
+	 * and/or `Null<T>`, making it easier to examine the type.
+	 */
+	public static function followComplexType(type:ComplexType):ComplexType {
+		return followMono(type.toType()).toComplexType();
+	}
+	
 	/**
 	 * Acts like `Context.follow()`, but doesn't follow abstracts and typedefs
 	 * unless they're marked `@:eager`. Normally, it only follows monomorphs
@@ -31,14 +45,6 @@ class MacroTools {
 			default:
 				type;
 		};
-	}
-	
-	/**
-	 * Adds package information and finds the type underlying an `Unknown<0>`
-	 * and/or `Null<T>`, making it easier to examine the type.
-	 */
-	public static function followComplexType(type:ComplexType):ComplexType {
-		return followMono(type.toType()).toComplexType();
 	}
 	
 	public static function followName(type:ComplexType):String {
@@ -67,6 +73,12 @@ class MacroTools {
 		} catch(e:Exception) {
 			false;
 		};
+	}
+	
+	public static function joinNames(types:Array<ComplexType>, sep:String, ?qualify:Bool = true):String {
+		var typeNames:Array<String> = [for(type in types) toIdentifier(type, qualify)];
+		typeNames.sort(compareStrings);
+		return typeNames.join(sep);
 	}
 	
 	public static function makeTypePath(parts:Array<String>):TypePath {
@@ -205,18 +217,6 @@ class MacroTools {
 				Context.error('Unexpected $x!', Context.currentPos());
 				return null;
 		}
-	}
-	
-	public static function compareStrings(a:String, b:String):Int {
-		a = a.toLowerCase();
-		b = b.toLowerCase();
-		return (a < b) ? -1 : (a > b) ? 1 : 0;
-	}
-	
-	public static function joinNames(types:Array<ComplexType>, sep:String, ?qualify:Bool = true):String {
-		var typeNames:Array<String> = [for(type in types) toIdentifier(type, qualify)];
-		typeNames.sort(compareStrings);
-		return typeNames.join(sep);
 	}
 }
 
