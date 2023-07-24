@@ -65,7 +65,20 @@ class SystemList extends System {
 		}
 	}
 	
-	private override function __update__(dt:Float, priority:Int):Void {
+	private function __recalculateOrder__(system:System):Void {
+		if(systems.remove(system)) {
+			var index:Int = Lambda.findIndex(systems, existingSystem ->
+				existingSystem.priority < system.priority);
+			
+			if(index >= 0) {
+				systems.insert(index, system);
+			} else {
+				systems.push(system);
+			}	
+		}
+	}
+	
+	private override function __update__(dt:Float):Void {
 		#if echoes_profiling
 		var startTime:Float = haxe.Timer.stamp();
 		#end
@@ -74,7 +87,7 @@ class SystemList extends System {
 		clock.addTime(dt);
 		for(step in clock) {
 			for(system in systems) {
-				system.__update__(step, system.__priority__);
+				system.__update__(step);
 			}
 		}
 		
@@ -96,7 +109,7 @@ class SystemList extends System {
 		}
 		
 		var index:Int = Lambda.findIndex(systems, existingSystem ->
-			existingSystem.__priority__ < system.__priority__);
+			existingSystem.priority < system.priority);
 		
 		if(index >= 0) {
 			systems.insert(index, system);
@@ -110,10 +123,8 @@ class SystemList extends System {
 			system.__activate__();
 		}
 		
-		if(system.__children__ != null) {
-			for(child in system.__children__) {
-				add(child);
-			}
+		for(child in system.__children__) {
+			add(child);
 		}
 		
 		return this;

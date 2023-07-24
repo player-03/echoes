@@ -52,9 +52,8 @@ class MacroTools {
 	}
 	
 	/**
-	 * If `field` is a function, returns its body as an array. If its body
-	 * wasn't yet a block expression, converts it to one. Returns null if the
-	 * field isn't a function at all.
+	 * If `field` is a function, returns its body as an array, making it easy to
+	 * add new expressions. Otherwise, returns null.
 	 */
 	public static inline function getFunctionBody(field:Field):Null<Array<Expr>> {
 		switch(field.kind) {

@@ -95,7 +95,7 @@ class Echoes {
 		var dt:Float = startTime - lastUpdate;
 		lastUpdate = startTime;
 		
-		activeSystems.__update__(dt, 0);
+		activeSystems.__update__(dt);
 		
 		#if echoes_profiling
 		lastUpdateLength = Std.int((haxe.Timer.stamp() - startTime) * 1000);

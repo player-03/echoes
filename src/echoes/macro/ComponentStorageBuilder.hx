@@ -18,7 +18,7 @@ class ComponentStorageBuilder {
 	private static var registered:Bool = false;
 	
 	public static inline function getComponentStorage(componentComplexType:ComplexType):Expr {
-		return macro $i{ getComponentStorageName(componentComplexType) }.instance;
+		return macro @:pos(Context.currentPos()) $i{ getComponentStorageName(componentComplexType) }.instance;
 	}
 	
 	public static function getComponentStorageName(componentComplexType:ComplexType):String {

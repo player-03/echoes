@@ -1,6 +1,5 @@
 package echoes.macro;
 
-import haxe.Exception;
 #if macro
 
 import haxe.macro.Expr;
@@ -71,7 +70,7 @@ class SystemBuilder {
 		return null;
 	}
 	
-	private static function getPriority(meta:Metadata, defaultPriority:Int):Int {
+	private static function getPriority(meta:Metadata):Null<Int> {
 		var entry:MetadataEntry = getMeta(meta, PRIORITY_META);
 		switch(entry) {
 			case null:
@@ -79,7 +78,7 @@ class SystemBuilder {
 				return Std.parseInt(v);
 			default:
 		}
-		return defaultPriority;
+		return null;
 	}
 	
 	public static function build():Array<Field> {
@@ -98,10 +97,11 @@ class SystemBuilder {
 			case TInst(_.get() => inst, types):
 				nameWithParams = inst.name;
 				
-				if(types.length > 0) {
-					//Apply the given substitutions.
+				if(!isGenericBuild && inst.params.length > 0) {
+					//Apply some default substitutions to improve completion.
+					substitutions = new TypeSubstitutions(inst);
+				} else if(types.length > 0) {
 					substitutions = new TypeSubstitutions(inst, types);
-					
 					nameWithParams += "<" + [for(type in types) new Printer().printComplexType(type.toComplexType())].join(", ") + ">";
 				}
 				
@@ -111,29 +111,29 @@ class SystemBuilder {
 				return fields;
 		};
 		
-		//Non-generic builds may be skipped.
-		if(!isGenericBuild) {
-			if(classType.meta.has(":genericBuild") && classType.params.length > 0) {
-				//Apply some default substitutions to improve completion.
-				substitutions = new TypeSubstitutions(classType);
-			}
-			
+		/**
+		 * `classType`, plus all superclasses in order, including `System`.
+		 */
+		var parentTypes:Array<ClassType> = [classType];
+		{
 			var parentType:ClassType = classType;
-			while(true) {
-				if(parentType.meta.has(":skipBuildMacro")) {
-					return fields;
-				}
-				
-				if(parentType.superClass != null) {
-					parentType = parentType.superClass.t.get();
-				} else {
-					break;
-				}
+			while(parentType.superClass != null) {
+				parentType = parentType.superClass.t.get();
+				parentTypes.push(parentType);
+			}
+			if(parentTypes.length < 2 || parentType.name != "System"
+				|| parentType.pack.length != 1 || parentType.pack[0] != "echoes") {
+				Context.fatalError('${ classType.name } must extend echoes.System.', Context.currentPos());
 			}
 		}
 		
-		if(classType.meta.has(":genericBuildDone")) {
-			return fields;
+		//Non-generic builds may be skipped.
+		if(!isGenericBuild) {
+			for(type in parentTypes) {
+				if(type.meta.has(":skipBuildMacro")) {
+					return fields;
+				}
+			}
 		}
 		
 		//Type substitutions
@@ -192,116 +192,78 @@ class SystemBuilder {
 			}
 		}
 		
-		//More information gathering
-		//==========================
+		//Listener function priorities
+		//============================
 		
-		//Listener functions
-		//------------------
-		
-		/**
-		 * The system's default priority. May be overridden per function.
-		 */
-		var priority:Int = getPriority(classType.meta.get(), 0);
-		
-		var updateListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, UPDATE_META, priority)).filter(notNull);
-		var addListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, ADD_META, priority)).filter(notNull);
-		var removeListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, REMOVE_META, priority)).filter(notNull);
+		var updateListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, UPDATE_META)).filter(notNull);
+		var addListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, ADD_META)).filter(notNull);
+		var removeListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, REMOVE_META)).filter(notNull);
 		for(listener in addListeners.concat(removeListeners)) {
 			if(listener.wrapperFunction == null) {
 				Context.error("An @:add or @:remove listener must take at least one component. (Optional arguments don't count.)", listener.pos);
 			}
 		}
 		
-		//Non-default priorities
-		//----------------------
-		
 		/**
-		 * All update listener priorities found in this system. For a default
-		 * system, this will have length 1, with the one entry being 0.
+		 * Update listeners that have `@:priority` tags. Each group of these
+		 * will be used to create a `ChildSystem`.
 		 */
-		var updatePriorities:Array<Int> = [];
+		var fixedPriorityUpdateListeners:Map<Int, Array<ListenerFunction>> = new Map();
 		for(listener in updateListeners) {
-			if(listener.priority == null) {
-				listener.priority = priority;
-			}
-			if(!updatePriorities.contains(listener.priority)) {
-				updatePriorities.push(listener.priority);
+			if(listener.priority != null) {
+				if(!fixedPriorityUpdateListeners.exists(listener.priority)) {
+					fixedPriorityUpdateListeners[listener.priority] = [];
+				}
+				
+				fixedPriorityUpdateListeners[listener.priority].push(listener);
 			}
 		}
 		
-		/**
-		 * All non-default update listener priorities found in this system.
-		 */
-		var childPriorities:Array<Int> = updatePriorities.copy();
-		childPriorities.remove(priority);
-		
-		//Done gathering information, time to start making changes.
+		var defaultPriority:Null<Int> = getPriority(classType.meta.get());
+		if(defaultPriority != null) {
+			fields.pushFields(macro class DefaultPriority {
+				private override function __getDefaultPriority__():Int {
+					return $v{ defaultPriority };
+				}
+			});
+		}
 		
 		//Constructor
 		//===========
 		
-		var constructor:Field = null;
-		var isDirectSubclass:Bool = classType.superClass.t.get().name == "System";
-		var superCall:Expr = macro super();
-		if(isDirectSubclass) {
-			superCall = macro super($v{ priority }, $a{
-				childPriorities.map(childPriority -> macro $v{ childPriority }) });
-		}
+		var initializeChildren:Array<Expr> = [for(priority => listeners in fixedPriorityUpdateListeners) {
+			var body:Array<Expr> = [for(listener in listeners) listener.callDuringUpdate()];
+			body.unshift(macro __dt__ = dt);
+			
+			macro __addListenersWithPriority__($v{ priority }, function(dt:Float) $b{ body });
+		}];
+		initializeChildren.push(macro if(parent != null) {
+			for(child in __children__) {
+				parent.add(child);
+			}
+		});
 		
-		//Find and update an existing constructor.
-		for(field in fields) {
-			if(field.name != "new") {
-				continue;
-			}
-			
-			constructor = field;
-			var constructorFunc:Function = switch(constructor.kind) {
-				case FFun(f):
-					f;
-				default:
-					Context.fatalError("Constructor must be a function.", constructor.pos);
-			};
-			if(constructorFunc.expr == null) {
-				constructorFunc.expr = macro {};
-			} else if(!constructorFunc.expr.expr.match(EBlock(_))) {
-				constructorFunc.expr = macro {
-					${ constructorFunc.expr }
-				};
-			}
-			
-			//Insert a `super()` call if needed.
-			if(isDirectSubclass) {
-				switch(constructorFunc.expr.expr) {
-					case EBlock(block):
-						var replaced:Bool = false;
-						for(i => expr in block) {
-							if(expr.expr.match(ECall({ expr: EConst(CIdent("super")) }, _))) {
-								replaced = true;
-								block[i] = superCall;
-								Context.warning("super() call will be replaced. Remove this call to suppress this warning.", expr.pos);
-								break;
-							}
-						}
+		switch(fields.find(field -> field.name == "new" || field.name == "_new")) {
+			case null:
+				//No constructor found; declare a new one.
+				fields.push((macro class Constructor {
+					public inline function new(?priority:Int) {
+						super(priority);
 						
-						if(!replaced) {
-							block.unshift(superCall);
-						}
-					default:
-						Context.fatalError("Expected block expr", constructorFunc.expr.pos);
+						$b{ initializeChildren }
+					}
+				}).fields[0]);
+			case _.getFunctionBody() => body if(body != null):
+				if(!body.exists(e -> e.expr.match(
+					ECall(_.expr => EConst(CIdent("super")), _)))) {
+						body.unshift(macro super());
 				}
-			}
-			
-			break;
-		}
-		
-		//Add a constructor if none was found.
-		if(constructor == null) {
-			constructor = (macro class Constructor {
-				public inline function new() {
-					$superCall;
+				
+				for(expr in initializeChildren) {
+					body.push(expr);
 				}
-			}).fields[0];
-			fields.push(constructor);
+			default:
+				//Allow Haxe to throw an error.
 		}
 		
 		//Listener wrappers
@@ -355,15 +317,24 @@ class SystemBuilder {
 				}
 			}
 			
-			private override function __update__(dt:Float, priority:Int):Void {
+			private override function __update__(dt:Float):Void {
 				#if echoes_profiling
 				var __timestamp__ = Date.now().getTime();
 				#end
 				
-				__dt__ = dt;
+				${ if(parentTypes.length <= 2) {
+					macro __dt__ = dt;
+				} else {
+					macro super.__update__(dt);
+				} }
 				
-				${ {
-					expr: ESwitch(macro priority, [for(priority in updatePriorities)
+				$b{ {
+					[for(listener in updateListeners) if(listener.priority == null)
+						listener.callDuringUpdate()];
+				} }
+				
+				/* ${ {
+					expr: ESwitch(macro priority, [for(priority in childPriorities)
 						{
 							values: [macro $v{ priority }],
 							expr: macro $b{
@@ -373,7 +344,7 @@ class SystemBuilder {
 						}
 					], null),
 					pos: (macro null).pos
-				} }
+				} } */
 				
 				#if echoes_profiling
 				this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__);
@@ -427,7 +398,8 @@ class SystemBuilder {
 			pos: Context.currentPos(),
 			name: name,
 			meta: [{
-				name: ":genericBuildDone",
+				//In case the `@:autoBuild` macro runs on the output.
+				name: ":skipBuildMacro",
 				pos: Context.currentPos()
 			}]
 		}], importsAndUsings.imports, importsAndUsings.usings);
@@ -445,7 +417,7 @@ class SystemBuilder {
 	name:String,
 	args:Array<FunctionArg>,
 	pos:Position,
-	priority:Int,
+	priority:Null<Int>,
 	?components:Array<ComplexType>,
 	?optionalComponents:Array<ComplexType>,
 	?viewName:String,
@@ -454,7 +426,7 @@ class SystemBuilder {
 
 @:forward
 abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
-	public static function fromField(field:Field, listenerType:String, defaultPriority:Int):ListenerFunction {
+	public static function fromField(field:Field, listenerType:String):ListenerFunction {
 		switch(field.kind) {
 			case FFun(func):
 				if(SystemBuilder.getMeta(field.meta, listenerType) == null) {
@@ -465,7 +437,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 					name: field.name,
 					args: func.args,
 					pos: field.pos,
-					priority: SystemBuilder.getPriority(field.meta, defaultPriority)
+					priority: SystemBuilder.getPriority(field.meta)
 				};
 			default:
 				return null;

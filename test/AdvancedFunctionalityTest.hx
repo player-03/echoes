@@ -7,6 +7,7 @@ import echoes.System;
 import echoes.SystemList;
 import echoes.utils.Signal;
 import echoes.View;
+import haxe.PosInfos;
 import MethodCounter.assertTimesCalled;
 import Systems;
 import utest.Assert;
@@ -118,41 +119,61 @@ class AdvancedFunctionalityTest extends Test {
 	private function testPriority():Void {
 		var list:SystemList = new SystemList();
 		
-		var high:HighPrioritySystem = new HighPrioritySystem();
-		var name:NameSystem = new NameSystem();
-		var low:LowPrioritySystem = new LowPrioritySystem();
+		inline function assertListContents(contents:Array<System>, ?pos:PosInfos):Void {
+			if(Assert.equals(contents.length, list.length,
+				'Expected ${ contents.length } systems; got ${ list.length }.', pos)) {
+				for(i in 0...contents.length) {
+					if(contents[i] != list.systems[i]) {
+						Assert.fail('Expected $contents, got ${ list.systems } (index $i differs).', pos);
+						break;
+					}
+				}
+			}
+		}
 		
-		Assert.equals(high.__priority__, 1);
-		Assert.equals(name.__priority__, 0);
-		Assert.equals(low.__priority__, -1);
+		//Add systems from low to high priority.
+		var high:HighPrioritySystem = new HighPrioritySystem();
+		var middle:NameSystem = new NameSystem();
+		var low:NameSystem = new NameSystem(-1);
 		
 		list.add(low);
-		list.add(name);
+		list.add(middle);
 		list.add(high);
+		assertListContents([high, middle, low]);
 		
-		Assert.equals(3, list.length);
-		Assert.equals(high, list.systems[0]);
-		Assert.equals(name, list.systems[1]);
-		Assert.equals(low, list.systems[2]);
-		
-		//Also test a system that comes with different-priority children.
+		//Next, add a system with children.
 		var parent:UpdateOrderSystem = new UpdateOrderSystem();
-		Assert.equals(parent.__priority__, 0);
+		Assert.equals(0, parent.priority);
+		Assert.equals(1, parent.__children__[0].priority);
+		Assert.equals(-1, parent.__children__[1].priority);
 		
 		list.add(parent);
-		Assert.equals(6, list.length);
-		Assert.equals(high, list.systems[0]);
-		Assert.equals(parent.__children__[1], list.systems[1]);
-		Assert.equals(name, list.systems[2]);
-		Assert.equals(parent, list.systems[3]);
-		Assert.equals(low, list.systems[4]);
-		Assert.equals(parent.__children__[0], list.systems[5]);
+		assertListContents([
+			high, parent.__children__[0], //1
+			middle, parent, //0
+			low, parent.__children__[1] //-1
+		]);
 		
 		var updateOrder:Array<String> = [];
 		new Entity(true).add(updateOrder);
 		list.__activate__();
-		list.__update__(1, 0);
+		list.__update__(1);
 		Assert.equals("pre_update, update, update2, post_update", updateOrder.join(", "));
+		
+		//Update the priority of existing systems. Setting `low` to -1 should
+		//move it to the end of that bracket even though it already was -1.
+		parent.priority = 2;
+		middle.priority = -1;
+		low.priority = -1;
+		assertListContents([
+			parent, //2
+			high, parent.__children__[0], //1
+			parent.__children__[1], middle, low //-1
+		]);
+		
+		updateOrder.resize(0);
+		list.__update__(1);
+		Assert.equals("update, update2, pre_update, post_update", updateOrder.join(", "));
 	}
 	
 	private function testSignals():Void {

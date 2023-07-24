@@ -71,20 +71,52 @@ class System {
 	@:noCompletion private var __updateTime__:Float = 0;
 	#end
 	
-	@:noCompletion private final __children__:Null<Array<ChildSystem>>;
+	@:noCompletion private final __children__:Array<ChildSystem> = [];
 	
 	@:noCompletion private var __dt__:Float = 0;
 	
-	@:noCompletion private final __priority__:Int;
+	public var active(default, null):Bool = false;
 	
 	public final onActivate:Signal<() -> Void> = new Signal();
 	public final onDeactivate:Signal<() -> Void> = new Signal();
-	public var active(default, null):Bool = false;
 	
 	/**
 	 * The list directly containing this system, if any.
 	 */
 	public var parent(default, null):SystemList;
+	
+	/**
+	 * This system's base priority, applying to any listener function that
+	 * doesn't have its own `@:priority` tag. This can be set via the
+	 * constructor, or by adding a `@:priority` tag to the system itself.
+	 * 
+	 * Each `SystemList` is sorted based on the priority of the systems within,
+	 * meaning within `parent`, this system will run before any system of lower
+	 * priority, and after any system with higher priority.
+	 * 
+	 * Systems with the same priority will run in the order they were added to
+	 * the list, with one caveat: setting `priority` places the system after all
+	 * other systems of that priority. Even `system.priority = system.priority`
+	 * will affect the ordering.
+	 */
+	public var priority(default, set):Int;
+	private inline function set_priority(value:Int):Int {
+		priority = value;
+		
+		if(parent != null) {
+			parent.__recalculateOrder__(this);
+		}
+		
+		return priority;
+	}
+	
+	/**
+	 * @param priority This system's initial priority. If omitted, this will
+	 * default to the value set by `@:priority`, or 0 if that's omitted too.
+	 */
+	private inline function new(?priority:Int) {
+		this.priority = priority != null ? priority : __getDefaultPriority__();
+	}
 	
 	@:allow(echoes.Echoes)
 	private function __activate__():Void {
@@ -98,6 +130,11 @@ class System {
 		}
 	}
 	
+	@:noCompletion
+	private inline function __addListenersWithPriority__(priority:Int, runUpdateListeners:(Float) -> Void):Void {
+		__children__.push(new ChildSystem(this, priority, runUpdateListeners));
+	}
+	
 	@:allow(echoes.Echoes)
 	private function __deactivate__():Void {
 		if(active) {
@@ -109,22 +146,23 @@ class System {
 		}
 	}
 	
+	/**
+	 * Returns the value from the system's `@:priority` tag, if any.
+	 */
+	private function __getDefaultPriority__():Int {
+		return 0;
+	}
+	
 	@:allow(echoes.Echoes)
-	private function __update__(dt:Float, priority:Int):Void {
+	private function __update__(dt:Float):Void {
 		__dt__ = dt;
 		
 		//Everything else is handled by macro.
 	}
 	
 	/**
-	 * The macro will automatically call this constructor.
+	 * @see `SystemList.find()`
 	 */
-	private inline function new(?priority:Int = 0, ?childPriorities:Array<Int>) {
-		__priority__ = priority;
-		__children__ = childPriorities != null ? [for(childPriority in childPriorities)
-			new ChildSystem(this, childPriority)] : null;
-	}
-	
 	private function find<T:System>(systemType:Class<T>):Null<T> {
 		if(Std.isOfType(this, systemType)) {
 			return cast this;
@@ -162,13 +200,28 @@ class System {
 private class ChildSystem extends System {
 	private final parentSystem:System;
 	
-	public inline function new(parentSystem:System, priority:Int) {
+	private final runUpdateListeners:(Float) -> Void;
+	
+	public inline function new(parentSystem:System, priority:Int, runUpdateListeners:(Float) -> Void) {
 		super(priority);
 		
 		this.parentSystem = parentSystem;
+		this.runUpdateListeners = runUpdateListeners;
 	}
 	
-	private override function __update__(dt:Float, priority:Int):Void {
-		parentSystem.__update__(dt, priority);
+	private override function __update__(dt:Float):Void {
+		#if echoes_profiling
+		var __timestamp__ = Date.now().getTime();
+		#end
+		
+		runUpdateListeners(dt);
+		
+		#if echoes_profiling
+		this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__);
+		#end
+	}
+	
+	public override function toString():String {
+		return parentSystem.toString() + ':$priority';
 	}
 }

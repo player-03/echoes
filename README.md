@@ -386,6 +386,11 @@ class Main {
 		//despite being added second.
 		Echoes.add(new AverageSystem());
 		Echoes.add(new HighPrioritySystem());
+		
+		//Alternatively, the default system constructor allows setting priority
+		//on a case-by-case basis. Priority -1 is the lowest of the three, so
+		//this will run last.
+		Echoes.add(new HighPrioritySystem(-1));
 	}
 }
 ```
@@ -403,6 +408,7 @@ class MultiPrioritySystem extends System {
 	}
 	
 	//A listener with negative priority will run near the end of the update.
+	//Currently, there's no option to override this priority at runtime.
 	@:update @:priority(-1) private function last(data:Data):Void {
 		//Now that the default priority systems are done, analyze their data.
 		data.analyze();
@@ -425,11 +431,15 @@ class Main {
 		//Because `AverageSystem` and `list` both have priority 0, they run in
 		//the order they're added.
 		Echoes.addSystem(new AverageSystem());
-		Echoes.addSystem(childList);
+		Echoes.addSystem(list);
 		
 		//No matter how high a system's priority, if it's added to `list` it
 		//will run during `list`, and will come after `AverageSystem`.
 		list.add(new HighPrioritySystem());
+		
+		//You can modify any system or system list's priority after the fact.
+		//This will cause `list` (including `HighPrioritySystem`) to run first.
+		list.priority = 1;
 	}
 }
 ```

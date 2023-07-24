@@ -43,10 +43,6 @@ class HighPrioritySystem extends System {
 	@:update private function update():Void {}
 }
 
-@:priority(-1)
-class LowPrioritySystem extends System {
-}
-
 class NameSystem extends System implements IMethodCounter {
 	@:add private function nameAdded(name:Name):Void {}
 	@:update private function nameUpdated(name:Name):Void {}
