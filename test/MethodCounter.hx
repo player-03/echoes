@@ -5,6 +5,8 @@ import haxe.macro.Expr;
 import haxe.PosInfos;
 import utest.Assert;
 
+using echoes.macro.MacroTools;
+
 /**
  * For any class that implements `IMethodCounter`, counts the number of times
  * that class's methods are called. This count can later be checked using
@@ -71,16 +73,10 @@ class MethodCounter {
 		var className:String = Context.getLocalClass().get().name;
 		
 		for(field in fields) {
-			var key:String = '$className.${field.name}';
-			switch(field.kind) {
-				case FFun({ expr: { expr: EBlock(exprs) } }):
-					exprs.unshift(macro MethodCounter.count($v{key}));
-				case FFun(func):
-					func.expr = macro {
-						MethodCounter.count($v{key});
-						${func.expr};
-					};
-				default:
+			var body:Null<Array<Expr>> = field.getFunctionBody();
+			if(body != null) {
+				var key:String = '$className.${ field.name }';
+				body.unshift(macro MethodCounter.count($v{ key }));
 			}
 		}
 		

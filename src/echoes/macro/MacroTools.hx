@@ -52,6 +52,31 @@ class MacroTools {
 	}
 	
 	/**
+	 * If `field` is a function, returns its body as an array. If its body
+	 * wasn't yet a block expression, converts it to one. Returns null if the
+	 * field isn't a function at all.
+	 */
+	public static inline function getFunctionBody(field:Field):Null<Array<Expr>> {
+		switch(field.kind) {
+			case FFun(func):
+				switch(func.expr) {
+					case null:
+						var block:Array<Expr> = [];
+						func.expr = macro @:pos(field.pos) $b{ block };
+						return block;
+					case _.expr => EBlock(exprs):
+						return exprs;
+					case expr:
+						var block:Array<Expr> = [expr];
+						func.expr.expr = EBlock(block);
+						return block;
+				}
+			default:
+				return null;
+		}
+	}
+	
+	/**
 	 * @param type A type for which you've already called `followMono()`.
 	 * @return An error message if `type` is reserved, or null otherwise.
 	 */
