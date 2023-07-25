@@ -20,7 +20,7 @@ class SystemBuilder {
 	private static inline final UPDATE_META:String = "updated";
 	private static inline final PRIORITY_META:String = "priority";
 	
-	private static final genericSystemCache:Map<String, Type> = new Map();
+	private static final genericSystemCache:Map<String, ComplexType> = new Map();
 	
 	private static inline function notNull<T>(e:Null<T>):Bool {
 		return e != null;
@@ -358,7 +358,7 @@ class SystemBuilder {
 		return fields;
 	}
 	
-	public static function genericBuild():Type {
+	public static function genericBuild():ComplexType {
 		var classType:ClassType;
 		var name:String;
 		switch(Context.getLocalType()) {
@@ -404,10 +404,10 @@ class SystemBuilder {
 			}]
 		}], importsAndUsings.imports, importsAndUsings.usings);
 		
-		var type:Type = TPath({
+		var type:ComplexType = TPath({
 			pack: classType.pack,
 			name: name
-		}).toType();
+		});
 		genericSystemCache[qualifiedName] = type;
 		return type;
 	}
