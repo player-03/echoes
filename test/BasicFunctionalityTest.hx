@@ -23,6 +23,7 @@ class BasicFunctionalityTest extends Test {
 		var entity:Entity = new Entity(false);
 		Assert.isFalse(entity.active);
 		Assert.equals(0, Echoes.activeEntities.length);
+		Assert.equals("0", Std.string(entity));
 		
 		//Activate it.
 		entity.activate();
@@ -48,6 +49,7 @@ class BasicFunctionalityTest extends Test {
 		var newEntity:Entity = new Entity();
 		Assert.equals(entity, newEntity);
 		Assert.equals(0, @:privateAccess Entity.idPool.length);
+		Assert.equals("0", Std.string(newEntity));
 	}
 	
 	private function testComponents():Void {
