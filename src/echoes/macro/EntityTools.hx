@@ -27,7 +27,7 @@ class EntityTools {
 	 */
 	public static function add(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
 		return macro {
-			var entity:echoes.Entity = $self;
+			var __entity__:echoes.Entity = $self;
 			
 			$b{ [for(component in components) {
 				var type:Type = component.parseComponentType();
@@ -44,10 +44,10 @@ class EntityTools {
 				};
 				
 				var storage:Expr = type.toComplexType().getComponentStorage();
-				macro $storage.$operation(entity, $component);
+				macro $storage.$operation(__entity__, $component);
 			}] }
 			
-			entity;
+			__entity__;
 		};
 	}
 	
@@ -64,16 +64,16 @@ class EntityTools {
 	 */
 	public static function addIfMissing(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
 		return macro {
-			var entity:echoes.Entity = $self;
+			var __entity__:echoes.Entity = $self;
 			
 			$b{ [for(component in components) {
 				var type:Type = component.parseComponentType();
 				
 				var storage:Expr = type.toComplexType().getComponentStorage();
-				macro if(!$storage.exists(entity)) $storage.add(entity, $component);
+				macro if(!$storage.exists(__entity__)) $storage.add(__entity__, $component);
 			}] }
 			
-			entity;
+			__entity__;
 		};
 	}
 	
@@ -85,14 +85,14 @@ class EntityTools {
 	 */
 	public static function remove(self:Expr, types:Array<ComplexType>):ExprOf<echoes.Entity> {
 		return macro {
-			var entity:echoes.Entity = $self;
+			var __entity__:echoes.Entity = $self;
 			
 			$b{ [for(type in types) {
 				var storage:Expr = type.getComponentStorage();
-				macro $storage.remove(entity);
+				macro $storage.remove(__entity__);
 			}] }
 			
-			entity;
+			__entity__;
 		};
 	}
 	
