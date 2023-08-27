@@ -45,7 +45,7 @@ class EntityTemplateBuilder {
 		var parents:Array<{ complexType:ComplexType, abstractType:AbstractType }> = [];
 		var nextParent:Type = type.type;
 		for(_ in 0...100) {
-			switch(nextParent) {
+			switch(nextParent.follow()) {
 				case TInst(_.get().kind => KAbstractImpl(_.get() => parentAbstract), _),
 					TAbstract(_.get() => parentAbstract, _):
 					parents.push({
