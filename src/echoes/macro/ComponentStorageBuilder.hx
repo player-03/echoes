@@ -40,6 +40,8 @@ class ComponentStorageBuilder {
 		var def:TypeDefinition = macro class $storageTypeName extends echoes.ComponentStorage<$componentComplexType> {
 			public static final instance:$storageType = new $storageTypePath();
 			
+			//Known issue: after a failed build, this line may produce "Missing
+			//function body" errors. Workaround: restart the language server.
 			private function new() {
 				super($v{ componentTypeName });
 			}
