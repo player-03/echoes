@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": [ "entity", "component", "system", "ecs" ],
   "description": "Macro-based Entity Component System framework, focusing on ease of use.",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "classPath": "src/",
-  "releasenote": "Allow entity templates to take arguments. To use this, tag the template with `@:arguments(Component1, Component2, ...)`.",
+  "releasenote": "Support generic systems, Haxe 4.3, variable system priorities.",
   "contributors": [ "player_03" ]
 }
