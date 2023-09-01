@@ -67,6 +67,11 @@ class Clock {
 	public var paused:Bool = false;
 	
 	/**
+	 * How many times this clock ticked since the last call to `addTime()`.
+	 */
+	public var tickCount:Int = 0;
+	
+	/**
 	 * The amount of time left on the `Clock`, in seconds.
 	 * 
 	 * To calculate [the blending factor](https://www.gafferongames.com/post/fix_your_timestep/#the-final-touch)
@@ -90,6 +95,8 @@ class Clock {
 			if(this.time > maxTime) {
 				this.time = maxTime;
 			}
+			
+			tickCount = 0;
 		}
 	}
 	
@@ -100,6 +107,7 @@ class Clock {
 	public function next():Float {
 		var tick:Float = time > maxTickLength ? maxTickLength : time;
 		time -= tick;
+		tickCount++;
 		return tick;
 	}
 	
