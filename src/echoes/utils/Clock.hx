@@ -38,23 +38,18 @@ package echoes.utils;
  */
 class Clock {
 	/**
-	 * The amount of time left on the `Clock`, in seconds.
+	 * The maximum tick length. By default, tick length is equal to the
+	 * remaining `time`, but this can make it shorter.
 	 * 
-	 * To calculate [the blending factor described in "Fix Your Timestep!"](https://www.gafferongames.com/post/fix_your_timestep/#the-final-touch),
-	 * divide `time` by `minTickLength`.
+	 * Setting `minTickLength` and `maxTickLength` to the same value creates a
+	 * fixed tick length.
 	 */
-	public var time(default, null):Float = 0;
+	public var maxTickLength:Float = Math.POSITIVE_INFINITY;
 	
 	/**
 	 * `time` will be capped to this value.
 	 */
 	public var maxTime:Float = Math.POSITIVE_INFINITY;
-	
-	/**
-	 * Prevents `time` from increasing, but doesn't prevent iterating over
-	 * whatever time remains.
-	 */
-	public var paused:Bool = false;
 	
 	/**
 	 * Once `time` falls below this value, the `Clock` will stop ticking. Any
@@ -66,13 +61,18 @@ class Clock {
 	public var minTickLength:Float = 1e-16;
 	
 	/**
-	 * The maximum tick length. By default, tick length is equal to the
-	 * remaining `time`, but this can make it shorter.
-	 * 
-	 * Setting `minTickLength` and `maxTickLength` to the same value creates a
-	 * fixed tick length.
+	 * Prevents `time` from increasing, but doesn't prevent iterating over
+	 * whatever time remains.
 	 */
-	public var maxTickLength:Float = Math.POSITIVE_INFINITY;
+	public var paused:Bool = false;
+	
+	/**
+	 * The amount of time left on the `Clock`, in seconds.
+	 * 
+	 * To calculate [the blending factor](https://www.gafferongames.com/post/fix_your_timestep/#the-final-touch)
+	 * described in "Fix Your Timestep!", divide `time` by `minTickLength`.
+	 */
+	public var time(default, null):Float = 0;
 	
 	/**
 	 * Multiplies all added time. This can speed time up (if `timeScale > 1`),
