@@ -206,6 +206,7 @@ class BasicFunctionalityTest extends Test {
 		assertTimesCalled(2, "AppearanceSystem.shapeRemoved");
 	}
 	
+	@:access(echoes.Echoes.lastUpdate)
 	private function testUpdateEvents():Void {
 		//Create a `TimeCountSystem` and use a custom `Clock`.
 		var systems:SystemList = new SystemList(new OneSecondClock());
@@ -232,6 +233,9 @@ class BasicFunctionalityTest extends Test {
 		
 		//Give one entity both a color and shape.
 		star.add((0xFFFFFF:Color));
+
+		//Simulate time passing without actually waiting for it.
+		Echoes.lastUpdate -= 0.001;
 		
 		//Run another few updates. (`colorTime` should now increment twice per
 		//update, since now two entities have color.)
@@ -241,6 +245,7 @@ class BasicFunctionalityTest extends Test {
 		Assert.equals(2, timeCountSystem.shapeTime);
 		Assert.equals(1, timeCountSystem.colorAndShapeTime);
 		
+		Echoes.lastUpdate -= 0.001;
 		Echoes.update();
 		Assert.equals(3, timeCountSystem.totalTime);
 		Assert.equals(5, timeCountSystem.colorTime);
