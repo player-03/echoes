@@ -49,9 +49,11 @@ class EdgeCaseTest extends Test {
 		
 		entity.add("Hello world.");
 		Assert.isTrue(entity.exists(String));
+		Assert.notNull(entity.get(String));
 		
 		entity.add((null:String));
 		Assert.isFalse(entity.exists(String));
+		Assert.isNull(entity.get(String));
 	}
 	
 	private function testRedundantOperations():Void {
