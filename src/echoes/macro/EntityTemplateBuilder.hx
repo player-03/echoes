@@ -189,9 +189,12 @@ class EntityTemplateBuilder {
 		//Allow converting to all parent types.
 		for(parent in parents) {
 			var name:String = "to" + parent.abstractType.name;
-			var complexType:ComplexType = parent.complexType;
+			var parentType:ComplexType = parent.complexType;
 			fields.pushFields(macro class ToParent {
-				@:to private inline function $name():$complexType {
+				/**
+				 * Caution: on some targets, this will convert `null` to `0`.
+				 */
+				@:to private inline function $name():$parentType {
 					return cast this;
 				}
 			});
