@@ -21,3 +21,6 @@ jobs:
       
       - name: Run tests
         run: haxe tests.hxml --interp
+      
+      - name: Run tests (map storage)
+        run: haxe tests.hxml --interp -D echoes_storage=Map

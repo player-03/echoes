@@ -7,8 +7,13 @@ import echoes.View;
 /**
  * A central location to store all components of a given type. For example, the
  * `ComponentStorage<String>` singleton stores every `String` components,
- * indexed by entity ID. `entity.get(String)` is actually shorthand for
+ * indexed by entity ID, and `entity.get(String)` is shorthand for
  * `Echoes.getComponentStorage(String).get(entity)`.
+ * 
+ * By default, `ComponentStorage` stores data in arrays. Compared to maps, this
+ * produces faster lookup times, but may take more memory if you have a large
+ * number of entities. In this case, you can try `-D echoes_storage=Map`, though
+ * be sure to test the performance impact.
  */
 class ComponentStorage<T> {
 	/**
@@ -23,15 +28,19 @@ class ComponentStorage<T> {
 	}
 	
 	/**
-	 * All components of this type.
-	 */
-	private var storage:Map<Entity, T> = new Map();
-	
-	/**
 	 * All views that include this type of component.
 	 */
 	@:allow(echoes.ViewBase)
-	private var relatedViews:Array<ViewBase> = [];
+	private final relatedViews:Array<ViewBase> = [];
+	
+	/**
+	 * All components of this type.
+	 */
+	#if (echoes_storage == "Map")
+	private final storage:Map<Int, T> = new Map();
+	#else
+	private final storage:Array<Null<T>> = [];
+	#end
 	
 	private inline function new(componentType:String) {
 		this.componentType = componentType;
@@ -44,11 +53,11 @@ class ComponentStorage<T> {
 			return;
 		}
 		
-		if(storage[entity] == component) {
+		if(get(entity) == component) {
 			return;
 		}
 		
-		storage[entity] = component;
+		storage[entity.id] = component;
 		
 		if(entity.active) {
 			for(view in relatedViews) {
@@ -64,20 +73,35 @@ class ComponentStorage<T> {
 	
 	@:allow(echoes.Echoes)
 	private inline function clear():Void {
+		#if (echoes_storage == "Map")
 		storage.clear();
+		#else
+		storage.resize(0);
+		#end
 	}
 	
 	public inline function exists(entity:Entity):Bool {
-		return storage.exists(entity);
+		#if (echoes_storage == "Map")
+		return storage.exists(entity.id);
+		#else
+		return storage[entity.id] != null;
+		#end
 	}
 	
 	public inline function get(entity:Entity):Null<T> {
-		return storage[entity];
+		return storage[entity.id];
 	}
 	
 	public function remove(entity:Entity):Void {
-		var removedComponent:T = get(entity);
-		if(storage.remove(entity) && entity.active) {
+		var removedComponent:Null<T> = get(entity);
+		
+		#if (echoes_storage == "Map")
+		storage.remove(entity.id);
+		#else
+		storage[entity.id] = null;
+		#end
+		
+		if(removedComponent != null && entity.active) {
 			for(view in relatedViews) {
 				view.removeIfExists(entity, this, removedComponent);
 				
@@ -91,7 +115,7 @@ class ComponentStorage<T> {
 	
 	/**
 	 * Dispatches a `@:remove` event (if applicable) before adding `component`.
-	 * To make Echoes use this, tag the component type with `@:echoes_replace`.
+	 * To use this for a given component, tag the type with `@:echoes_replace`.
 	 */
 	public inline function replace(entity:Entity, component:T):Void {
 		if(get(entity) != component) {
@@ -105,7 +129,7 @@ class ComponentStorage<T> {
  * A version of `ComponentStorage` that stores components of unknown type. As
  * this makes it unsafe to call `add()`, that function is disabled.
  */
-@:forward(name, get, exists, remove, clear)
+@:forward(componentType, get, exists, remove, clear)
 abstract DynamicComponentStorage(ComponentStorage<Dynamic>) {
 	@:from private static inline function fromComponentStorage<T>(componentStorage:ComponentStorage<T>):DynamicComponentStorage {
 		return cast componentStorage;

@@ -86,6 +86,14 @@ abstract Entity(Int) {
 	}
 	
 	/**
+	 * This entity's unique integer ID. Used internally.
+	 */
+	public var id(get, never):Int;
+	private inline function get_id():Int {
+		return this;
+	}
+	
+	/**
 	 * @param active Whether to activate this entity immediately. Otherwise,
 	 * you'll have to call `activate()`.
 	 */
@@ -184,7 +192,7 @@ abstract Entity(Int) {
 		var components:Map<String, Dynamic> = new Map();
 		for(storage in Echoes.componentStorage) {
 			if(storage.exists(cast this)) {
-				components[storage.name] = storage.get(cast this);
+				components[storage.componentType] = storage.get(cast this);
 			}
 		}
 		return components;
