@@ -17,12 +17,12 @@ class Report {
 	@:allow(echoes.macro.ViewBuilder)
 	private static var viewNames:Array<String> = [];
 	
-	private static var reportRegistered = false;
+	private static var registered = false;
 	
-	public static function gen():Void {
+	public static function registerCallback():Void {
 		#if echoes_report
 		
-		if(!reportRegistered) {
+		if(!registered) {
 			Context.onGenerate(function(types:Array<Type>):Void {
 				if(Context.definedValue("echoes_report") == "sorted") {
 					componentNames.sort(MacroTools.compareStrings);
@@ -35,7 +35,7 @@ class Report {
 					+ '    VIEWS [${viewNames.length}]:\n'
 					+ "        " + viewNames.join("\n        "));
 			});
-			reportRegistered = true;
+			registered = true;
 		}
 		
 		#end

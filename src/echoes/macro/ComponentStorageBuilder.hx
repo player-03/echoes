@@ -54,7 +54,7 @@ class ComponentStorageBuilder {
 		}
 		
 		Report.componentNames.push(componentTypeName);
-		Report.gen();
+		Report.registerCallback();
 		
 		return storageTypeName;
 	}

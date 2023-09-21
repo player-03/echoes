@@ -28,7 +28,7 @@ class AdvancedFunctionalityTest extends Test {
 	
 	//Tests may be run in any order, but not in parallel.
 	
-	private function testAbstractEntities():Void {
+	private function testEntityTemplates():Void {
 		Echoes.addSystem(new NameSystem());
 		Echoes.addSystem(new AppearanceSystem());
 		
