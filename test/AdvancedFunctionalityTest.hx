@@ -115,6 +115,22 @@ class AdvancedFunctionalityTest extends Test {
 		}
 	}
 	
+	private function testGetComponentStorage():Void {
+		//`String` and `Array` are already fully-qualified, but `Bool` is short
+		//for `StdTypes.Bool`.
+		Assert.equals("String", Echoes.getComponentStorage(String).componentType);
+		Assert.equals("Array<StdTypes.Bool>", Echoes.getComponentStorage((_:Array<Bool>)).componentType);
+		
+		var entity:Entity = new Entity();
+		entity.add(["xyz"]);
+		switch(Echoes.getComponentStorage((_:Array<String>)).get(entity)) {
+			case ["xyz"]:
+				Assert.pass();
+			case x:
+				Assert.fail('Expected ["xyz"], got $x');
+		}
+	}
+	
 	@:access(echoes.System)
 	private function testPriority():Void {
 		var list:SystemList = new SystemList();
