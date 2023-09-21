@@ -11,7 +11,16 @@ import echoes.View;
  * `Echoes.getComponentStorage(String).get(entity)`.
  */
 class ComponentStorage<T> {
-	public var name(default, null):String;
+	/**
+	 * The component's fully-qualified type, in string form. For instance,
+	 * `Echoes.getComponentStorage(Bool).componentType` is `"StdTypes.Bool"`.
+	 */
+	public final componentType:String;
+	
+	public var name(get, never):String;
+	private inline function get_name():String {
+		return 'ComponentStorage<$componentType>';
+	}
 	
 	/**
 	 * All components of this type.
@@ -24,8 +33,8 @@ class ComponentStorage<T> {
 	@:allow(echoes.ViewBase)
 	private var relatedViews:Array<ViewBase> = [];
 	
-	private function new(name:String) {
-		this.name = name;
+	private inline function new(componentType:String) {
+		this.componentType = componentType;
 		Echoes.componentStorage.push(this);
 	}
 	
