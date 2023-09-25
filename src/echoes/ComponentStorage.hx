@@ -76,6 +76,12 @@ class ComponentStorage<T> {
 		#if (echoes_storage == "Map")
 		storage.clear();
 		#else
+		#if eval
+		//Work around a bug in the eval target.
+		for(i in 0...storage.length) {
+			storage[i] = null;
+		}
+		#end
 		storage.resize(0);
 		#end
 	}

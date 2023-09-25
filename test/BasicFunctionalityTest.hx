@@ -18,6 +18,27 @@ class BasicFunctionalityTest extends Test {
 	
 	//Tests may be run in any order, but not in parallel.
 	
+	#if (echoes_storage != "Map")
+	#if !eval
+	//Test an array-specific edge case that potentially breaks every other test.
+	//If this fails on any target, update `ComponentStorage.clear()`, then skip
+	//this test on that target.
+	private function testArrayBehavior():Void {
+		var array:Array<Int> = [for(i in 0...5) i];
+		Assert.equals(2, array[2]);
+		Assert.isNull(array[6]);
+		
+		array.resize(0);
+		Assert.isNull(array[2]);
+		
+		array[3] = 30;
+		Assert.isNull(array[2]); //<- The only test likely to fail.
+		Assert.equals(30, array[3]);
+		Assert.isNull(array[4]);
+	}
+	#end
+	#end
+	
 	private function testEntities():Void {
 		//Make an inactive entity.
 		var entity:Entity = new Entity(false);
