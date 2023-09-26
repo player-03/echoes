@@ -33,12 +33,10 @@ class ViewBase {
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
 	private function add(entity:Entity):Void {
-		if(!entities.has(entity)) {
-			if(isMatched(entity)) {
+		if(isMatched(entity)) {
+			if(!entities.has(entity)) {
 				_entities.add(entity);
-				dispatchAddedCallback(entity);
 			}
-		} else {
 			dispatchAddedCallback(entity);
 		}
 	}
