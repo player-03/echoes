@@ -115,7 +115,7 @@ abstract Entity(Int) {
 		if(!active) {
 			statuses[this] = true;
 			Echoes._activeEntities.add(cast this);
-			for(view in Echoes.activeViews) view.addIfMatched(cast this);
+			for(view in Echoes.activeViews) view.add(cast this);
 		}
 	}
 	
@@ -154,7 +154,7 @@ abstract Entity(Int) {
 		if(active) {
 			Echoes._activeEntities.remove(cast this);
 			statuses[this] = false;
-			for(view in Echoes.activeViews) view.removeIfExists(cast this);
+			for(view in Echoes.activeViews) view.remove(cast this);
 		}
 	}
 	

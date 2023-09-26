@@ -26,13 +26,13 @@ class ViewBase {
 		if(activations == 1) {
 			Echoes._activeViews.push(this);
 			for(e in Echoes.activeEntities) {
-				addIfMatched(e);
+				add(e);
 			}
 		}
 	}
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
-	private function addIfMatched(entity:Entity):Void {
+	private function add(entity:Entity):Void {
 		if(!entities.has(entity)) {
 			if(isMatched(entity)) {
 				_entities.add(entity);
@@ -67,7 +67,7 @@ class ViewBase {
 	}
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
-	private function removeIfExists(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
+	private function remove(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
 		if(_entities.remove(entity)) {
 			dispatchRemovedCallback(entity, removedComponentStorage, removedComponent);
 		}
@@ -77,7 +77,7 @@ class ViewBase {
 		activations = 0;
 		Echoes._activeViews.remove(this);
 		while(!entities.isEmpty()) {
-			removeIfExists(entities.first());
+			remove(entities.first());
 		}
 	}
 	

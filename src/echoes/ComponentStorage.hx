@@ -61,7 +61,7 @@ class ComponentStorage<T> {
 		
 		if(entity.active) {
 			for(view in relatedViews) {
-				view.addIfMatched(entity);
+				view.add(entity);
 				
 				//Stop dispatching events if a listener removed it.
 				if(!exists(entity)) {
@@ -109,7 +109,7 @@ class ComponentStorage<T> {
 		
 		if(removedComponent != null && entity.active) {
 			for(view in relatedViews) {
-				view.removeIfExists(entity, this, removedComponent);
+				view.remove(entity, this, removedComponent);
 				
 				//Stop dispatching events if a listener added it back.
 				if(exists(entity)) {
