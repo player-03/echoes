@@ -574,9 +574,13 @@ Echoes offers a few ways to customize compilation.
 
 ## Breaking changes
 
+### Since v1.0.0-rc.5
+
+- `Entity.getComponents()` now returns a list of `ComponentStorage` instances, instead of a map. If you prefer the old format, you can perform an implicit cast: `var map:Map<String, Dynamic> = Entity.getComponents()`.
+
 ### Since v1.0.0-rc.3
 
-- Macro users only: `ComponentStorageBuilder.getComponentStorage()` now returns the full `StorageType.instance` expression, not just a value that can be parsed to find `StorageType`. If you need this value, use `getComponentStorageName()`. None of this affects `Echoes.getComponentStorage()`, which continues to work as before.
+- Macro users only: `ComponentStorageBuilder.getComponentStorage()` now returns the full `StorageType.instance` expression, not just a value that can be parsed to find `StorageType`. If you need the old value, use `getComponentStorageName()`. None of this affects `Echoes.getComponentStorage()`, which continues to work as before.
 - Entity templates may no longer define their own constructor, and should instead declare an `onApplyTemplate()` function that takes no arguments.
 - In an entity template, you must now use variables (not properties) to declare components. Properties now have their default Haxe behavior.
 

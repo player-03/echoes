@@ -23,7 +23,7 @@ class Echoes {
 	}
 	#end
 	
-	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
+	@:allow(echoes.ComponentStorage)
 	private static var componentStorage:Array<DynamicComponentStorage> = [];
 	
 	@:allow(echoes.Entity)
@@ -124,6 +124,7 @@ class Echoes {
 		for(storage in componentStorage) {
 			storage.clear();
 		}
+		EntityComponents.components.resize(0);
 		
 		Entity.idPool.resize(0);
 		Entity.statuses.resize(0);

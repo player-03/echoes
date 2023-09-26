@@ -1,7 +1,8 @@
 package echoes;
 
-import echoes.Entity;
 import echoes.Echoes;
+import echoes.Entity;
+import echoes.utils.ReadOnlyData;
 import echoes.View;
 
 /**
@@ -30,8 +31,13 @@ class ComponentStorage<T> {
 	/**
 	 * All views that include this type of component.
 	 */
+	public var relatedViews(get, never):ReadOnlyArray<ViewBase>;
+	private inline function get_relatedViews():ReadOnlyArray<ViewBase> {
+		return _relatedViews;
+	}
+	
 	@:allow(echoes.ViewBase)
-	private final relatedViews:Array<ViewBase> = [];
+	private final _relatedViews:Array<ViewBase> = [];
 	
 	/**
 	 * All components of this type.
@@ -58,6 +64,17 @@ class ComponentStorage<T> {
 		}
 		
 		storage[entity.id] = component;
+		
+		var components:List<DynamicComponentStorage> = EntityComponents.components[entity.id];
+		if(components == null) {
+			EntityComponents.components[entity.id] = components = new List();
+		}
+		
+		//Add to the beginning of the list, so that `remove()` will search
+		//recently-added components first. This way, short-term components can
+		//be added and removed quickly, and long-lasting components filter down
+		//to the end of the list where they don't get in the way.
+		components.push(this);
 		
 		if(entity.active) {
 			for(view in relatedViews) {
@@ -107,13 +124,17 @@ class ComponentStorage<T> {
 		storage[entity.id] = null;
 		#end
 		
-		if(removedComponent != null && entity.active) {
-			for(view in relatedViews) {
-				view.remove(entity, this, removedComponent);
-				
-				//Stop dispatching events if a listener added it back.
-				if(exists(entity)) {
-					return;
+		if(removedComponent != null) {
+			EntityComponents.components[entity.id].remove(this);
+			
+			if(entity.active) {
+				for(view in relatedViews) {
+					view.remove(entity, this, removedComponent);
+					
+					//Stop dispatching events if a listener added it back.
+					if(exists(entity)) {
+						return;
+					}
 				}
 			}
 		}
@@ -135,9 +156,69 @@ class ComponentStorage<T> {
  * A version of `ComponentStorage` that stores components of unknown type. As
  * this makes it unsafe to call `add()`, that function is disabled.
  */
-@:forward(componentType, get, exists, remove, clear)
+@:forward(clear, componentType, exists, get, name, relatedViews, remove)
 abstract DynamicComponentStorage(ComponentStorage<Dynamic>) {
 	@:from private static inline function fromComponentStorage<T>(componentStorage:ComponentStorage<T>):DynamicComponentStorage {
 		return cast componentStorage;
+	}
+}
+
+/**
+ * The components currently attached to an entity. This isn't a good way to look
+ * up an individual component, but it helps with batch operations such as
+ * `deactivate()` and `destroy()`.
+ */
+@:forward @:allow(echoes.ComponentStorage)
+abstract EntityComponents(ReadOnlyList<DynamicComponentStorage>) from List<DynamicComponentStorage> to ReadOnlyList<DynamicComponentStorage> {
+	/**
+	 * The source data for all `EntityComponents` lists. This should only be
+	 * updated by `ComponentStorage`, or by `Echoes.reset()`.
+	 */
+	@:allow(echoes.Echoes)
+	private static final components:Array<List<DynamicComponentStorage>> = [];
+	
+	/**
+	 * Gets the `EntityComponents` list for the given entity.
+	 */
+	@:allow(echoes.Entity)
+	private static inline function forEntity(entity:Entity):EntityComponents {
+		if(components[entity.id] == null) {
+			return components[entity.id] = new List();
+		} else {
+			return components[entity.id];
+		}
+	}
+	
+	/**
+	 * @see `Entity.removeAll()`
+	 */
+	@:allow(echoes.Entity)
+	private static inline function removeAll(entity:Entity):Void {
+		if(components[entity.id] != null) {
+			//`List` is designed to allow iteration while removing items.
+			for(componentStorage in components[entity.id]) {
+				componentStorage.remove(entity);
+			}
+		}
+	}
+	
+	@:to private inline function toIterable():Iterable<DynamicComponentStorage> {
+		return this;
+	}
+	
+	/**
+	 * Creates a `Map` of the entity's components, mapping types onto values.
+	 * For instance, if the entity has `Bool` and `String` components, the map
+	 * might be `["StdTypes.Bool" => true, "String" => "Hello World"]`.
+	 */
+	@:to private inline function toMap():Map<String, Dynamic> {
+		var entity:Entity = switch(components.indexOf(cast this)) {
+			case -1:
+				throw "This EntityComponents instance was disposed.";
+			case x:
+				cast x;
+		};
+		
+		return [for(storage in this) storage.componentType => storage.get(entity)];
 	}
 }

@@ -151,7 +151,7 @@ class ViewBuilder {
 					//Each expression adds this `View` to a related list.
 					[for(component in components) {
 						var storage:Expr = component.getComponentStorage();
-						macro $storage.relatedViews.push(this);
+						macro $storage._relatedViews.push(this);
 					}]
 				}
 			}
@@ -186,7 +186,7 @@ class ViewBuilder {
 					//Each expression removes this `View` from a related list.
 					[for(component in components) {
 						var storage:Expr = component.getComponentStorage();
-						macro ${ storage }.relatedViews.remove(this);
+						macro ${ storage }._relatedViews.remove(this);
 					}]
 				}
 			}

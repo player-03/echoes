@@ -1,5 +1,8 @@
 package echoes;
 
+import echoes.ComponentStorage;
+import echoes.utils.ReadOnlyData;
+
 #if macro
 import echoes.macro.EntityTools;
 import haxe.macro.Expr;
@@ -115,7 +118,12 @@ abstract Entity(Int) {
 		if(!active) {
 			statuses[this] = true;
 			Echoes._activeEntities.add(cast this);
-			for(view in Echoes.activeViews) view.add(cast this);
+			
+			for(storage in getComponents()) {
+				for(view in storage.relatedViews) {
+					view.add(cast this);
+				}
+			}
 		}
 	}
 	
@@ -154,7 +162,12 @@ abstract Entity(Int) {
 		if(active) {
 			Echoes._activeEntities.remove(cast this);
 			statuses[this] = false;
-			for(view in Echoes.activeViews) view.remove(cast this);
+			
+			for(storage in getComponents()) {
+				for(view in storage.relatedViews) {
+					view.remove(cast this);
+				}
+			}
 		}
 	}
 	
@@ -188,14 +201,13 @@ abstract Entity(Int) {
 		return EntityTools.get(self, type.parseClassExpr());
 	}
 	
-	public function getComponents():Map<String, Dynamic> {
-		var components:Map<String, Dynamic> = new Map();
-		for(storage in Echoes.componentStorage) {
-			if(storage.exists(cast this)) {
-				components[storage.componentType] = storage.get(cast this);
-			}
-		}
-		return components;
+	/**
+	 * Finds all the `ComponentStorage` instances currently storing information
+	 * about this entity. This is roughly equivalent to a list of components.
+	 * @see `get()` for a faster way to look up individual components.
+	 */
+	public inline function getComponents():EntityComponents {
+		return EntityComponents.forEntity(cast this);
 	}
 	
 	/**
@@ -213,10 +225,8 @@ abstract Entity(Int) {
 	 * destroy it. Caution: if a `@:remove` listener adds a component to the
 	 * entity, that component may remain afterwards.
 	 */
-	public function removeAll():Void {
-		for(storage in Echoes.componentStorage) {
-			storage.remove(cast this);
-		}
+	public inline function removeAll():Void {
+		EntityComponents.removeAll(cast this);
 	}
 }
 
