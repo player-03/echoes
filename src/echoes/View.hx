@@ -32,7 +32,7 @@ class ViewBase {
 	}
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
-	private function add(entity:Entity):Void {
+	private inline function add(entity:Entity):Void {
 		if(isMatched(entity)) {
 			if(!entities.has(entity)) {
 				_entities.add(entity);
@@ -65,7 +65,7 @@ class ViewBase {
 	}
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
-	private function remove(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
+	private inline function remove(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
 		if(_entities.remove(entity)) {
 			dispatchRemovedCallback(entity, removedComponentStorage, removedComponent);
 		}
