@@ -546,7 +546,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 					ret: macro:Void,
 					expr: call()
 				}),
-				pos: Context.currentPos()
+				pos: this.pos
 			};
 		}
 		
@@ -580,7 +580,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 			}
 		}];
 		
-		return macro $i{ this.name }($a{ args });
+		return macro @:pos(this.pos) $i{ this.name }($a{ args });
 	}
 	
 	/**
