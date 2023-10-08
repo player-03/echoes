@@ -51,6 +51,16 @@ class ComponentStorage<T> {
 	private inline function new(componentType:String) {
 		this.componentType = componentType;
 		Echoes.componentStorage.push(this);
+		
+		//Some platforms get confused by the declaration of `Array<Null<T>>`,
+		//and treat that as something like `Array<Dynamic>`, and then cast to
+		//int, converting null to 0.
+		
+		//So far, this has only been seen in C++, and can be fixed by inserting
+		//a null value anywhere in the array.
+		#if (cpp && (echoes_storage != "Map"))
+		storage[0] = null;
+		#end
 	}
 	
 	public function add(entity:Entity, component:T):Void {
@@ -93,7 +103,7 @@ class ComponentStorage<T> {
 		#if (echoes_storage == "Map")
 		storage.clear();
 		#else
-		#if eval
+		#if (eval && !haxe5)
 		//Work around a bug in the eval target.
 		for(i in 0...storage.length) {
 			storage[i] = null;

@@ -245,6 +245,8 @@ class BasicFunctionalityTest extends Test {
 		var star:Entity = new Entity().add(STAR, ("Proxima Centauri":Name));
 		Assert.equals(0, timeCountSystem.shapeTime);
 		
+		Assert.isNull(star.get(Color), star.get(Color) + " should be null. See ComponentStorage constructor for details.");
+		
 		//Run an update.
 		Echoes.update();
 		Assert.equals(1, timeCountSystem.totalTime);
