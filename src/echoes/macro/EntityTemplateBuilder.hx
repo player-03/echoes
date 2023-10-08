@@ -192,10 +192,13 @@ class EntityTemplateBuilder {
 			var parentType:ComplexType = parent.complexType;
 			fields.pushFields(macro class ToParent {
 				/**
-				 * Caution: on some targets, this will convert `null` to `0`.
+				 * Caution: in C++, this converts `null` to `0`. Specifically,
+				 * it generates the code `(int) entity` instead of `entity`.
+				 * Tweaks like `Null<$parentType>` have no effect on this
+				 * generated code.
 				 */
 				@:to private inline function $name():$parentType {
-					return cast this;
+					return this;
 				}
 			});
 		}

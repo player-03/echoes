@@ -24,7 +24,7 @@ class BasicFunctionalityTest extends Test {
 	//If this fails on any target, update `ComponentStorage.clear()`, then skip
 	//this test on that target.
 	private function testArrayBehavior():Void {
-		var array:Array<Int> = [for(i in 0...5) i];
+		var array:Array<Null<Int>> = [for(i in 0...5) i];
 		Assert.equals(2, array[2]);
 		Assert.isNull(array[6]);
 		
@@ -44,7 +44,7 @@ class BasicFunctionalityTest extends Test {
 		var entity:Entity = new Entity(false);
 		Assert.isFalse(entity.active);
 		Assert.equals(0, Echoes.activeEntities.length);
-		Assert.equals("0", Std.string(entity));
+		Assert.equals(0, entity.id);
 		
 		//Activate it.
 		entity.activate();
@@ -70,7 +70,7 @@ class BasicFunctionalityTest extends Test {
 		var newEntity:Entity = new Entity();
 		Assert.equals(entity, newEntity);
 		Assert.equals(0, @:privateAccess Entity.idPool.length);
-		Assert.equals("0", Std.string(newEntity));
+		Assert.equals(0, newEntity.id);
 	}
 	
 	private function testComponents():Void {

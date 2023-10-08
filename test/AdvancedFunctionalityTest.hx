@@ -61,6 +61,14 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals(NameStringEntity.DEFAULT_NAME, new NameStringEntity().name);
 		assertTimesCalled(4, "NameSystem.nameAdded");
 		assertTimesCalled(1, "NameSystem.nameRemoved");
+		
+		var nullEntity:Null<NamedEntity> = null;
+		Assert.isNull(nullEntity);
+		#if cpp
+		Assert.notNull((nullEntity:Null<Entity>), "C++ code generation has improved, and a warning can be removed from EntityTemplateBuilder.");
+		#else
+		Assert.isNull((nullEntity:Null<Entity>));
+		#end
 	}
 	
 	private function testFindSystem():Void {
@@ -196,15 +204,17 @@ class AdvancedFunctionalityTest extends Test {
 		count1 = 0;
 		var count2:Int = 0;
 		
-		#if !hl
-		//Each time you access an instance method, Haxe will create a new
-		//closure, meaning `listener1 != listener1`. The only reliable way to
-		//compare methods is via `Reflect`.
+		#if (hl || cpp)
+		Assert.equals(listener1, listener1);
+		#else
+		//Each time you access an instance method, Haxe will (or used to) create
+		//a new closure, meaning `listener1 != listener1`. The only reliable way
+		//to compare methods is (or was) via `Reflect`.
 		Assert.notEquals(listener1, listener1, "Haxe changed how it handles instance methods.");
 		#end
 		Assert.isTrue(Reflect.compareMethods(listener1, listener1));
 		
-		//However, local functions work fine.
+		//However, local functions have always worked fine.
 		function listener2():Void {
 			count2++;
 		}
