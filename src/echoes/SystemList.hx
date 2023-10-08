@@ -33,7 +33,7 @@ class SystemList extends System {
 		return clock.paused;
 	}
 	private inline function set_paused(value:Bool):Bool {
-		return clock.paused = paused;
+		return clock.paused = value;
 	}
 	
 	private var systems:Array<System> = [];
