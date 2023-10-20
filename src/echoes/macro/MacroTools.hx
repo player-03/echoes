@@ -139,7 +139,13 @@ class MacroTools {
 			return followMono(e.typeof()).toComplexType();
 		} catch(err:Exception) { }
 		
-		Context.error('Failed to parse `${ new Printer().printExpr(e) }`. Try making a typedef or using the special type check syntax: `entity.get((_:MyType))` instead of `entity.get(MyType)`.', e.pos);
+		var expr:String = new Printer().printExpr(e);
+		if(~/^[\w\d\.]+$/.match(expr)) {
+			Context.error('Type not found: `$expr`.', e.pos);
+		} else {
+			Context.error('Failed to parse type `$expr`. Try using the special type check syntax, e.g. `entity.get((_:$expr))` instead of `entity.get($expr)`.', e.pos);
+		}
+		
 		return macro:Dynamic;
 	}
 	
