@@ -26,7 +26,7 @@ class EntityTools {
 	 * this will dispatch a `@:remove` event before dispatching `@:add`.
 	 */
 	public static function add(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
-		return macro {
+		return macro @:pos(Context.currentPos()) {
 			var __entity__:echoes.Entity = $self;
 			
 			$b{ [for(component in components) {
@@ -63,7 +63,7 @@ class EntityTools {
 	 * @return The entity.
 	 */
 	public static function addIfMissing(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
-		return macro {
+		return macro @:pos(Context.currentPos()) {
 			var __entity__:echoes.Entity = $self;
 			
 			$b{ [for(component in components) {
@@ -84,7 +84,7 @@ class EntityTools {
 	 * @return The entity.
 	 */
 	public static function remove(self:Expr, types:Array<ComplexType>):ExprOf<echoes.Entity> {
-		return macro {
+		return macro @:pos(Context.currentPos()) {
 			var __entity__:echoes.Entity = $self;
 			
 			$b{ [for(type in types) {
@@ -104,7 +104,7 @@ class EntityTools {
 	 */
 	public static function get<T>(self:Expr, complexType:ComplexType):ExprOf<T> {
 		var storage:Expr = complexType.getComponentStorage();
-		return macro $storage.get($self);
+		return macro @:pos(Context.currentPos()) $storage.get($self);
 	}
 	
 	/**
@@ -113,7 +113,7 @@ class EntityTools {
 	 */
 	public static function exists(self:Expr, complexType:ComplexType):ExprOf<Bool> {
 		var storage:Expr = complexType.getComponentStorage();
-		return macro $storage.exists($self);
+		return macro @:pos(Context.currentPos()) $storage.exists($self);
 	}
 }
 
