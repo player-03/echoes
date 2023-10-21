@@ -157,6 +157,9 @@ abstract Entity(Int) {
 	/**
 	 * Removes this entity from all views and systems, but saves all associated
 	 * components. Call `activate()` to restore it.
+	 * 
+	 * Note: this will trigger `@:remove` events for all of the entity's
+	 * components, even though the components aren't removed.
 	 */
 	public function deactivate():Void {
 		if(active) {
@@ -177,8 +180,8 @@ abstract Entity(Int) {
 	 */
 	public function destroy():Void {
 		if(!destroyed) {
-			deactivate();
 			removeAll();
+			deactivate();
 			idPool.push(this);
 		}
 	}

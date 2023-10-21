@@ -44,6 +44,27 @@ class EdgeCaseTest extends Test {
 		assertTimesCalled(0, "NameSubsystem.nameRemoved");
 	}
 	
+	private function testComponentsExist():Void {
+		Echoes.addSystem(new ComponentsExistSystem());
+		
+		var entity:Entity = new Entity();
+		entity.add(("name":Name));
+		entity.add((0xFFFFFF:Color));
+		entity.remove(Color);
+		entity.remove(Name);
+		
+		entity.add((0xFFFFFF:Color));
+		entity.add(("name":Name));
+		entity.destroy();
+		
+		//The system's functions contain the important tests; all we need to do
+		//here is make sure they were called.
+		assertTimesCalled(2, "ComponentsExistSystem.nameAdded");
+		assertTimesCalled(2, "ComponentsExistSystem.nameAndColorAdded");
+		assertTimesCalled(2, "ComponentsExistSystem.nameOrColorRemoved");
+		assertTimesCalled(2, "ComponentsExistSystem.nameRemoved");
+	}
+	
 	private function testNullComponents():Void {
 		var entity:Entity = new Entity();
 		
@@ -196,6 +217,32 @@ typedef Three = Int;
 
 typedef Brief = Float;
 typedef Permanent = Float;
+
+class ComponentsExistSystem extends System implements IMethodCounter {
+	@:add private function nameAdded(name:Name, entity:Entity):Void {
+		Assert.notNull(entity.get(Name));
+		Assert.equals(name, entity.get(Name));
+	}
+	
+	@:add private function nameAndColorAdded(name:Name, color:Color, entity:Entity):Void {
+		Assert.notNull(entity.get(Name));
+		Assert.equals(name, entity.get(Name));
+		Assert.notNull(entity.get(Color));
+		Assert.equals(color, entity.get(Color));
+	}
+	
+	@:remove private function nameRemoved(name:Name, entity:Entity):Void {
+		Assert.isNull(entity.get(Name));
+		Assert.notNull(name);
+	}
+	
+	@:remove private function nameOrColorRemoved(name:Name, color:Color, entity:Entity):Void {
+		Assert.isFalse(entity.exists(Name) && entity.exists(Color));
+		Assert.isTrue(entity.exists(Name) || entity.exists(Color));
+		Assert.notNull(name);
+		Assert.notNull(color);
+	}
+}
 
 class NameSubsystem extends NameSystem {
 	private override function nameAdded(name:Name):Void {}

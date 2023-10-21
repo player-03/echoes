@@ -60,6 +60,13 @@ class BasicFunctionalityTest extends Test {
 		entity.deactivate();
 		Assert.isTrue(entity.exists(Shape));
 		
+		//Add and remove a component while inactive.
+		entity.add(("entity":Name));
+		Assert.isTrue(entity.exists(Name));
+		
+		entity.remove(Name);
+		Assert.isFalse(entity.exists(Name));
+		
 		//Destroy it.
 		entity.destroy();
 		Assert.isFalse(entity.exists(Shape));
