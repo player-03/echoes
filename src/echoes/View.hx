@@ -35,7 +35,11 @@ class ViewBase {
 	private inline function add(entity:Entity):Void {
 		if(isMatched(entity)) {
 			if(!entities.has(entity)) {
-				_entities.add(entity);
+				//Many applications will have a mix of short-lived and
+				//long-lived entities. This means recently-created entities are
+				//more likely to be removed than ones that have been around a
+				//while. Therefore, store entities in last-in-first-out order.
+				_entities.push(entity);
 			}
 			dispatchAddedCallback(entity);
 		}

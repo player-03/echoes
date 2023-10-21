@@ -107,7 +107,11 @@ abstract Entity(Int) {
 		
 		statuses[this] = active;
 		if(active) {
-			Echoes._activeEntities.add(cast this);
+			//Many applications will have a mix of short-lived and long-lived
+			//entities. This means recently-created entities are more likely to
+			//be removed than ones that have been around a while. Therefore,
+			//store entities in last-in-first-out order.
+			Echoes._activeEntities.push(cast this);
 		}
 	}
 	
@@ -117,7 +121,7 @@ abstract Entity(Int) {
 	public function activate():Void {
 		if(!active) {
 			statuses[this] = true;
-			Echoes._activeEntities.add(cast this);
+			Echoes._activeEntities.push(cast this);
 			
 			for(storage in getComponents()) {
 				for(view in storage.relatedViews) {
