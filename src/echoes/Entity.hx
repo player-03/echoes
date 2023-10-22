@@ -1,12 +1,10 @@
 package echoes;
 
 import echoes.ComponentStorage;
-import echoes.utils.ReadOnlyData;
 
 #if macro
 import echoes.macro.EntityTools;
 import haxe.macro.Expr;
-import haxe.macro.Printer;
 
 using echoes.macro.ComponentStorageBuilder;
 using echoes.macro.MacroTools;

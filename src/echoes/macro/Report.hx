@@ -2,8 +2,10 @@ package echoes.macro;
 
 #if macro
 
+#if echoes_report
 import haxe.macro.Context;
 import haxe.macro.Type;
+#end
 
 /**
  * Use `-Dechoes_report` to print all generated components and views, in the

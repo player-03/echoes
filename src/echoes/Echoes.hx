@@ -8,7 +8,6 @@ import echoes.View;
 
 #if macro
 import haxe.macro.Expr;
-import haxe.macro.Printer;
 
 using echoes.macro.ComponentStorageBuilder;
 using echoes.macro.MacroTools;
