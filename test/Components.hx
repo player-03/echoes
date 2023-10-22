@@ -12,10 +12,10 @@ abstract Color(Int) from Int to Int {
 typedef Name = String;
 
 enum abstract Shape(String) {
-	var CIRCLE;
-	var LINE;
-	var SQUARE;
-	var STAR;
+	final CIRCLE;
+	final LINE;
+	final SQUARE;
+	final STAR;
 }
 
 //Templates
