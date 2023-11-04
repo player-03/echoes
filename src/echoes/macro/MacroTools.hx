@@ -34,6 +34,8 @@ class MacroTools {
 	 */
 	public static function followMono(type:Type):Type {
 		return switch(type) {
+			case null:
+				null;
 			case TMono(_.get() => innerType):
 				followMono(innerType);
 			case TAbstract(_.get() => { name: "Null" }, [innerType]):

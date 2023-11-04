@@ -362,12 +362,13 @@ class SystemBuilder {
 		var classType:ClassType;
 		var name:String;
 		switch(Context.getLocalType()) {
-			case TInst(_.get() => inst, params):
+			case TInst(_.get() => inst, args):
 				classType = inst;
-				
 				name = inst.name;
-				for(param in params) {
-					name += "_" + param.toComplexType().toIdentifier(false);
+				
+				TypeSubstitutions.applyDefaultTypeParams(classType, args);
+				for(i => arg in args) {
+					name += "_" + arg.toComplexType().toIdentifier(false);
 				}
 			default:
 				return Context.fatalError("SystemBuilder only acts on classes.", Context.currentPos());

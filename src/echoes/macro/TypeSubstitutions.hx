@@ -34,6 +34,32 @@ using haxe.macro.ExprTools;
 class TypeSubstitutions {
 	private static final cache:Map<String, CachedImports> = new Map();
 	
+	/**
+	 * Replaces any null entries in `args` with their defaults, modifying
+	 * `args` in place. Throws an error if the default is missing too.
+	 * @param args The type arguments specified by the user when creating an
+	 * instance of `classType`.
+	 */
+	public static inline function applyDefaultTypeParams(classType:ClassType, args:Array<Type>):Void {
+		final params:Array<TypeParameter> = classType.params;
+		
+		if(params.length != args.length) {
+			Context.fatalError('${ classType.name } requires ${ params.length } '
+				+ 'type parameters; got ${ args.length }', Context.currentPos());
+		}
+		
+		for(i => arg in args) {
+			if(arg.followMono() == null) {
+				if(params[i] == null) {
+					Context.fatalError('Parameter ${ params[i]?.name } '
+						+ "has no default type; you must specify one here.", Context.currentPos());
+				}
+				
+				args[i] = params[i].defaultType;
+			}
+		}
+	}
+	
 	public static inline function getCachedImports(classType:ClassType):CachedImports {
 		var qualifiedClassName:String = classType.pack.join(".") + "." + classType.name;
 		return cache[qualifiedClassName];
@@ -57,13 +83,14 @@ class TypeSubstitutions {
 	
 	/**
 	 * @param types Omit this to perform default substitutions instead, based on
-	 * type constraints.
+	 * type constraints. Will be modified in place to apply default values.
 	 */
 	public inline function new(classType:ClassType, ?types:Array<Type>) {
 		className = classType.name;
 		this.classType = classType;
 		
-		var params:Array<TypeParameter> = classType.params;
+		final params:Array<TypeParameter> = classType.params;
+		
 		var codeCompletionMode:Bool = types == null;
 		if(codeCompletionMode) {
 			//Replace each param with its constraint type. If multiple
@@ -78,10 +105,7 @@ class TypeSubstitutions {
 			];
 		}
 		
-		if(params.length != types.length) {
-			Context.fatalError('$className requires ${ params.length } '
-				+ 'type parameters; got ${ types.length }', Context.currentPos());
-		}
+		applyDefaultTypeParams(classType, types);
 		
 		for(i => param in params) {
 			var type:ComplexType = types[i].followMono().toComplexType();
