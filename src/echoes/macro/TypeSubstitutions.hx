@@ -49,14 +49,22 @@ class TypeSubstitutions {
 		}
 		
 		for(i => arg in args) {
-			if(arg.followMono() == null) {
-				if(params[i] == null) {
-					Context.fatalError('Parameter ${ params[i]?.name } '
-						+ "has no default type; you must specify one here.", Context.currentPos());
-				}
-				
-				args[i] = params[i].defaultType;
+			if(arg.followMono() != null) {
+				continue;
 			}
+			
+			#if (haxe_ver >= 4.3)
+			if(params[i] != null) {
+				args[i] = params[i].defaultType;
+				
+				if(args[i] != null) {
+					continue;
+				}
+			}
+			#end
+			
+			Context.fatalError('Parameter ${ params[i]?.name } '
+				+ "has no default type; you must specify one here.", Context.currentPos());
 		}
 	}
 	
