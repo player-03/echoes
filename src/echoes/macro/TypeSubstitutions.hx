@@ -55,7 +55,7 @@ class TypeSubstitutions {
 			
 			#if (haxe_ver >= 4.3)
 			if(params[i] != null) {
-				args[i] = params[i].defaultType;
+				args[i] = params[i]?.defaultType;
 				
 				if(args[i] != null) {
 					continue;
@@ -63,7 +63,7 @@ class TypeSubstitutions {
 			}
 			#end
 			
-			Context.fatalError('Parameter ${ params[i]?.name } '
+			Context.fatalError('Parameter ${ params[i] != null ? params[i].name : Std.string(i) } '
 				+ "has no default type; you must specify one here.", Context.currentPos());
 		}
 	}
