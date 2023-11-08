@@ -263,15 +263,15 @@ class AdvancedFunctionalityTest extends Test {
 		//Make some views; each should see a different selection of entities.
 		var viewOfName:View<Name> = Echoes.getView(Name);
 		Assert.equals(2, viewOfName.entities.length);
-		Assert.isTrue(viewOfName.entities.has(name));
-		Assert.isTrue(viewOfName.entities.has(colorName));
+		Assert.isTrue(viewOfName.entities.contains(name));
+		Assert.isTrue(viewOfName.entities.contains(colorName));
 		
 		var viewOfShape:View<Shape> = Echoes.getView(Shape);
 		Assert.equals(2, viewOfShape.entities.length);
-		Assert.isTrue(viewOfShape.entities.has(shape));
-		Assert.isTrue(viewOfShape.entities.has(colorShape));
+		Assert.isTrue(viewOfShape.entities.contains(shape));
+		Assert.isTrue(viewOfShape.entities.contains(colorShape));
 		
-		//Test iter().
+		//Test `iter()`.
 		var joinedNames:String = "";
 		viewOfName.iter((e:Entity, n:Name) -> joinedNames += n);
 		Assert.equals("name1name2", joinedNames);
@@ -279,7 +279,7 @@ class AdvancedFunctionalityTest extends Test {
 		//Remove a component.
 		colorName.remove(Name);
 		Assert.equals(1, viewOfName.entities.length);
-		Assert.isFalse(viewOfName.entities.has(colorName));
+		Assert.isFalse(viewOfName.entities.contains(colorName));
 		
 		//Make a view that's linked to a system.
 		var nameSystem:NameSystem = new NameSystem();
@@ -291,8 +291,8 @@ class AdvancedFunctionalityTest extends Test {
 		Echoes.addSystem(nameSystem);
 		Assert.isTrue(viewOfColor.active);
 		Assert.equals(2, viewOfColor.entities.length);
-		Assert.isTrue(viewOfColor.entities.has(colorName));
-		Assert.isTrue(viewOfColor.entities.has(colorShape));
+		Assert.isTrue(viewOfColor.entities.contains(colorName));
+		Assert.isTrue(viewOfColor.entities.contains(colorShape));
 		
 		Echoes.removeSystem(nameSystem);
 		Assert.isFalse(viewOfColor.active);

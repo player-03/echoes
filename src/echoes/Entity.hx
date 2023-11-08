@@ -105,10 +105,6 @@ abstract Entity(Int) {
 		
 		statuses[this] = active;
 		if(active) {
-			//Many applications will have a mix of short-lived and long-lived
-			//entities. This means recently-created entities are more likely to
-			//be removed than ones that have been around a while. Therefore,
-			//store entities in last-in-first-out order.
 			Echoes._activeEntities.push(cast this);
 		}
 	}
@@ -165,7 +161,13 @@ abstract Entity(Int) {
 	 */
 	public function deactivate():Void {
 		if(active) {
-			Echoes._activeEntities.remove(cast this);
+			//Many applications will have a mix of short-lived and long-lived
+			//entities. An entity being removed is more likely to be
+			//short-lived, meaning it's near the end of the array.
+			final index:Int = Echoes.activeEntities.lastIndexOf(cast this);
+			if(index >= 0) {
+				Echoes._activeEntities.splice(index, 1);
+			}
 			statuses[this] = false;
 			
 			for(storage in getComponents()) {

@@ -157,11 +157,18 @@ class ViewBuilder {
 			}
 			
 			private override function dispatchAddedCallback(entity:echoes.Entity):Void {
-				//$a{} - Insert function arguments from an `Array<Expr>`.
+				var index:Int = entities.lastIndexOf(entity);
 				for(callback in onAdded) {
+					//$a{} - Insert function arguments from an `Array<Expr>`.
 					callback($a{ callbackArgs });
-					if(!entities.has(entity)) {
-						break;
+					
+					//If the callback removed the entity, stop. Cache the index
+					//to save time in most cases.
+					if(entities[index] != entity) {
+						index = entities.indexOf(entity);
+						if(entities[index] != entity) {
+							break;
+						}
 					}
 				}
 			}
@@ -170,7 +177,9 @@ class ViewBuilder {
 				for(callback in onRemoved) {
 					//$a{} - Insert function arguments from an `Array<Expr>`.
 					callback($a{ removedCallbackArgs });
-					if(entities.has(entity)) {
+					
+					//If the callback re-added the entity, stop.
+					if(entities.contains(entity)) {
 						break;
 					}
 				}

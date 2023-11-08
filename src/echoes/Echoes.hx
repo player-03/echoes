@@ -23,15 +23,15 @@ class Echoes {
 	#end
 	
 	@:allow(echoes.ComponentStorage)
-	private static var componentStorage:Array<DynamicComponentStorage> = [];
+	private static final componentStorage:Array<DynamicComponentStorage> = [];
 	
 	@:allow(echoes.Entity)
-	private static var _activeEntities:List<Entity> = new List();
-	public static var activeEntities(get, never):ReadOnlyList<Entity>;
-	private static inline function get_activeEntities():ReadOnlyList<Entity> return _activeEntities;
+	private static final _activeEntities:Array<Entity> = [];
+	public static var activeEntities(get, never):ReadOnlyArray<Entity>;
+	private static inline function get_activeEntities():ReadOnlyArray<Entity> return _activeEntities;
 	
 	@:allow(echoes.ViewBase)
-	private static var _activeViews:Array<ViewBase> = [];
+	private static final _activeViews:Array<ViewBase> = [];
 	public static var activeViews(get, never):ReadOnlyArray<ViewBase>;
 	private static inline function get_activeViews():ReadOnlyArray<ViewBase> return _activeViews;
 	
@@ -110,7 +110,7 @@ class Echoes {
 			Entity.statuses[i] = false;
 		}
 		
-		_activeEntities.clear();
+		_activeEntities.resize(0);
 		activeSystems.removeAll();
 		
 		//Iterate backwards when removing items from arrays.

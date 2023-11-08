@@ -10,12 +10,12 @@ import echoes.utils.ReadOnlyData;
 class View<Rest> extends ViewBase { }
 
 class ViewBase {
-	private var _entities:List<Entity> = new List();
+	@:allow(echoes.Echoes) private final _entities:Array<Entity> = [];
 	/**
 	 * All entities in this view.
 	 */
-	public var entities(get, never):ReadOnlyList<Entity>;
-	private inline function get_entities():ReadOnlyList<Entity> return _entities;
+	public var entities(get, never):ReadOnlyArray<Entity>;
+	private inline function get_entities():ReadOnlyArray<Entity> return _entities;
 	
 	private var activations:Int = 0;
 	public var active(get, never):Bool;
@@ -34,11 +34,7 @@ class ViewBase {
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
 	private inline function add(entity:Entity):Void {
 		if(isMatched(entity)) {
-			if(!entities.has(entity)) {
-				//Many applications will have a mix of short-lived and
-				//long-lived entities. This means recently-created entities are
-				//more likely to be removed than ones that have been around a
-				//while. Therefore, store entities in last-in-first-out order.
+			if(!entities.contains(entity)) {
 				_entities.push(entity);
 			}
 			dispatchAddedCallback(entity);
@@ -70,7 +66,12 @@ class ViewBase {
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
 	private inline function remove(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
-		if(_entities.remove(entity)) {
+		//Many applications will have a mix of short-lived and long-lived
+		//entities. An entity being removed is more likely to be short-lived,
+		//meaning it's near the end of the array.
+		final index:Int = entities.lastIndexOf(entity);
+		if(index >= 0) {
+			_entities.splice(index, 1);
 			dispatchRemovedCallback(entity, removedComponentStorage, removedComponent);
 		}
 	}
@@ -78,7 +79,7 @@ class ViewBase {
 	@:allow(echoes.Echoes) private function reset():Void {
 		activations = 0;
 		Echoes._activeViews.remove(this);
-		_entities.clear();
+		_entities.resize(0);
 	}
 	
 	public function toString():String {
