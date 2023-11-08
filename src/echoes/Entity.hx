@@ -159,12 +159,24 @@ abstract Entity(Int) {
 			if(index >= 0) {
 				Echoes.activeEntityIndices[this] = null;
 				
+				#if echoes_stable_order
+				//Do the equivalent of `_activeEntities.remove(this)`, but also
+				//save each entity's new index.
 				for(i in index...(Echoes.activeEntities.length - 1)) {
 					final entity:Entity = Echoes.activeEntities[i + 1];
 					Echoes.activeEntityIndices[entity.id] = i;
 					Echoes._activeEntities[i] = entity;
 				}
 				Echoes._activeEntities.pop();
+				#else
+				//Instead of removing this from the middle of the array in O(n),
+				//move the final entity to `index` in O(1).
+				final lastEntity:Entity = Echoes._activeEntities.pop();
+				if(lastEntity.id != this) {
+					Echoes.activeEntityIndices[lastEntity.id] = index;
+					Echoes._activeEntities[index] = lastEntity;
+				}
+				#end
 			}
 			
 			for(storage in getComponents()) {

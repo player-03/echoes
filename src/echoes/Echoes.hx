@@ -27,6 +27,13 @@ class Echoes {
 	
 	@:allow(echoes.Entity)
 	private static final _activeEntities:Array<Entity> = [];
+	/**
+	 * All currently-active entities.
+	 * 
+	 * Note: to improve performance, this array is re-ordered whenever an entity
+	 * is deactivated or destroyed. To suppress this behavior and keep the array
+	 * in a consistent order, use `-D echoes_stable_order`.
+	 */
 	public static var activeEntities(get, never):ReadOnlyArray<Entity>;
 	private static inline function get_activeEntities():ReadOnlyArray<Entity> return _activeEntities;
 	
