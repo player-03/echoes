@@ -224,13 +224,13 @@ class BasicFunctionalityTest extends Test {
 		
 		//Deactivate a system.
 		Echoes.removeSystem(nameSystem);
-		assertTimesCalled(3, "NameSystem.nameRemoved");
+		assertTimesCalled(2, "NameSystem.nameRemoved");
 		
 		//Destroy the remaining entity.
 		assertTimesCalled(1, "AppearanceSystem.shapeRemoved");
 		
 		circle.destroy();
-		assertTimesCalled(3, "NameSystem.nameRemoved");
+		assertTimesCalled(2, "NameSystem.nameRemoved");
 		assertTimesCalled(2, "AppearanceSystem.shapeRemoved");
 	}
 	

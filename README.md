@@ -577,6 +577,7 @@ Echoes offers a few ways to customize compilation.
 ### Since v1.0.0-rc.5
 
 - `Entity.getComponents()` now returns a list of `ComponentStorage` instances, instead of a map. If you prefer the old format, you can perform an implicit cast: `var map:Map<String, Dynamic> = Entity.getComponents()`.
+- Systems no longer receive `@:remove` events when deactivated. For instance, a system removed by `Echoes.removeSystem()` won't receive a bunch of events.
 
 ### Since v1.0.0-rc.3
 

@@ -45,7 +45,7 @@ class ViewBase {
 		}
 	}
 	
-	public function deactivate():Void {
+	public inline function deactivate():Void {
 		activations--;
 		if(activations <= 0) {
 			reset();
@@ -78,9 +78,7 @@ class ViewBase {
 	@:allow(echoes.Echoes) private function reset():Void {
 		activations = 0;
 		Echoes._activeViews.remove(this);
-		while(!entities.isEmpty()) {
-			remove(entities.first());
-		}
+		_entities.clear();
 	}
 	
 	public function toString():String {

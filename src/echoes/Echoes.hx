@@ -106,7 +106,6 @@ class Echoes {
 	 * automatic updates started during `init()`.
 	 */
 	public static function reset():Void {
-		//Deactivate all entities so that no events are dispatched.
 		for(i in 0...Entity.statuses.length) {
 			Entity.statuses[i] = false;
 		}
