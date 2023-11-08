@@ -64,17 +64,11 @@ abstract Entity(Int) {
 	private static var idPool:Array<Int> = [];
 	
 	/**
-	 * The status of every entity ID that has been allocated thus far. True
-	 * means the entity is active, false means it's inactive or destroyed.
-	 */
-	private static var statuses:Array<Bool> = [];
-	
-	/**
 	 * Whether this entity is active. If false, it may also be destroyed.
 	 */
 	public var active(get, never):Bool;
 	private inline function get_active():Bool {
-		return statuses[this];
+		return Echoes.activeEntityIndices[this] != null;
 	}
 	
 	/**
@@ -103,8 +97,8 @@ abstract Entity(Int) {
 		
 		this = id != null ? id : nextId++;
 		
-		statuses[this] = active;
 		if(active) {
+			Echoes.activeEntityIndices[this] = Echoes._activeEntities.length;
 			Echoes._activeEntities.push(cast this);
 		}
 	}
@@ -114,7 +108,7 @@ abstract Entity(Int) {
 	 */
 	public function activate():Void {
 		if(!active) {
-			statuses[this] = true;
+			Echoes.activeEntityIndices[this] = Echoes._activeEntities.length;
 			Echoes._activeEntities.push(cast this);
 			
 			for(storage in getComponents()) {
@@ -161,14 +155,17 @@ abstract Entity(Int) {
 	 */
 	public function deactivate():Void {
 		if(active) {
-			//Many applications will have a mix of short-lived and long-lived
-			//entities. An entity being removed is more likely to be
-			//short-lived, meaning it's near the end of the array.
-			final index:Int = Echoes.activeEntities.lastIndexOf(cast this);
+			final index:Int = Echoes.activeEntityIndices[this];
 			if(index >= 0) {
-				Echoes._activeEntities.splice(index, 1);
+				Echoes.activeEntityIndices[this] = null;
+				
+				for(i in index...(Echoes.activeEntities.length - 1)) {
+					final entity:Entity = Echoes.activeEntities[i + 1];
+					Echoes.activeEntityIndices[entity.id] = i;
+					Echoes._activeEntities[i] = entity;
+				}
+				Echoes._activeEntities.pop();
 			}
-			statuses[this] = false;
 			
 			for(storage in getComponents()) {
 				for(view in storage.relatedViews) {

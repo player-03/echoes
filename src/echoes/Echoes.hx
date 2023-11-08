@@ -30,6 +30,13 @@ class Echoes {
 	public static var activeEntities(get, never):ReadOnlyArray<Entity>;
 	private static inline function get_activeEntities():ReadOnlyArray<Entity> return _activeEntities;
 	
+	/**
+	 * The index of each entity in `activeEntities`. For any active entity,
+	 * `entity == activeEntities[activeEntityIndices[entity.id]]`.
+	 */
+	@:allow(echoes.Entity)
+	private static final activeEntityIndices:Array<Null<Int>> = [];
+	
 	@:allow(echoes.ViewBase)
 	private static final _activeViews:Array<ViewBase> = [];
 	public static var activeViews(get, never):ReadOnlyArray<ViewBase>;
@@ -106,10 +113,7 @@ class Echoes {
 	 * automatic updates started during `init()`.
 	 */
 	public static function reset():Void {
-		for(i in 0...Entity.statuses.length) {
-			Entity.statuses[i] = false;
-		}
-		
+		activeEntityIndices.resize(0);
 		_activeEntities.resize(0);
 		activeSystems.removeAll();
 		
@@ -125,8 +129,6 @@ class Echoes {
 		EntityComponents.components.resize(0);
 		
 		Entity.idPool.resize(0);
-		Entity.statuses.resize(0);
-		
 		Entity.nextId = 0;
 		
 		init(0);
