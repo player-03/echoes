@@ -24,3 +24,6 @@ jobs:
       
       - name: Run tests (map storage)
         run: haxe tests.hxml --interp -D echoes_storage=Map
+      
+      - name: Run tests (stable array order)
+        run: haxe tests.hxml --interp -D echoes_stable_order

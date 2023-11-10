@@ -65,6 +65,64 @@ class EdgeCaseTest extends Test {
 		assertTimesCalled(2, "ComponentsExistSystem.nameRemoved");
 	}
 	
+	private function testEntityIndices():Void {
+		inline function assertOrder(order:Array<Entity>, ?posInfos:PosInfos):Void {
+			if(Assert.equals(order.length, Echoes.activeEntities.length, posInfos)) {
+				for(i in 0...order.length) {
+					Assert.equals(order[i], Echoes.activeEntities[i],
+						'expected ${ order[i] } at index $i, got ${ Echoes.activeEntities[i] }', posInfos);
+				}
+			}
+		}
+		
+		var a:Entity = new Entity();
+		var b:Entity = new Entity();
+		var c:Entity = new Entity();
+		var d:Entity = new Entity();
+		
+		#if echoes_stable_order
+		
+		assertOrder([a, b, c, d]);
+		
+		//Removing an entity should shift the rest, preserving order.
+		a.deactivate();
+		assertOrder([b, c, d]);
+		
+		a.activate();
+		assertOrder([b, c, d, a]);
+		
+		d.deactivate();
+		assertOrder([b, c, a]);
+		
+		b.deactivate();
+		assertOrder([c, a]);
+		
+		a.deactivate();
+		assertOrder([c]);
+		
+		#else
+		
+		assertOrder([a, b, c, d]);
+		
+		//Removing an entity should move the final entity, saving time.
+		a.deactivate();
+		assertOrder([d, b, c]);
+		
+		a.activate();
+		assertOrder([d, b, c, a]);
+		
+		c.deactivate();
+		assertOrder([d, b, a]);
+		
+		d.deactivate();
+		assertOrder([a, b]);
+		
+		b.deactivate();
+		assertOrder([a]);
+		
+		#end
+	}
+	
 	private function testNullComponents():Void {
 		var entity:Entity = new Entity();
 		
