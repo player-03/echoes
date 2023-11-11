@@ -71,7 +71,12 @@ class ViewBase {
 		//meaning it's near the end of the array.
 		final index:Int = entities.lastIndexOf(entity);
 		if(index >= 0) {
+			#if echoes_stable_order
 			_entities.splice(index, 1);
+			#else
+			_entities[index] = entities[entities.length - 1];
+			_entities.pop();
+			#end
 			dispatchRemovedCallback(entity, removedComponentStorage, removedComponent);
 		}
 	}
