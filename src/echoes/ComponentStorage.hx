@@ -2,6 +2,7 @@ package echoes;
 
 import echoes.Echoes;
 import echoes.Entity;
+import echoes.utils.ComponentTypes;
 import echoes.utils.ReadOnlyData;
 import echoes.View;
 
@@ -75,16 +76,11 @@ class ComponentStorage<T> {
 		
 		storage[entity.id] = component;
 		
-		var components:List<DynamicComponentStorage> = EntityComponents.components[entity.id];
+		var components:EntityComponents = EntityComponents.components[entity.id];
 		if(components == null) {
-			EntityComponents.components[entity.id] = components = new List();
+			EntityComponents.components[entity.id] = components = new EntityComponents();
 		}
-		
-		//Add to the beginning of the list, so that `remove()` will search
-		//recently-added components first. This way, short-term components can
-		//be added and removed quickly, and long-lasting components filter down
-		//to the end of the list where they don't get in the way.
-		components.push(this);
+		components.addComponentStorage(this);
 		
 		if(entity.active) {
 			for(view in relatedViews) {
@@ -135,7 +131,7 @@ class ComponentStorage<T> {
 		#end
 		
 		if(removedComponent != null) {
-			EntityComponents.components[entity.id].remove(this);
+			EntityComponents.components[entity.id].removeComponentStorage(this);
 			
 			if(entity.active) {
 				for(view in relatedViews) {
@@ -182,14 +178,19 @@ abstract DynamicComponentStorage(ComponentStorage<Dynamic>) {
  * up an individual component, but it helps with batch operations such as
  * `deactivate()` and `destroy()`.
  */
-@:forward @:allow(echoes.ComponentStorage)
-abstract EntityComponents(ReadOnlyList<DynamicComponentStorage>) from List<DynamicComponentStorage> to ReadOnlyList<DynamicComponentStorage> {
+@:forward(contains, containsComponentStorage, iterator, length) @:forward.new
+@:allow(echoes.ComponentStorage)
+abstract EntityComponents(ComponentTypes) from ComponentTypes {
 	/**
 	 * The source data for all `EntityComponents` lists. This should only be
 	 * updated by `ComponentStorage`, or by `Echoes.reset()`.
 	 */
 	@:allow(echoes.Echoes)
-	private static final components:Array<List<DynamicComponentStorage>> = [];
+	private static final components:Array<EntityComponents> = [];
+	
+	private inline function addComponentStorage(storage:DynamicComponentStorage):Void {
+		this.addComponentStorage(storage);
+	}
 	
 	/**
 	 * Gets the `EntityComponents` list for the given entity.
@@ -197,7 +198,7 @@ abstract EntityComponents(ReadOnlyList<DynamicComponentStorage>) from List<Dynam
 	@:allow(echoes.Entity)
 	private static inline function forEntity(entity:Entity):EntityComponents {
 		if(components[entity.id] == null) {
-			return components[entity.id] = new List();
+			return components[entity.id] = new EntityComponents();
 		} else {
 			return components[entity.id];
 		}
@@ -208,12 +209,17 @@ abstract EntityComponents(ReadOnlyList<DynamicComponentStorage>) from List<Dynam
 	 */
 	@:allow(echoes.Entity)
 	private static inline function removeAll(entity:Entity):Void {
-		if(components[entity.id] != null) {
-			//`List` is designed to allow iteration while removing items.
-			for(componentStorage in components[entity.id]) {
+		final entityComponents:EntityComponents = components[entity.id];
+		if(entityComponents != null) {
+			components[entity.id] = new EntityComponents();
+			for(componentStorage in entityComponents) {
 				componentStorage.remove(entity);
 			}
 		}
+	}
+	
+	private inline function removeComponentStorage(storage:DynamicComponentStorage):Bool {
+		return this.removeComponentStorage(storage);
 	}
 	
 	@:to private inline function toIterable():Iterable<DynamicComponentStorage> {

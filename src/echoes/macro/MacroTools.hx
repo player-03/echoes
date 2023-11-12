@@ -122,8 +122,11 @@ class MacroTools {
 	/**
 	 * Given an expression representing a class (the sort of expression passed
 	 * to `entity.get()`), determines the component type.
+	 * @param acceptInstance Whether to accept an instance of the type instead
+	 * of the identifier. For instance, with this enabled, the user could pass
+	 * `true` or `false` instead of `Bool`.
 	 */
-	public static function parseClassExpr(e:Expr):ComplexType {
+	public static function parseClassExpr(e:Expr, ?acceptInstance:Bool = false):ComplexType {
 		switch(e.expr) {
 			case EParenthesis({ expr:ECheckType(_, type) }):
 				return followComplexType(type);
@@ -137,9 +140,11 @@ class MacroTools {
 			} catch(err:Exception) { }
 		}
 		
-		try {
-			return followMono(e.typeof()).toComplexType();
-		} catch(err:Exception) { }
+		if(acceptInstance) {
+			try {
+				return followMono(e.typeof()).toComplexType();
+			} catch(err:Exception) { }
+		}
 		
 		var expr:String = new Printer().printExpr(e);
 		if(~/^[\w\d\.]+$/.match(expr)) {

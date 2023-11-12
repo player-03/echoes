@@ -1,10 +1,12 @@
 package;
 
 import Components;
+import echoes.ComponentStorage;
 import echoes.Echoes;
 import echoes.Entity;
 import echoes.System;
 import echoes.SystemList;
+import echoes.utils.ComponentTypes;
 import echoes.utils.Signal;
 import echoes.View;
 import haxe.PosInfos;
@@ -27,6 +29,26 @@ class AdvancedFunctionalityTest extends Test {
 	}
 	
 	//Tests may be run in any order, but not in parallel.
+	
+	private function testComponentTypes():Void {
+		var types:ComponentTypes = new ComponentTypes();
+		types.add(Bool);
+		types.add(Bool);
+		Assert.equals(1, types.length);
+		Assert.isTrue(types.containsComponentStorage(Echoes.getComponentStorage(Bool)));
+		
+		final stringStorage:DynamicComponentStorage = Echoes.getComponentStorage(String);
+		types.addComponentStorage(stringStorage);
+		Assert.equals(2, types.length);
+		Assert.isTrue(types.contains(String));
+		
+		types.remove(Bool);
+		Assert.isFalse(types.contains(Bool));
+		Assert.isTrue(types.contains(String));
+		
+		types.removeComponentStorage(stringStorage);
+		Assert.isFalse(types.contains(String));
+	}
 	
 	private function testEntityTemplates():Void {
 		Echoes.addSystem(new NameSystem());

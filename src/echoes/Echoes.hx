@@ -160,7 +160,7 @@ class Echoes {
 	//=================
 	
 	/**
-	 * Returns the `ComponentStorage` singleton for the given component.
+	 * Returns the `ComponentStorage` singleton for the given component type.
 	 * 
 	 * Sample usage:
 	 * 
