@@ -128,6 +128,7 @@ class AdvancedFunctionalityTest extends Test {
 		//for `StdTypes.Bool`.
 		Assert.equals("String", Echoes.getComponentStorage(String).componentType);
 		Assert.equals("Array<StdTypes.Bool>", Echoes.getComponentStorage((_:Array<Bool>)).componentType);
+		Assert.equals("ComponentStorage<StdTypes.Bool>", Std.string(Echoes.getComponentStorage(Bool)));
 		
 		var entity:Entity = new Entity();
 		entity.add(["xyz"]);

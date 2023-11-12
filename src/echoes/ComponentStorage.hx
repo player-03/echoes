@@ -160,6 +160,10 @@ class ComponentStorage<T> {
 			add(entity, component);
 		}
 	}
+	
+	private inline function toString():String {
+		return name;
+	}
 }
 
 /**
