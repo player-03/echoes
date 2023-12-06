@@ -239,9 +239,8 @@ class EdgeCaseTest extends Test {
 		entity.remove(Permanent);
 		Assert.isTrue(entity.exists(Permanent));
 		
-		//Clear the permanent listeners before cleaning up.
-		Echoes.getView(Permanent).onRemoved.pop();
-		Echoes.getView(Permanent, One).onRemoved.pop();
+		Echoes.reset();
+		Assert.isFalse(entity.exists(Permanent));
 	}
 	
 	private function testSystemLists():Void {
