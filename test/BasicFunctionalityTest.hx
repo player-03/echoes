@@ -241,25 +241,25 @@ class BasicFunctionalityTest extends Test {
 		Echoes.addSystem(systems);
 		
 		var timeCountSystem:TimeCountSystem = new TimeCountSystem();
-		Assert.equals(0, timeCountSystem.totalTime);
+		Assert.equals(0.0, timeCountSystem.totalTime);
 		
 		systems.add(timeCountSystem);
 		
 		//Create some entities, but none with both color and shape.
 		var green:Entity = new Entity().add((0x00FF00:Color));
-		Assert.equals(0, timeCountSystem.colorTime);
+		Assert.equals(0.0, timeCountSystem.colorTime);
 		
 		var star:Entity = new Entity().add(STAR, ("Proxima Centauri":Name));
-		Assert.equals(0, timeCountSystem.shapeTime);
+		Assert.equals(0.0, timeCountSystem.shapeTime);
 		
 		Assert.isNull(star.get(Color), star.get(Color) + " should be null. See ComponentStorage constructor for details.");
 		
 		//Run an update.
 		Echoes.update();
-		Assert.equals(1, timeCountSystem.totalTime);
-		Assert.equals(1, timeCountSystem.colorTime);
-		Assert.equals(1, timeCountSystem.shapeTime);
-		Assert.equals(0, timeCountSystem.colorAndShapeTime);
+		Assert.equals(1.0, timeCountSystem.totalTime);
+		Assert.equals(1.0, timeCountSystem.colorTime);
+		Assert.equals(1.0, timeCountSystem.shapeTime);
+		Assert.equals(0.0, timeCountSystem.colorAndShapeTime);
 		
 		//Give one entity both a color and shape.
 		star.add((0xFFFFFF:Color));
@@ -270,17 +270,17 @@ class BasicFunctionalityTest extends Test {
 		//Run another few updates. (`colorTime` should now increment twice per
 		//update, since now two entities have color.)
 		Echoes.update();
-		Assert.equals(2, timeCountSystem.totalTime);
-		Assert.equals(3, timeCountSystem.colorTime);
-		Assert.equals(2, timeCountSystem.shapeTime);
-		Assert.equals(1, timeCountSystem.colorAndShapeTime);
+		Assert.equals(2.0, timeCountSystem.totalTime);
+		Assert.equals(3.0, timeCountSystem.colorTime);
+		Assert.equals(2.0, timeCountSystem.shapeTime);
+		Assert.equals(1.0, timeCountSystem.colorAndShapeTime);
 		
 		Echoes.lastUpdate -= 0.001;
 		Echoes.update();
-		Assert.equals(3, timeCountSystem.totalTime);
-		Assert.equals(5, timeCountSystem.colorTime);
-		Assert.equals(3, timeCountSystem.shapeTime);
-		Assert.equals(2, timeCountSystem.colorAndShapeTime);
+		Assert.equals(3.0, timeCountSystem.totalTime);
+		Assert.equals(5.0, timeCountSystem.colorTime);
+		Assert.equals(3.0, timeCountSystem.shapeTime);
+		Assert.equals(2.0, timeCountSystem.colorAndShapeTime);
 	}
 }
 
