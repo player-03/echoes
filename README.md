@@ -580,6 +580,7 @@ Echoes offers a few ways to customize compilation.
 - Systems no longer receive `@:remove` events when deactivated. For instance, a system removed by `Echoes.removeSystem()` won't receive a bunch of events.
 - `View.entities` is now an `Array` rather than a `List`. You can still iterate over it as before, but you'll have to call `contains()` rather than `has()` if you want to check existence.
 - `Echoes.activeEntities` and `View.entities` may be re-ordered when entities or their components are removed. You can set `-D echoes_stable_order` to preserve the order, potentially at the cost of speed.
+- `@:remove` listeners are no longer allowed to add back the component that's currently being removed. They may still add other components as normal.
 
 ### Since v1.0.0-rc.3
 

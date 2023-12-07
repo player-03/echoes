@@ -174,14 +174,18 @@ class ViewBuilder {
 			}
 			
 			private override function dispatchRemovedCallback(entity:echoes.Entity, ?removedComponentStorage:echoes.ComponentStorage.DynamicComponentStorage, ?removedComponent:Any):Void {
+				var exception:haxe.Exception = null;
 				for(callback in onRemoved) {
-					//$a{} - Insert function arguments from an `Array<Expr>`.
-					callback($a{ removedCallbackArgs });
-					
-					//If the callback re-added the entity, stop.
-					if(entities.contains(entity)) {
-						break;
+					try {
+						//$a{} - Insert function arguments from an `Array<Expr>`.
+						callback($a{ removedCallbackArgs });
+					} catch(e:haxe.Exception) {
+						exception = e;
 					}
+				}
+				
+				if(exception != null) {
+					throw exception;
 				}
 			}
 			

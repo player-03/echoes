@@ -199,12 +199,16 @@ class EdgeCaseTest extends Test {
 			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
 		Echoes.getView(Brief, One).onAdded.push((entity, brief, one)
 			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
-		Echoes.getView(Permanent, One).onRemoved.push((entity, permanent, one)
-			-> Assert.fail("ComponentStorage.remove() didn't stop iterating despite component being re-added."));
 		Echoes.getView(Brief).onAdded.push((entity, brief)
 			-> Assert.fail("ViewBuilder.dispatchAddedCallback() didn't stop iterating despite entity being removed."));
+		
+		//However, `RecursiveEventSystem` shouldn't be able to interrupt
+		//`onRemoved` events.
+		var permanentRemoveFlags:Int = 0;
 		Echoes.getView(Permanent).onRemoved.push((entity, permanent)
-			-> Assert.fail("ViewBuilder.dispatchRemovedCallback() didn't stop iterating despite entity being re-added."));
+			-> permanentRemoveFlags |= 1);
+		Echoes.getView(Permanent, One).onRemoved.push((entity, permanent, one)
+			-> permanentRemoveFlags |= 2);
 		
 		//Test components that add/remove other components.
 		entity.add((1:One));
@@ -236,11 +240,16 @@ class EdgeCaseTest extends Test {
 		entity.add((Math.POSITIVE_INFINITY:Permanent));
 		Assert.isTrue(entity.exists(Permanent));
 		
-		entity.remove(Permanent);
-		Assert.isTrue(entity.exists(Permanent));
-		
-		Echoes.reset();
+		//`RecursiveEventSystem` will attempt to undo `remove(Permanent)`, which
+		//should throw an error. Afterwards, `Permanent` should remain gone, and
+		//all listeners should have been called.
+		Assert.raises(() -> entity.remove(Permanent), String);
 		Assert.isFalse(entity.exists(Permanent));
+		Assert.equals(1 | 2, permanentRemoveFlags);
+		
+		//`remove()` should only prevent adding `Permanent` while it's ongoing.
+		entity.add((80:Permanent));
+		Assert.equals(80.0, entity.get(Permanent));
 	}
 	
 	private function testSystemLists():Void {
@@ -326,7 +335,9 @@ class RecursiveEventSystem extends System implements IMethodCounter {
 		entity.remove(Brief);
 	}
 	
-	@:remove private function permanentAddsItself(permanent:Permanent, entity:Entity):Void {
+	@:remove private function permanentTriesToAddItself(permanent:Permanent, entity:Entity):Void {
+		//This is not allowed, and should throw an error. If it was allowed, it
+		//would keep the component around permanently, hence the name.
 		entity.add(permanent);
 	}
 }

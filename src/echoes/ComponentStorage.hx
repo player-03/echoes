@@ -5,6 +5,7 @@ import echoes.Entity;
 import echoes.utils.ComponentTypes;
 import echoes.utils.ReadOnlyData;
 import echoes.View;
+import haxe.Exception;
 
 /**
  * A central location to store all components of a given type. For example, the
@@ -28,6 +29,12 @@ class ComponentStorage<T> {
 	private inline function get_name():String {
 		return 'ComponentStorage<$componentType>';
 	}
+	
+	/**
+	 * Entity IDs for which this component is currently being removed. During
+	 * this time, the component cannot be re-added.
+	 */
+	private final ongoingRemovals:Array<Int> = [];
 	
 	/**
 	 * All views that include this type of component.
@@ -74,6 +81,10 @@ class ComponentStorage<T> {
 			return;
 		}
 		
+		if(ongoingRemovals.contains(entity.id)) {
+			throw 'Attempted to add $componentType to entity ${ entity.id } during a @:remove listener for that component.';
+		}
+		
 		storage[entity.id] = component;
 		
 		var components:EntityComponents = EntityComponents.components[entity.id];
@@ -107,6 +118,8 @@ class ComponentStorage<T> {
 		#end
 		storage.resize(0);
 		#end
+		
+		ongoingRemovals.resize(0);
 	}
 	
 	public inline function exists(entity:Entity):Bool {
@@ -134,13 +147,21 @@ class ComponentStorage<T> {
 			EntityComponents.components[entity.id].removeComponentStorage(this);
 			
 			if(entity.active) {
+				ongoingRemovals.push(entity.id);
+				
+				var exception:Exception = null;
 				for(view in relatedViews) {
-					view.remove(entity, this, removedComponent);
-					
-					//Stop dispatching events if a listener added it back.
-					if(exists(entity)) {
-						return;
+					try {
+						view.remove(entity, this, removedComponent);
+					} catch(e:Exception) {
+						exception = e;
 					}
+				}
+				
+				ongoingRemovals.remove(entity.id);
+				
+				if(exception != null) {
+					throw exception;
 				}
 			}
 		}
