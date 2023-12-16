@@ -5,3 +5,4 @@
 -lib utest
 -main Main
 -dce full
+-D UTEST_DETAILED_MESSAGES
