@@ -161,6 +161,22 @@ class System {
 	}
 	
 	/**
+	 * Adds this to `activeSystems`, activating it.
+	 * 
+	 * Note: you can also activate this by adding it to an active `SystemList`.
+	 */
+	public inline function activate():Void {
+		Echoes.activeSystems.add(this);
+	}
+	
+	/**
+	 * Removes this from `activeSystems`, deactivating it.
+	 */
+	public inline function deactivate():Void {
+		parent.remove(this);
+	}
+	
+	/**
 	 * @see `SystemList.find()`
 	 */
 	private function find<T:System>(systemType:Class<T>):Null<T> {

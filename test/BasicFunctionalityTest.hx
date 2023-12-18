@@ -137,7 +137,7 @@ class BasicFunctionalityTest extends Test {
 		Assert.isFalse(inactive.active);
 		Assert.equals(0, Echoes.activeEntities.length);
 		
-		Echoes.addSystem(new AppearanceSystem());
+		new AppearanceSystem().activate();
 		assertTimesCalled(0, "AppearanceSystem.colorAdded");
 		
 		//Add some components the system looks for.
@@ -159,7 +159,7 @@ class BasicFunctionalityTest extends Test {
 		var appearanceSystem:AppearanceSystem = new AppearanceSystem();
 		Assert.equals(0, Echoes.activeSystems.length);
 		
-		Echoes.addSystem(appearanceSystem);
+		appearanceSystem.activate();
 		Assert.equals(1, Echoes.activeSystems.length);
 		assertTimesCalled(0, "AppearanceSystem.colorAdded");
 		
@@ -193,7 +193,7 @@ class BasicFunctionalityTest extends Test {
 		redLine.add(("redLine":Name));
 		assertTimesCalled(0, "NameSystem.nameAdded", "NameSystem isn't active but its method was still called.");
 		
-		Echoes.addSystem(nameSystem);
+		nameSystem.activate();
 		assertTimesCalled(2, "NameSystem.nameAdded");
 		assertTimesCalled(0, "NameSystem.nameRemoved");
 		
@@ -223,7 +223,7 @@ class BasicFunctionalityTest extends Test {
 		assertTimesCalled(2, "NameSystem.nameRemoved");
 		
 		//Deactivate a system.
-		Echoes.removeSystem(nameSystem);
+		nameSystem.deactivate();
 		assertTimesCalled(2, "NameSystem.nameRemoved");
 		
 		//Destroy the remaining entity.
@@ -238,7 +238,7 @@ class BasicFunctionalityTest extends Test {
 	private function testUpdateEvents():Void {
 		//Create a `TimeCountSystem` and use a custom `Clock`.
 		var systems:SystemList = new SystemList(new OneSecondClock());
-		Echoes.addSystem(systems);
+		systems.activate();
 		
 		var timeCountSystem:TimeCountSystem = new TimeCountSystem();
 		Assert.equals(0.0, timeCountSystem.totalTime);

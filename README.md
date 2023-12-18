@@ -32,7 +32,7 @@ class EchoesExample {
 		Echoes.init();
 		
 		//Create and activate an instance of our system.
-		Echoes.addSystem(new RenderSystem()); //Details below.
+		new RenderSystem().activate(); //Details below.
 		
 		//Create an entity with the components our system will use. Entities are
 		//activated automatically unless `false` is passed.
@@ -114,8 +114,8 @@ class EchoesExample {
 		
 		//Adding `physicsSystems` first means that entire group will run before
 		//`RenderSystem`, even if more systems are added later.
-		Echoes.addSystem(physicsSystems);
-		Echoes.addSystem(new RenderSystem()); //Details in previous example.
+		physicsSystems.activate();
+		new RenderSystem().activate(); //Details in previous example.
 		
 		//Create entities: one tree and two rabbits. The rabbits will race
 		//towards the tree.
@@ -303,9 +303,9 @@ class Main {
 		
 		//Run all `enterFrame` systems first, then all `midFrame` systems, then
 		//all `exitFrame` systems.
-		Echoes.addSystem(enterFrame);
-		Echoes.addSystem(midFrame);
-		Echoes.addSystem(exitFrame);
+		enterFrame.activate();
+		midFrame.activate();
+		exitFrame.activate();
 		
 		//Even if `exitFrame` systems are defined first, they'll run last.
 		exitFrame.add(new ExitFrameSystem());
@@ -333,11 +333,11 @@ class Main {
 		var enterFrame:SystemList = new SystemList();
 		enterFrame.add(new EnterFrameSystem());
 		enterFrame.add(new EnterFrameSystem2());
-		Echoes.addSystem(enterFrame);
+		enterFrame.activate();
 		
 		var midFrame:SystemList = new SystemList();
 		midFrame.add(new MidFrameSystem());
-		Echoes.addSystem(midFrame);
+		midFrame.activate();
 		
 		//Set up `physics` as part of `midFrame`.
 		var physics:SystemList = new SystemList();
@@ -355,7 +355,7 @@ class Main {
 		var exitFrame:SystemList = new SystemList();
 		exitFrame.add(new ExitFrameSystem());
 		exitFrame.add(new ExitFrameSystem2());
-		Echoes.addSystem(exitFrame);
+		exitFrame.activate();
 	}
 }
 ```
@@ -430,8 +430,8 @@ class Main {
 		
 		//Because `AverageSystem` and `list` both have priority 0, they run in
 		//the order they're added.
-		Echoes.addSystem(new AverageSystem());
-		Echoes.addSystem(list);
+		new AverageSystem().activate();
+		list.activate();
 		
 		//No matter how high a system's priority, if it's added to `list` it
 		//will run during `list`, and will come after `AverageSystem`.
@@ -576,11 +576,13 @@ Echoes offers a few ways to customize compilation.
 
 ### Since v1.0.0-rc.5
 
+- `Echoes.addSystem()`, `Echoes.hasSystem()`, and `Echoes.removeSystem()` have been replaced by `system.activate()`, `system.active`, and `system.deactivate()`, respectively.
 - `Entity.getComponents()` now returns a list of `ComponentStorage` instances, instead of a map. If you prefer the old format, you can perform an implicit cast: `var map:Map<String, Dynamic> = Entity.getComponents()`.
 - Systems no longer receive `@:remove` events when deactivated. For instance, a system removed by `Echoes.removeSystem()` won't receive a bunch of events.
 - `View.entities` is now an `Array` rather than a `List`. You can still iterate over it as before, but you'll have to call `contains()` rather than `has()` if you want to check existence.
 - `Echoes.activeEntities` and `View.entities` may be re-ordered when entities or their components are removed. You can set `-D echoes_stable_order` to preserve the order, potentially at the cost of speed.
 - `@:remove` listeners are no longer allowed to add back the component that's currently being removed. They may still add other components as normal.
+- `SystemList.exists()` now searches recursively, returning true for grandchildren as well as direct children.
 
 ### Since v1.0.0-rc.3
 
@@ -630,6 +632,8 @@ Find | Replace with | Notes
 `Echoes.entities` | `Echoes.activeEntities`
 `Echoes.views` | `Echoes.activeViews`
 `Echoes.systems` | `Echoes.activeSystems`
+`Echoes.addSystem(system)` | `system.activate()` | You might have used a different variable name than `system`.
+`Echoes.removeSystem(system)` | `system.deactivate()` | Ditto.
 `AbstractView` | `ViewBase` | Import `echoes.View`.
 `ISystem` | `System` | Change "`implements`" to "`extends`," if applicable.
 `ICleanableComponentContainer` | `ComponentStorage`

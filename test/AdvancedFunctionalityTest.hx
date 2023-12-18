@@ -51,8 +51,8 @@ class AdvancedFunctionalityTest extends Test {
 	}
 	
 	private function testEntityTemplates():Void {
-		Echoes.addSystem(new NameSystem());
-		Echoes.addSystem(new AppearanceSystem());
+		new NameSystem().activate();
+		new AppearanceSystem().activate();
 		
 		var entity:Entity = new Entity();
 		entity.add(("John":Name));
@@ -112,7 +112,7 @@ class AdvancedFunctionalityTest extends Test {
 	
 	private function testGenerics():Void {
 		var system:GenericSystem<String, Int> = new GenericSystem<String, Int>();
-		Echoes.addSystem(system);
+		system.activate();
 		
 		var entity:Entity = new Entity();
 		entity.add("STRING");
@@ -133,7 +133,7 @@ class AdvancedFunctionalityTest extends Test {
 		}
 		
 		var system = new GenericSystem<Alias<Name>, String>();
-		Echoes.addSystem(system);
+		system.activate();
 		
 		entity.add(("NAME":Alias<Name>));
 		switch(system.record) {
@@ -311,13 +311,13 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals(0, viewOfColor.entities.length);
 		
 		//Adding/removing the system should activate/deactivate the linked view.
-		Echoes.addSystem(nameSystem);
+		nameSystem.activate();
 		Assert.isTrue(viewOfColor.active);
 		Assert.equals(2, viewOfColor.entities.length);
 		Assert.isTrue(viewOfColor.entities.contains(colorName));
 		Assert.isTrue(viewOfColor.entities.contains(colorShape));
 		
-		Echoes.removeSystem(nameSystem);
+		nameSystem.deactivate();
 		Assert.isFalse(viewOfColor.active);
 		Assert.equals(0, viewOfColor.entities.length);
 	}

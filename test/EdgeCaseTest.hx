@@ -23,14 +23,14 @@ class EdgeCaseTest extends Test {
 	//Tests may be run in any order, but not in parallel.
 	
 	private function testChildSystems():Void {
-		Echoes.addSystem(new NameSubsystem());
+		new NameSubsystem().activate();
 		
 		var entity:Entity = new Entity();
 		entity.add(("Name":Name));
 		assertTimesCalled(0, "NameSystem.nameAdded");
 		assertTimesCalled(1, "NameSubsystem.nameAdded");
 		
-		Echoes.addSystem(new NameSystem());
+		new NameSystem().activate();
 		assertTimesCalled(1, "NameSystem.nameAdded");
 		assertTimesCalled(0, "NameSystem.nameRemoved");
 		assertTimesCalled(0, "NameSubsystem.nameRemoved");
@@ -45,7 +45,7 @@ class EdgeCaseTest extends Test {
 	}
 	
 	private function testComponentsExist():Void {
-		Echoes.addSystem(new ComponentsExistSystem());
+		new ComponentsExistSystem().activate();
 		
 		var entity:Entity = new Entity();
 		entity.add(("name":Name));
@@ -136,7 +136,7 @@ class EdgeCaseTest extends Test {
 	}
 	
 	private function testRedundantOperations():Void {
-		Echoes.addSystem(new AppearanceSystem());
+		new AppearanceSystem().activate();
 		
 		var entity:Entity = new Entity(false);
 		
@@ -171,7 +171,7 @@ class EdgeCaseTest extends Test {
 		assertTimesCalled(1, "AppearanceSystem.colorRemoved");
 		
 		//Replace a `Name` with itself.
-		Echoes.addSystem(new NameSystem());
+		new NameSystem().activate();
 		entity.add(("name":Name));
 		assertTimesCalled(1, "NameSystem.nameAdded");
 		assertTimesCalled(0, "NameSystem.nameRemoved");
@@ -189,7 +189,7 @@ class EdgeCaseTest extends Test {
 		var entity:Entity = new Entity();
 		
 		//Activate the system first so that it can process events first.
-		Echoes.addSystem(new RecursiveEventSystem());
+		new RecursiveEventSystem().activate();
 		
 		//Certain events should stop propagating after `RecursiveEventSystem`
 		//gets to them.
