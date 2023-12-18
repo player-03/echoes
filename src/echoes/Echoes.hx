@@ -46,15 +46,38 @@ class Echoes {
 	
 	@:allow(echoes.ViewBase)
 	private static final _activeViews:Array<ViewBase> = [];
+	/**
+	 * All currently-active views.
+	 */
 	public static var activeViews(get, never):ReadOnlyArray<ViewBase>;
 	private static inline function get_activeViews():ReadOnlyArray<ViewBase> return _activeViews;
 	
+	/**
+	 * All currently-active systems. Unlike `activeEntities` and `activeViews`,
+	 * this is not a flat array, but rather the root node of a tree: it may
+	 * contain `SystemList`s containing `SystemList`s. All active systems will
+	 * be somewhere in this tree.
+	 * 
+	 * Adding a system to this list (whether directly, via `addSystem()`, or by
+	 * adding a list containing that system) activates that system.
+	 * 
+	 * Removing a system from this list (whether directly, via `removeSystem()`,
+	 * or by removing a list containing that system) deactivates that system.
+	 * 
+	 * To search the full tree, use `activeSystems.find()`.
+	 */
 	public static var activeSystems(default, null):SystemList = {
 		var activeSystems:SystemList = new SystemList();
 		activeSystems.__activate__();
 		activeSystems.clock.maxTime = 1;
 		activeSystems;
 	};
+	
+	/**
+	 * The clock used to update `activeSystems`. This starts with all the usual
+	 * defaults, except `maxTime` is set to 1 second. Any changes you make to
+	 * this clock will be preserved, even after `Echoes.reset()`.
+	 */
 	public static var clock(get, never):Clock;
 	private static inline function get_clock():Clock {
 		return activeSystems.clock;
@@ -139,21 +162,6 @@ class Echoes {
 		Entity.nextId = 0;
 		
 		init(0);
-	}
-	
-	//System management
-	//=================
-	
-	public static inline function addSystem(system:System):Void {
-		activeSystems.add(system);
-	}
-	
-	public static inline function removeSystem(system:System):Void {
-		activeSystems.remove(system);
-	}
-	
-	public static inline function hasSystem(system:System):Bool {
-		return activeSystems.exists(system);
 	}
 	
 	//Singleton getters

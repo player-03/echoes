@@ -131,11 +131,15 @@ class SystemList extends System {
 	}
 	
 	/**
-	 * Returns whether this list directly contains the given system.
-	 * @see `find()` if you need to recursively search child lists.
+	 * Returns whether this list directly or indirectly contains `system`. Use
+	 * `system.parent` instead if you only want its direct parent.
 	 */
 	public inline function exists(system:System):Bool {
-		return system.parent == this;
+		var parent:SystemList = system.parent;
+		while(parent != null && parent != this) {
+			parent = parent.parent;
+		}
+		return parent == this;
 	}
 	
 	/**
