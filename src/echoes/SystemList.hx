@@ -191,6 +191,7 @@ class SystemList extends System {
 	public function removeAll():SystemList {
 		for(system in systems) {
 			system.__deactivate__();
+			system.parent = null;
 		}
 		systems.resize(0);
 		
