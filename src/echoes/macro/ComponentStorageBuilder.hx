@@ -2,8 +2,10 @@ package echoes.macro;
 
 #if macro
 
+import haxe.macro.CompilationServer;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
+import haxe.PosInfos;
 
 using echoes.macro.MacroTools;
 using haxe.macro.Context;
@@ -39,8 +41,6 @@ class ComponentStorageBuilder {
 		var def:TypeDefinition = macro class $storageTypeName extends echoes.ComponentStorage<$componentComplexType> {
 			public static final instance:$storageType = new $storageTypePath();
 			
-			//Known issue: after a failed build, this line may produce "Missing
-			//function body" errors. Workaround: restart the language server.
 			private function new() {
 				super($v{ componentTypeName });
 			}
@@ -56,6 +56,11 @@ class ComponentStorageBuilder {
 		Report.registerCallback();
 		
 		return storageTypeName;
+	}
+	
+	public static function invalidate():Void {
+		final filePath:String = ((?infos:PosInfos) -> infos.fileName)();
+		CompilationServer.invalidateFiles([filePath]);
 	}
 }
 
