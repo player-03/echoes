@@ -68,7 +68,7 @@ import haxe.rtti.Meta;
 #end
 class System {
 	#if echoes_profiling
-	@:noCompletion private var __updateTime__:Float = 0;
+	@:noCompletion private var __updateTime__:Int = 0;
 	#end
 	
 	@:noCompletion private final __children__:Array<ChildSystem> = [];
