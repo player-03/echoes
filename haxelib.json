@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": [ "entity", "component", "system", "ecs" ],
   "description": "Macro-based Entity Component System framework, focusing on ease of use.",
-  "version": "1.0.0-rc.5",
+  "version": "1.0.0",
   "classPath": "src/",
-  "releasenote": "Support generic systems, Haxe 4.3, variable system priorities.",
+  "releasenote": "Release 1.0.0",
   "contributors": [ "player_03" ]
 }
