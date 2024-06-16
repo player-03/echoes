@@ -66,8 +66,8 @@ class Echoes {
 	 * 
 	 * To search the full tree, use `activeSystems.find()`.
 	 */
-	public static var activeSystems(default, null):SystemList = {
-		var activeSystems:SystemList = new SystemList();
+	public static final activeSystems:SystemList = {
+		final activeSystems:SystemList = new SystemList();
 		activeSystems.__activate__();
 		activeSystems.clock.maxTime = 1;
 		activeSystems;
@@ -127,8 +127,8 @@ class Echoes {
 	 * Updates all active systems.
 	 */
 	public static function update():Void {
-		var startTime:Float = haxe.Timer.stamp();
-		var dt:Float = startTime - lastUpdate;
+		final startTime:Float = haxe.Timer.stamp();
+		final dt:Float = startTime - lastUpdate;
 		lastUpdate = startTime;
 		
 		activeSystems.__update__(dt);
@@ -192,8 +192,8 @@ class Echoes {
 	 * @see `getView()` to automatically activate the view.
 	 */
 	public static #if !macro macro #end function getInactiveView(componentTypes:Array<ExprOf<Class<Any>>>):Expr {
-		var componentComplexTypes:Array<ComplexType> = [for(type in componentTypes) type.parseClassExpr()];
-		var viewName:String = componentComplexTypes.getViewName();
+		final componentComplexTypes:Array<ComplexType> = [for(type in componentTypes) type.parseClassExpr()];
+		final viewName:String = componentComplexTypes.getViewName();
 		componentComplexTypes.createViewType();
 		
 		return macro $i{ viewName }.instance;
@@ -212,7 +212,7 @@ class Echoes {
 	 * ```
 	 */
 	public static #if !macro macro #end function getView(componentTypes:Array<ExprOf<Class<Any>>>):Expr {
-		var view:Expr = getInactiveView(componentTypes);
+		final view:Expr = getInactiveView(componentTypes);
 		
 		return macro {
 			$view.activate();

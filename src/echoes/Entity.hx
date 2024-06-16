@@ -61,7 +61,7 @@ abstract Entity(Int) {
 	 * A destroyed entity's ID will go in this pool, and will then be reassigned
 	 * to the next entity to be created.
 	 */
-	private static var idPool:Array<Int> = [];
+	private static final idPool:Array<Int> = [];
 	
 	/**
 	 * Whether this entity is active. If false, it may also be destroyed.
@@ -93,7 +93,7 @@ abstract Entity(Int) {
 	 * you'll have to call `activate()`.
 	 */
 	public inline function new(?active:Bool = true) {
-		var id:Null<Int> = idPool.pop();
+		final id:Null<Int> = idPool.pop();
 		
 		this = id != null ? id : nextId++;
 		

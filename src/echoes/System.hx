@@ -198,9 +198,9 @@ class System {
 	 * Returns a view that will activate and deactivate when the system does.
 	 */
 	public macro function getLinkedView(self:Expr, componentTypes:Array<ExprOf<Class<Any>>>):Expr {
-		var view:Expr = Echoes.getInactiveView(componentTypes);
+		final view:Expr = Echoes.getInactiveView(componentTypes);
 		return macro {
-			var self = $self;
+			final self = $self;
 			self.onActivate.push($view.activate);
 			self.onDeactivate.push($view.deactivate);
 			$view;
@@ -227,7 +227,7 @@ private class ChildSystem extends System {
 	
 	private override function __update__(dt:Float):Void {
 		#if echoes_profiling
-		var __timestamp__ = Date.now().getTime();
+		final __timestamp__ = Date.now().getTime();
 		#end
 		
 		runUpdateListeners(dt);

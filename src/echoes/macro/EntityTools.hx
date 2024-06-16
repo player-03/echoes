@@ -27,12 +27,12 @@ class EntityTools {
 	 */
 	public static function add(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
 		return macro @:pos(Context.currentPos()) {
-			var __entity__:echoes.Entity = $self;
+			final __entity__:echoes.Entity = $self;
 			
 			$b{ [for(component in components) {
-				var type:Type = component.parseComponentType();
+				final type:Type = component.parseComponentType();
 				
-				var operation:String = switch(type) {
+				final operation:String = switch(type) {
 					case TEnum(_.get().meta => m, _),
 						TInst(_.get().meta => m, _),
 						TType(_.get().meta => m, _),
@@ -43,7 +43,7 @@ class EntityTools {
 						"add";
 				};
 				
-				var storage:Expr = type.toComplexType().getComponentStorage();
+				final storage:Expr = type.toComplexType().getComponentStorage();
 				macro $storage.$operation(__entity__, $component);
 			}] }
 			
@@ -64,12 +64,12 @@ class EntityTools {
 	 */
 	public static function addIfMissing(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
 		return macro @:pos(Context.currentPos()) {
-			var __entity__:echoes.Entity = $self;
+			final __entity__:echoes.Entity = $self;
 			
 			$b{ [for(component in components) {
-				var type:Type = component.parseComponentType();
+				final type:Type = component.parseComponentType();
 				
-				var storage:Expr = type.toComplexType().getComponentStorage();
+				final storage:Expr = type.toComplexType().getComponentStorage();
 				macro if(!$storage.exists(__entity__)) $storage.add(__entity__, $component);
 			}] }
 			
@@ -85,10 +85,10 @@ class EntityTools {
 	 */
 	public static function remove(self:Expr, types:Array<ComplexType>):ExprOf<echoes.Entity> {
 		return macro @:pos(Context.currentPos()) {
-			var __entity__:echoes.Entity = $self;
+			final __entity__:echoes.Entity = $self;
 			
 			$b{ [for(type in types) {
-				var storage:Expr = type.getComponentStorage();
+				final storage:Expr = type.getComponentStorage();
 				macro $storage.remove(__entity__);
 			}] }
 			
@@ -103,7 +103,7 @@ class EntityTools {
 	 * @return The component, or `null` if the entity doesn't have it.
 	 */
 	public static function get<T>(self:Expr, complexType:ComplexType):ExprOf<T> {
-		var storage:Expr = complexType.getComponentStorage();
+		final storage:Expr = complexType.getComponentStorage();
 		return macro @:pos(Context.currentPos()) $storage.get($self);
 	}
 	
@@ -112,7 +112,7 @@ class EntityTools {
 	 * @param type The type to check for.
 	 */
 	public static function exists(self:Expr, complexType:ComplexType):ExprOf<Bool> {
-		var storage:Expr = complexType.getComponentStorage();
+		final storage:Expr = complexType.getComponentStorage();
 		return macro @:pos(Context.currentPos()) $storage.exists($self);
 	}
 }

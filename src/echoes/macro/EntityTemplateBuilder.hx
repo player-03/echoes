@@ -30,7 +30,7 @@ class EntityTemplateBuilder {
 		//=====================
 		
 		//Get information about the `abstract` being built.
-		var type:AbstractType = switch(Context.getLocalType()) {
+		final type:AbstractType = switch(Context.getLocalType()) {
 			case TInst(_.get().kind => KAbstractImpl(_.get() => type), _):
 				type;
 			default:
@@ -42,7 +42,7 @@ class EntityTemplateBuilder {
 		}
 		
 		//Get information about parent types.
-		var parents:Array<{ complexType:ComplexType, abstractType:AbstractType }> = [];
+		final parents:Array<{ complexType:ComplexType, abstractType:AbstractType }> = [];
 		var nextParent:Type = type.type;
 		for(_ in 0...100) {
 			switch(nextParent.follow()) {
@@ -87,22 +87,22 @@ class EntityTemplateBuilder {
 		 * Contains a temporary `storage` value, which is the identifier for the
 		 * `ComponentStorage` for this type.
 		 */
-		var parameters:Array<FunctionArg & { storage:String }> = [];
+		final parameters:Array<FunctionArg & { storage:String }> = [];
 		
 		/**
 		 * Arguments to pass to `applyTemplateToSelf()`.
 		 */
-		var arguments:Array<Expr> = [];
+		final arguments:Array<Expr> = [];
 		
 		/**
 		 * Arguments to pass to the super type's `applyTemplateToSelf()`.
 		 */
-		var superArguments:Array<Expr> = [];
+		final superArguments:Array<Expr> = [];
 		
 		/**
 		 * The types marked as optional that don't yet have a default value.
 		 */
-		var optionalValuesRemaining:Map<String, ComplexType> = [];
+		final optionalValuesRemaining:Map<String, ComplexType> = [];
 		
 		/**
 		 * Adds the given value to `parameters` and `arguments` unless it's
@@ -117,7 +117,7 @@ class EntityTemplateBuilder {
 						name = n;
 						type = t.followComplexType();
 					default:
-						var fieldChain:Null<String> = param.printFieldChain();
+						final fieldChain:Null<String> = param.printFieldChain();
 						if(fieldChain != null) {
 							try {
 								type = fieldChain.getType().followMono().toComplexType();
@@ -132,7 +132,7 @@ class EntityTemplateBuilder {
 						}
 				}
 				
-				var storage:String = type.getComponentStorageName();
+				final storage:String = type.getComponentStorageName();
 				var existingName:String = null;
 				for(existing in parameters) {
 					if(existing.storage == storage) {
@@ -188,8 +188,8 @@ class EntityTemplateBuilder {
 		
 		//Allow converting to all parent types.
 		for(parent in parents) {
-			var name:String = "to" + parent.abstractType.name;
-			var parentType:ComplexType = parent.complexType;
+			final name:String = "to" + parent.abstractType.name;
+			final parentType:ComplexType = parent.complexType;
 			fields.pushFields(macro class ToParent {
 				/**
 				 * Caution: in C++, this converts `null` to `0`. Specifically,
@@ -204,7 +204,7 @@ class EntityTemplateBuilder {
 		}
 		
 		//Process the component variables.
-		var knownComponents:Array<FunctionArg> = [];
+		final knownComponents:Array<FunctionArg> = [];
 		for(field in fields) {
 			if(field.access != null && field.access.contains(AStatic)) {
 				continue;
@@ -258,8 +258,8 @@ class EntityTemplateBuilder {
 				//update the metadata to make it match, but since macro order is
 				//unspecified, a child type may have already been built using
 				//the wrong metadata.)
-				var storage:String = componentType.getComponentStorageName();
-				var parameter:FunctionArg = parameters.find(p -> p.storage == storage);
+				final storage:String = componentType.getComponentStorageName();
+				final parameter:FunctionArg = parameters.find(p -> p.storage == storage);
 				if(parameter != null) {
 					if(parameter.opt) {
 						optionalValuesRemaining.remove(storage);
@@ -282,8 +282,8 @@ class EntityTemplateBuilder {
 			//Convert the field to a property, and remove the expression.
 			field.kind = FProp("get", "set", macro:Null<$componentType>, null);
 			
-			var getter:String = "get_" + field.name;
-			var setter:String = "set_" + field.name;
+			final getter:String = "get_" + field.name;
+			final setter:String = "set_" + field.name;
 			
 			fields.pushFields(macro class Accessors {
 				private inline function $getter():Null<$componentType> {
@@ -298,9 +298,9 @@ class EntityTemplateBuilder {
 		}
 		
 		if(!optionalValuesRemaining.empty()) {
-			var missing:Array<String> = [for(type in optionalValuesRemaining)
+			final missing:Array<String> = [for(type in optionalValuesRemaining)
 				new Printer().printComplexType(type)];
-			var s:String = missing.length == 1 ? "" : "s";
+			final s:String = missing.length == 1 ? "" : "s";
 			
 			Context.fatalError('Missing default value$s for the following component type$s: '
 				+ missing.join(", "), Context.currentPos());
@@ -313,7 +313,7 @@ class EntityTemplateBuilder {
 		 * An ordered list of parameters taken by the constructor and the
 		 * "apply" functions. This version no longer exposes `storage`.
 		 */
-		var parameters:Array<FunctionArg> = [for(p in parameters) p];
+		final parameters:Array<FunctionArg> = [for(p in parameters) p];
 		
 		/**
 		 * Adds `parameters` to each function in the given type definition, then
@@ -335,7 +335,7 @@ class EntityTemplateBuilder {
 		}
 		
 		//Add the constructor and `applyTemplateTo()`.
-		var templateType:ComplexType = TPath({ pack: [], name: type.name });
+		final templateType:ComplexType = TPath({ pack: [], name: type.name });
 		addFunctions(macro class Constructor {
 			public static inline function applyTemplateTo(entity:echoes.Entity):$templateType {
 				(cast entity:$templateType).applyTemplateToSelf($a{ arguments });
@@ -353,7 +353,7 @@ class EntityTemplateBuilder {
 		//Prepare the `applyTemplateToSelf()` function. Set the components in
 		//order of priority: values passed by the user, then known values, then
 		//inherited values.
-		var applyToSelfExprs:Array<Expr> = [];
+		final applyToSelfExprs:Array<Expr> = [];
 		for(parameter in parameters) {
 			applyToSelfExprs.push(macro this.addIfMissing($i{ parameter.name }));
 		}

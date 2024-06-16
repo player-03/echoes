@@ -69,7 +69,7 @@ class TypeSubstitutions {
 	}
 	
 	public static inline function getCachedImports(classType:ClassType):CachedImports {
-		var qualifiedClassName:String = classType.pack.join(".") + "." + classType.name;
+		final qualifiedClassName:String = classType.pack.join(".") + "." + classType.name;
 		return cache[qualifiedClassName];
 	}
 	
@@ -99,7 +99,7 @@ class TypeSubstitutions {
 		
 		final params:Array<TypeParameter> = classType.params;
 		
-		var codeCompletionMode:Bool = types == null;
+		final codeCompletionMode:Bool = types == null;
 		if(codeCompletionMode) {
 			//Replace each param with its constraint type. If multiple
 			//constraints are specified, pick one.
@@ -116,11 +116,11 @@ class TypeSubstitutions {
 		applyDefaultTypeParams(classType, types);
 		
 		for(i => param in params) {
-			var type:ComplexType = types[i].followMono().toComplexType();
+			final type:ComplexType = types[i].followMono().toComplexType();
 			addSubstitution(param.name, type);
 			
 			//Check for `Entity` and `Float`.
-			var error:String = type.getReservedComponentMessage();
+			final error:String = type.getReservedComponentMessage();
 			if(error != null && !codeCompletionMode) {
 				Context.error('$className.${ param.name }: ' + error, Context.currentPos());
 			}
@@ -128,13 +128,13 @@ class TypeSubstitutions {
 		
 		//Local imports and usings become inaccessible during a generic build,
 		//so save them for future reference.
-		var qualifiedClassName:String = classType.pack.join(".") + "." + className;
+		final qualifiedClassName:String = classType.pack.join(".") + "." + className;
 		if(!cache.exists(qualifiedClassName) && Context.getLocalModule() == classType.module) {
 			cache[qualifiedClassName] = {
 				imports: Context.getLocalImports(),
 				usings: [for(u in Context.getLocalUsing()) if(u != null) {
-					var usingType:ClassType = u.get();
-					var parts:Array<String> = usingType.module.split(".");
+					final usingType:ClassType = u.get();
+					final parts:Array<String> = usingType.module.split(".");
 					if(parts[parts.length - 1] != usingType.name) {
 						parts.push(usingType.name);
 					}
@@ -171,7 +171,7 @@ class TypeSubstitutions {
 		if(!substitutions.exists(identifier)) {
 			substitutions[identifier] = type;
 			
-			var printedType:String = new Printer().printComplexType(type);
+			final printedType:String = new Printer().printComplexType(type);
 			if(printedType.indexOf("<") < 0) {
 				substitutionExprs[identifier] = printedType.parse(Context.currentPos()).expr;
 			}
@@ -291,7 +291,7 @@ class TypeSubstitutions {
 		
 		return switch(type) {
 			case TPath(p):
-				var p:TypePath = substituteTypePath(p);
+				final p:TypePath = substituteTypePath(p);
 				if(p.isResolvable()) {
 					TPath(p).toType().toComplexType();
 				} else {
@@ -330,7 +330,7 @@ class TypeSubstitutions {
 	}
 	
 	public function substituteTypePath(typePath:TypePath):TypePath {
-		var substitute:Bool = switch(typePath) {
+		final substitute:Bool = switch(typePath) {
 			case { pack: [], name: name, sub: null }:
 				true;
 			case { pack: [module], name: name, sub: null },

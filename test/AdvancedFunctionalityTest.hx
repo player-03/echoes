@@ -31,7 +31,7 @@ class AdvancedFunctionalityTest extends Test {
 	//Tests may be run in any order, but not in parallel.
 	
 	private function testComponentTypes():Void {
-		var types:ComponentTypes = new ComponentTypes();
+		final types:ComponentTypes = new ComponentTypes();
 		types.add(Bool);
 		types.add(Bool);
 		Assert.equals(1, types.length);
@@ -54,10 +54,10 @@ class AdvancedFunctionalityTest extends Test {
 		new NameSystem().activate();
 		new AppearanceSystem().activate();
 		
-		var entity:Entity = new Entity();
+		final entity:Entity = new Entity();
 		entity.add(("John":Name));
 		
-		var namedEntity:NamedEntity = NamedEntity.applyTemplateTo(entity);
+		final namedEntity:NamedEntity = NamedEntity.applyTemplateTo(entity);
 		Assert.equals(entity, namedEntity);
 		Assert.equals("John", namedEntity.name);
 		assertTimesCalled(1, "NameSystem.nameAdded");
@@ -68,7 +68,7 @@ class AdvancedFunctionalityTest extends Test {
 		assertTimesCalled(1, "NameSystem.nameAdded");
 		assertTimesCalled(1, "NameSystem.nameRemoved");
 		
-		var visualEntity:VisualEntity = VisualEntity.applyTemplateTo(namedEntity);
+		final visualEntity:VisualEntity = VisualEntity.applyTemplateTo(namedEntity);
 		Assert.equals(VisualEntity.DEFAULT_COLOR, visualEntity.color);
 		assertTimesCalled(1, "AppearanceSystem.colorAdded");
 		assertTimesCalled(0, "AppearanceSystem.colorRemoved");
@@ -84,7 +84,7 @@ class AdvancedFunctionalityTest extends Test {
 		assertTimesCalled(4, "NameSystem.nameAdded");
 		assertTimesCalled(1, "NameSystem.nameRemoved");
 		
-		var nullEntity:Null<NamedEntity> = null;
+		final nullEntity:Null<NamedEntity> = null;
 		Assert.isNull(nullEntity);
 		#if cpp
 		Assert.notNull((nullEntity:Null<Entity>), "C++ code generation has improved, and a warning can be removed from EntityTemplateBuilder.");
@@ -94,10 +94,10 @@ class AdvancedFunctionalityTest extends Test {
 	}
 	
 	private function testFindSystem():Void {
-		var parent:SystemList = new SystemList();
-		var child:SystemList = new SystemList();
-		var name:NameSystem = new NameSystem();
-		var appearance:AppearanceSystem = new AppearanceSystem();
+		final parent:SystemList = new SystemList();
+		final child:SystemList = new SystemList();
+		final name:NameSystem = new NameSystem();
+		final appearance:AppearanceSystem = new AppearanceSystem();
 		
 		parent.add(child);
 		parent.add(name);
@@ -111,10 +111,10 @@ class AdvancedFunctionalityTest extends Test {
 	}
 	
 	private function testGenerics():Void {
-		var system:GenericSystem<String, Int> = new GenericSystem<String, Int>();
+		final system:GenericSystem<String, Int> = new GenericSystem<String, Int>();
 		system.activate();
 		
-		var entity:Entity = new Entity();
+		final entity:Entity = new Entity();
 		entity.add("STRING");
 		entity.add(0);
 		switch(system.record) {
@@ -132,7 +132,7 @@ class AdvancedFunctionalityTest extends Test {
 				Assert.fail("Incorrect record: " + system.record);
 		}
 		
-		var system = new GenericSystem<Alias<Name>, String>();
+		final system = new GenericSystem<Alias<Name>, String>();
 		system.activate();
 		
 		entity.add(("NAME":Alias<Name>));
@@ -152,7 +152,7 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals("Array<StdTypes.Bool>", Echoes.getComponentStorage((_:Array<Bool>)).componentType);
 		Assert.equals("ComponentStorage<StdTypes.Bool>", Std.string(Echoes.getComponentStorage(Bool)));
 		
-		var entity:Entity = new Entity();
+		final entity:Entity = new Entity();
 		entity.add(["xyz"]);
 		switch(Echoes.getComponentStorage((_:Array<String>)).get(entity)) {
 			case ["xyz"]:
@@ -164,7 +164,7 @@ class AdvancedFunctionalityTest extends Test {
 	
 	@:access(echoes.System)
 	private function testPriority():Void {
-		var list:SystemList = new SystemList();
+		final list:SystemList = new SystemList();
 		
 		inline function assertListContents(contents:Array<System>, ?pos:PosInfos):Void {
 			if(Assert.equals(contents.length, list.length,
@@ -179,9 +179,9 @@ class AdvancedFunctionalityTest extends Test {
 		}
 		
 		//Add systems from low to high priority.
-		var high:HighPrioritySystem = new HighPrioritySystem();
-		var middle:NameSystem = new NameSystem();
-		var low:NameSystem = new NameSystem(-1);
+		final high:HighPrioritySystem = new HighPrioritySystem();
+		final middle:NameSystem = new NameSystem();
+		final low:NameSystem = new NameSystem(-1);
 		
 		list.add(low);
 		list.add(middle);
@@ -189,7 +189,7 @@ class AdvancedFunctionalityTest extends Test {
 		assertListContents([high, middle, low]);
 		
 		//Next, add a system with children.
-		var parent:UpdateOrderSystem = new UpdateOrderSystem();
+		final parent:UpdateOrderSystem = new UpdateOrderSystem();
 		Assert.equals(0, parent.priority);
 		Assert.equals(1, parent.__children__[0].priority);
 		Assert.equals(-1, parent.__children__[1].priority);
@@ -201,7 +201,7 @@ class AdvancedFunctionalityTest extends Test {
 			low, parent.__children__[1] //-1
 		]);
 		
-		var updateOrder:Array<String> = [];
+		final updateOrder:Array<String> = [];
 		new Entity(true).add(updateOrder);
 		list.__activate__();
 		list.__update__(1);
@@ -245,7 +245,7 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.isTrue(Reflect.compareMethods(listener2, listener2));
 		
 		//Make a signal.
-		var signal:Signal<()->Void> = new Signal();
+		final signal:Signal<()->Void> = new Signal();
 		
 		signal.push(listener1);
 		Assert.isTrue(signal.contains(listener1));
@@ -268,7 +268,7 @@ class AdvancedFunctionalityTest extends Test {
 	}
 	
 	private function testTypeParameters():Void {
-		var entity:Entity = new Entity();
+		final entity:Entity = new Entity();
 		
 		entity.add([1, 2, 3]);
 		Assert.isFalse(entity.exists(IntArray)); //Regular typedef
@@ -278,18 +278,18 @@ class AdvancedFunctionalityTest extends Test {
 	
 	private function testViews():Void {
 		//Make several entities with varying components.
-		var name:Entity = new Entity().add(("name1":Name));
-		var shape:Entity = new Entity().add(CIRCLE);
-		var colorName:Entity = new Entity().add((0x00FF00:Color), ("name2":Name));
-		var colorShape:Entity = new Entity().add((0xFFFFFF:Color), STAR);
+		final name:Entity = new Entity().add(("name1":Name));
+		final shape:Entity = new Entity().add(CIRCLE);
+		final colorName:Entity = new Entity().add((0x00FF00:Color), ("name2":Name));
+		final colorShape:Entity = new Entity().add((0xFFFFFF:Color), STAR);
 		
 		//Make some views; each should see a different selection of entities.
-		var viewOfName:View<Name> = Echoes.getView(Name);
+		final viewOfName:View<Name> = Echoes.getView(Name);
 		Assert.equals(2, viewOfName.entities.length);
 		Assert.isTrue(viewOfName.entities.contains(name));
 		Assert.isTrue(viewOfName.entities.contains(colorName));
 		
-		var viewOfShape:View<Shape> = Echoes.getView(Shape);
+		final viewOfShape:View<Shape> = Echoes.getView(Shape);
 		Assert.equals(2, viewOfShape.entities.length);
 		Assert.isTrue(viewOfShape.entities.contains(shape));
 		Assert.isTrue(viewOfShape.entities.contains(colorShape));
@@ -305,8 +305,8 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.isFalse(viewOfName.entities.contains(colorName));
 		
 		//Make a view that's linked to a system.
-		var nameSystem:NameSystem = new NameSystem();
-		var viewOfColor:View<Color> = nameSystem.getLinkedView(Color);
+		final nameSystem:NameSystem = new NameSystem();
+		final viewOfColor:View<Color> = nameSystem.getLinkedView(Color);
 		Assert.isFalse(viewOfColor.active);
 		Assert.equals(0, viewOfColor.entities.length);
 		
@@ -323,9 +323,9 @@ class AdvancedFunctionalityTest extends Test {
 	}
 	
 	private function testViewSignals():Void {
-		var entity:Entity = new Entity();
+		final entity:Entity = new Entity();
 		
-		var viewOfShape:View<Shape> = Echoes.getView(Shape);
+		final viewOfShape:View<Shape> = Echoes.getView(Shape);
 		
 		var signalDispatched:Bool = false;
 		function listener(e:Entity, s:Shape):Void {

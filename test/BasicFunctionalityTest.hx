@@ -24,7 +24,7 @@ class BasicFunctionalityTest extends Test {
 	//If this fails on any target, update `ComponentStorage.clear()`, then skip
 	//this test on that target.
 	private function testArrayBehavior():Void {
-		var array:Array<Null<Int>> = [for(i in 0...5) i];
+		final array:Array<Null<Int>> = [for(i in 0...5) i];
 		Assert.equals(2, array[2]);
 		Assert.isNull(array[6]);
 		
@@ -41,7 +41,7 @@ class BasicFunctionalityTest extends Test {
 	
 	private function testEntities():Void {
 		//Make an inactive entity.
-		var entity:Entity = new Entity(false);
+		final entity:Entity = new Entity(false);
 		Assert.isFalse(entity.active);
 		Assert.equals(0, Echoes.activeEntities.length);
 		Assert.equals(0, entity.id);
@@ -74,7 +74,7 @@ class BasicFunctionalityTest extends Test {
 		Assert.equals(1, @:privateAccess Entity.idPool.length);
 		
 		//Make a new entity (should use the same ID as the old).
-		var newEntity:Entity = new Entity();
+		final newEntity:Entity = new Entity();
 		Assert.equals(entity, newEntity);
 		Assert.equals(0, @:privateAccess Entity.idPool.length);
 		Assert.equals(0, newEntity.id);
@@ -82,15 +82,15 @@ class BasicFunctionalityTest extends Test {
 	
 	private function testComponents():Void {
 		//Create the entity.
-		var blackSquare:Entity = new Entity();
+		final blackSquare:Entity = new Entity();
 		Assert.isTrue(blackSquare.active);
 		Assert.equals(0, Lambda.count(blackSquare.getComponents()));
 		
 		//Create some interchangeable components.
-		var black:Color = 0x000000;
-		var nearBlack:Color = 0x111111;
-		var name:Name = "blackSquare";
-		var shortName:Name = "blSq";
+		final black:Color = 0x000000;
+		final nearBlack:Color = 0x111111;
+		final name:Name = "blackSquare";
+		final shortName:Name = "blSq";
 		
 		//Add components.
 		blackSquare.add(black);
@@ -133,7 +133,7 @@ class BasicFunctionalityTest extends Test {
 	}
 	
 	private function testInactiveEntities():Void {
-		var inactive:Entity = new Entity(false);
+		final inactive:Entity = new Entity(false);
 		Assert.isFalse(inactive.active);
 		Assert.equals(0, Echoes.activeEntities.length);
 		
@@ -156,7 +156,7 @@ class BasicFunctionalityTest extends Test {
 	
 	private function testAddAndRemoveEvents():Void {
 		//Add a system.
-		var appearanceSystem:AppearanceSystem = new AppearanceSystem();
+		final appearanceSystem:AppearanceSystem = new AppearanceSystem();
 		Assert.equals(0, Echoes.activeSystems.length);
 		
 		appearanceSystem.activate();
@@ -166,7 +166,7 @@ class BasicFunctionalityTest extends Test {
 		//Add a red line.
 		Assert.equals(0, Echoes.activeEntities.length);
 		
-		var redLine:Entity = new Entity();
+		final redLine:Entity = new Entity();
 		Assert.equals(1, Echoes.activeEntities.length);
 		
 		redLine.add((0xFF0000:Color), Shape.LINE);
@@ -175,7 +175,7 @@ class BasicFunctionalityTest extends Test {
 		assertTimesCalled(0, "AppearanceSystem.colorAndShapeRemoved");
 		
 		//Add a circle.
-		var circle:Entity = new Entity();
+		final circle:Entity = new Entity();
 		Assert.equals(2, Echoes.activeEntities.length);
 		
 		circle.add(CIRCLE);
@@ -188,7 +188,7 @@ class BasicFunctionalityTest extends Test {
 		circle.add(("circle":Name));
 		assertTimesCalled(0, "NameSystem.nameAdded", "NameSystem doesn't exist but its method was still called.");
 		
-		var nameSystem:NameSystem = new NameSystem();
+		final nameSystem:NameSystem = new NameSystem();
 		
 		redLine.add(("redLine":Name));
 		assertTimesCalled(0, "NameSystem.nameAdded", "NameSystem isn't active but its method was still called.");
@@ -237,19 +237,19 @@ class BasicFunctionalityTest extends Test {
 	@:access(echoes.Echoes.lastUpdate)
 	private function testUpdateEvents():Void {
 		//Create a `TimeCountSystem` and use a custom `Clock`.
-		var systems:SystemList = new SystemList(new OneSecondClock());
+		final systems:SystemList = new SystemList(new OneSecondClock());
 		systems.activate();
 		
-		var timeCountSystem:TimeCountSystem = new TimeCountSystem();
+		final timeCountSystem:TimeCountSystem = new TimeCountSystem();
 		Assert.equals(0.0, timeCountSystem.totalTime);
 		
 		systems.add(timeCountSystem);
 		
 		//Create some entities, but none with both color and shape.
-		var green:Entity = new Entity().add((0x00FF00:Color));
+		final green:Entity = new Entity().add((0x00FF00:Color));
 		Assert.equals(0.0, timeCountSystem.colorTime);
 		
-		var star:Entity = new Entity().add(STAR, ("Proxima Centauri":Name));
+		final star:Entity = new Entity().add(STAR, ("Proxima Centauri":Name));
 		Assert.equals(0.0, timeCountSystem.shapeTime);
 		
 		Assert.isNull(star.get(Color), star.get(Color) + " should be null. See ComponentStorage constructor for details.");

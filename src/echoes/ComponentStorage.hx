@@ -135,7 +135,7 @@ class ComponentStorage<T> {
 	}
 	
 	public function remove(entity:Entity):Void {
-		var removedComponent:Null<T> = get(entity);
+		final removedComponent:Null<T> = get(entity);
 		
 		#if (echoes_storage == "Map")
 		storage.remove(entity.id);
@@ -253,7 +253,7 @@ abstract EntityComponents(ComponentTypes) from ComponentTypes {
 	 * might be `["StdTypes.Bool" => true, "String" => "Hello World"]`.
 	 */
 	@:to private inline function toMap():Map<String, Dynamic> {
-		var entity:Entity = switch(components.indexOf(cast this)) {
+		final entity:Entity = switch(components.indexOf(cast this)) {
 			case -1:
 				throw "This EntityComponents instance was disposed.";
 			case x:

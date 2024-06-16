@@ -25,7 +25,7 @@ class EdgeCaseTest extends Test {
 	private function testChildSystems():Void {
 		new NameSubsystem().activate();
 		
-		var entity:Entity = new Entity();
+		final entity:Entity = new Entity();
 		entity.add(("Name":Name));
 		assertTimesCalled(0, "NameSystem.nameAdded");
 		assertTimesCalled(1, "NameSubsystem.nameAdded");
@@ -47,7 +47,7 @@ class EdgeCaseTest extends Test {
 	private function testComponentsExist():Void {
 		new ComponentsExistSystem().activate();
 		
-		var entity:Entity = new Entity();
+		final entity:Entity = new Entity();
 		entity.add(("name":Name));
 		entity.add((0xFFFFFF:Color));
 		entity.remove(Color);
@@ -75,10 +75,10 @@ class EdgeCaseTest extends Test {
 			}
 		}
 		
-		var a:Entity = new Entity();
-		var b:Entity = new Entity();
-		var c:Entity = new Entity();
-		var d:Entity = new Entity();
+		final a:Entity = new Entity();
+		final b:Entity = new Entity();
+		final c:Entity = new Entity();
+		final d:Entity = new Entity();
 		
 		#if echoes_stable_order
 		
@@ -124,7 +124,7 @@ class EdgeCaseTest extends Test {
 	}
 	
 	private function testNullComponents():Void {
-		var entity:Entity = new Entity();
+		final entity:Entity = new Entity();
 		
 		entity.add("Hello world.");
 		Assert.isTrue(entity.exists(String));
@@ -138,7 +138,7 @@ class EdgeCaseTest extends Test {
 	private function testRedundantOperations():Void {
 		new AppearanceSystem().activate();
 		
-		var entity:Entity = new Entity(false);
+		final entity:Entity = new Entity(false);
 		
 		//Deactivate an inactive entity.
 		Assert.isFalse(entity.active);
@@ -186,7 +186,7 @@ class EdgeCaseTest extends Test {
 	}
 	
 	private function testRecursiveEvents():Void {
-		var entity:Entity = new Entity();
+		final entity:Entity = new Entity();
 		
 		//Activate the system first so that it can process events first.
 		new RecursiveEventSystem().activate();
@@ -253,9 +253,9 @@ class EdgeCaseTest extends Test {
 	}
 	
 	private function testSystemLists():Void {
-		var list0:SystemList = new SystemList();
-		var list1:SystemList = new SystemList();
-		var system:NameSystem = new NameSystem();
+		final list0:SystemList = new SystemList();
+		final list1:SystemList = new SystemList();
+		final system:NameSystem = new NameSystem();
 		
 		list0.add(system);
 		Assert.equals(list0, system.parent);
@@ -267,8 +267,8 @@ class EdgeCaseTest extends Test {
 	}
 	
 	private function testTypeParsing():Void {
-		var entity:Entity = new Entity();
-		var infos:PosInfos = ((?infos:PosInfos) -> infos)();
+		final entity:Entity = new Entity();
+		final infos:PosInfos = ((?infos:PosInfos) -> infos)();
 		entity.add(infos);
 		
 		Assert.equals(infos, entity.get(PosInfos));

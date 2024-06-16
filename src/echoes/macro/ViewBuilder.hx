@@ -14,7 +14,7 @@ using haxe.macro.Context;
 using Lambda;
 
 class ViewBuilder {
-	private static var viewCache:Map<String, { cls:ComplexType, components:Array<ComplexType>, type:Type }> = new Map();
+	private static final viewCache:Map<String, { cls:ComplexType, components:Array<ComplexType>, type:Type }> = new Map();
 	
 	public static inline function isView(name:String):Bool {
 		return viewCache.exists(name);
@@ -25,7 +25,7 @@ class ViewBuilder {
 	 * hasn't been defined, the given order will become canonical.)
 	 */
 	public static function getComponentOrder(components:Array<ComplexType>):Array<ComplexType> {
-		var name:String = getViewName(components);
+		final name:String = getViewName(components);
 		if(!viewCache.exists(name)) {
 			createViewType(components);
 		}
@@ -44,11 +44,11 @@ class ViewBuilder {
 	 */
 	public static function getViewName(components:Array<ComplexType>):String {
 		//Use the fully-qualified component names to generate a unique hash.
-		var md5:String = "_" + Md5.encode(components.joinNames("_")).substr(0, 5);
+		final md5:String = "_" + Md5.encode(components.joinNames("_")).substr(0, 5);
 		
 		//Use the unqualified component names for the final result, as they're
 		//easier to read. Include part of the hash to avoid collisions.
-		var name:String = "ViewOf_" + components.joinNames("_", false) + md5;
+		final name:String = "ViewOf_" + components.joinNames("_", false) + md5;
 		
 		if(Context.defined("cpp")) {
 			var maxLength:Null<Int> = null;
@@ -77,14 +77,14 @@ class ViewBuilder {
 	}
 	
 	public static function createViewType(components:Array<ComplexType>):Type {
-		var viewClassName:String = getViewName(components);
+		final viewClassName:String = getViewName(components);
 		
 		if(viewCache.exists(viewClassName)) {
 			return viewCache[viewClassName].type;
 		}
 		
-		var viewTypePath:TypePath = { pack: [], name: viewClassName };
-		var viewComplexType:ComplexType = TPath(viewTypePath);
+		final viewTypePath:TypePath = { pack: [], name: viewClassName };
+		final viewComplexType:ComplexType = TPath(viewTypePath);
 		
 		/**
 		 * The function signature for any event listeners attached to this view.
@@ -92,7 +92,7 @@ class ViewBuilder {
 		 * `View<Hue, Saturation>`, listeners would need to have the signature
 		 * `(Entity, Hue, Saturation) -> Void`.
 		 */
-		var callbackType:ComplexType = TFunction([macro:echoes.Entity].concat(components), macro:Void);
+		final callbackType:ComplexType = TFunction([macro:echoes.Entity].concat(components), macro:Void);
 		
 		/**
 		 * The arguments required to dispatch an add or update event. In a
@@ -103,7 +103,7 @@ class ViewBuilder {
 		 *     SaturationContainer.instance.get(entity));
 		 * ```
 		 */
-		var callbackArgs:Array<Expr> = [for(component in components)
+		final callbackArgs:Array<Expr> = [for(component in components)
 			macro ${ component.getComponentStorage() }.get(entity)];
 		
 		/**
@@ -126,8 +126,8 @@ class ViewBuilder {
 		 * may sound inefficient, in practice many (if not most) views will only
 		 * run the loop for 0-1 iterations.
 		 */
-		var removedCallbackArgs:Array<Expr> = [for(component in components) {
-			var inst:Expr = macro ${ component.getComponentStorage() };
+		final removedCallbackArgs:Array<Expr> = [for(component in components) {
+			final inst:Expr = macro ${ component.getComponentStorage() };
 			macro $inst == removedComponentStorage ? removedComponent : $inst.get(entity);
 		}];
 		
@@ -135,11 +135,11 @@ class ViewBuilder {
 		callbackArgs.unshift(macro entity);
 		removedCallbackArgs.unshift(macro entity);
 		
-		var def:TypeDefinition = macro class $viewClassName extends echoes.View.ViewBase {
+		final def:TypeDefinition = macro class $viewClassName extends echoes.View.ViewBase {
 			public static final instance:$viewComplexType = new $viewTypePath();
 			
-			public var onAdded(default, null) = new echoes.utils.Signal<$callbackType>();
-			public var onRemoved(default, null) = new echoes.utils.Signal<$callbackType>();
+			public final onAdded = new echoes.utils.Signal<$callbackType>();
+			public final onRemoved = new echoes.utils.Signal<$callbackType>();
 			
 			private function new() { }
 			
@@ -150,7 +150,7 @@ class ViewBuilder {
 				if(activations == 1) $b{
 					//Each expression adds this `View` to a related list.
 					[for(component in components) {
-						var storage:Expr = component.getComponentStorage();
+						final storage:Expr = component.getComponentStorage();
 						macro $storage._relatedViews.push(this);
 					}]
 				}
@@ -198,7 +198,7 @@ class ViewBuilder {
 				$b{
 					//Each expression removes this `View` from a related list.
 					[for(component in components) {
-						var storage:Expr = component.getComponentStorage();
+						final storage:Expr = component.getComponentStorage();
 						macro ${ storage }._relatedViews.remove(this);
 					}]
 				}
@@ -218,7 +218,7 @@ class ViewBuilder {
 					//instance, in a `View<Hue, Saturation>`, the two checks
 					//would be `HueContainer.instance.exists(entity)` and
 					//`SaturationContainer.instance.exists(entity)`.
-					var checks:Array<Expr> = [for(component in components)
+					final checks:Array<Expr> = [for(component in components)
 						macro ${ component.getComponentStorage() }.exists(entity)];
 					//The checks are joined by `&&` operators.
 					checks.fold((a, b) -> macro $a && $b, checks.shift());
@@ -237,7 +237,7 @@ class ViewBuilder {
 		
 		Context.defineType(def);
 		
-		var viewType:Type = viewComplexType.toType();
+		final viewType:Type = viewComplexType.toType();
 		viewCache.set(viewClassName, { cls: viewComplexType, components: components, type: viewType });
 		
 		Report.viewNames.push(viewClassName);

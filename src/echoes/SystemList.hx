@@ -36,7 +36,7 @@ class SystemList extends System {
 		return clock.paused = value;
 	}
 	
-	private var systems:Array<System> = [];
+	private final systems:Array<System> = [];
 	
 	public function new(?name:String = "SystemList", ?clock:Clock, ?priority:Int = 0) {
 		super(priority);
@@ -67,7 +67,7 @@ class SystemList extends System {
 	
 	private function __recalculateOrder__(system:System):Void {
 		if(systems.remove(system)) {
-			var index:Int = Lambda.findIndex(systems, existingSystem ->
+			final index:Int = Lambda.findIndex(systems, existingSystem ->
 				existingSystem.priority < system.priority);
 			
 			if(index >= 0) {
@@ -80,7 +80,7 @@ class SystemList extends System {
 	
 	private override function __update__(dt:Float):Void {
 		#if echoes_profiling
-		var startTime:Float = haxe.Timer.stamp();
+		final startTime:Float = haxe.Timer.stamp();
 		#end
 		
 		__dt__ = dt;
@@ -108,7 +108,7 @@ class SystemList extends System {
 			system.parent.remove(system);
 		}
 		
-		var index:Int = Lambda.findIndex(systems, existingSystem ->
+		final index:Int = Lambda.findIndex(systems, existingSystem ->
 			existingSystem.priority < system.priority);
 		
 		if(index >= 0) {
@@ -148,7 +148,7 @@ class SystemList extends System {
 	 */
 	public override function find<T:System>(systemType:Class<T>):Null<T> {
 		for(child in systems) {
-			var result:Null<T> = child.find(systemType);
+			final result:Null<T> = child.find(systemType);
 			
 			if(result != null) {
 				return result;
@@ -159,7 +159,7 @@ class SystemList extends System {
 	}
 	
 	public override function getStatistics():SystemDetails {
-		var result:SystemDetails = super.getStatistics();
+		final result:SystemDetails = super.getStatistics();
 		result.children = [for(system in systems) system.getStatistics()];
 		return result;
 	}

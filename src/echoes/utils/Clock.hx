@@ -105,7 +105,7 @@ class Clock {
 	}
 	
 	public function next():Float {
-		var tick:Float = time > maxTickLength ? maxTickLength : time;
+		final tick:Float = time > maxTickLength ? maxTickLength : time;
 		time -= tick;
 		tickCount++;
 		return tick;

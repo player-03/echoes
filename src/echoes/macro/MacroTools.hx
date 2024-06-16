@@ -62,13 +62,13 @@ class MacroTools {
 			case FFun(func):
 				switch(func.expr) {
 					case null:
-						var block:Array<Expr> = [];
+						final block:Array<Expr> = [];
 						func.expr = macro @:pos(field.pos) $b{ block };
 						return block;
 					case _.expr => EBlock(exprs):
 						return exprs;
 					case expr:
-						var block:Array<Expr> = [expr];
+						final block:Array<Expr> = [expr];
 						func.expr.expr = EBlock(block);
 						return block;
 				}
@@ -102,13 +102,13 @@ class MacroTools {
 	}
 	
 	public static function joinNames(types:Array<ComplexType>, sep:String, ?qualify:Bool = true):String {
-		var typeNames:Array<String> = [for(type in types) toIdentifier(type, qualify)];
+		final typeNames:Array<String> = [for(type in types) toIdentifier(type, qualify)];
 		typeNames.sort(compareStrings);
 		return typeNames.join(sep);
 	}
 	
 	public static function makeTypePath(parts:Array<String>):TypePath {
-		var typePath:TypePath = {
+		final typePath:TypePath = {
 			pack: parts,
 			name: parts.pop()
 		};
@@ -133,7 +133,7 @@ class MacroTools {
 			default:
 		}
 		
-		var fieldChain:Null<String> = printFieldChain(e);
+		final fieldChain:Null<String> = printFieldChain(e);
 		if(fieldChain != null) {
 			try {
 				return followMono(fieldChain.getType()).toComplexType();
@@ -146,7 +146,7 @@ class MacroTools {
 			} catch(err:Exception) { }
 		}
 		
-		var expr:String = new Printer().printExpr(e);
+		final expr:String = new Printer().printExpr(e);
 		if(~/^[\w\d\.]+$/.match(expr)) {
 			Context.error('Type not found: `$expr`.', e.pos);
 		} else {
@@ -191,7 +191,7 @@ class MacroTools {
 	public static function printFieldChain(fieldExpr:Expr):Null<String> {
 		switch(fieldExpr.expr) {
 			case EField(e, field):
-				var sub:Null<String> = printFieldChain(e);
+				final sub:Null<String> = printFieldChain(e);
 				return sub != null ? '$sub.$field' : null;
 			case EConst(CIdent(s)):
 				return s;

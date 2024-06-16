@@ -14,7 +14,7 @@ using haxe.macro.ComplexTypeTools;
 class ComponentStorageBuilder {
 	public static inline final PREFIX:String = "ComponentStorage_";
 
-	private static var storageCache:Map<String, TypeDefinition> = new Map();
+	private static final storageCache:Map<String, TypeDefinition> = new Map();
 	
 	private static var registered:Bool = false;
 	
@@ -25,20 +25,20 @@ class ComponentStorageBuilder {
 	public static function getComponentStorageName(componentComplexType:ComplexType):String {
 		componentComplexType = componentComplexType.followComplexType();
 		
-		var error:String = componentComplexType.getReservedComponentMessage();
+		final error:String = componentComplexType.getReservedComponentMessage();
 		if(error != null) {
 			Context.error(error, Context.currentPos());
 		}
 		
-		var storageTypeName:String = PREFIX + componentComplexType.toIdentifier();
+		final storageTypeName:String = PREFIX + componentComplexType.toIdentifier();
 		if(storageCache.exists(storageTypeName)) {
 			return storageTypeName;
 		}
 		
-		var componentTypeName:String = new Printer().printComplexType(componentComplexType);
-		var storageTypePath:TypePath = { pack: [], name: storageTypeName };
-		var storageType:ComplexType = TPath(storageTypePath);
-		var def:TypeDefinition = macro class $storageTypeName extends echoes.ComponentStorage<$componentComplexType> {
+		final componentTypeName:String = new Printer().printComplexType(componentComplexType);
+		final storageTypePath:TypePath = { pack: [], name: storageTypeName };
+		final storageType:ComplexType = TPath(storageTypePath);
+		final def:TypeDefinition = macro class $storageTypeName extends echoes.ComponentStorage<$componentComplexType> {
 			public static final instance:$storageType = new $storageTypePath();
 			
 			private function new() {

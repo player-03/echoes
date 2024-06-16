@@ -13,7 +13,7 @@ using echoes.macro.MacroTools;
  * `assertTimesCalled()`.
  */
 class MethodCounter {
-	private static var counts:Map<String, Int> = new Map();
+	private static final counts:Map<String, Int> = new Map();
 	
 	/**
 	 * Resets all counters.
@@ -31,20 +31,20 @@ class MethodCounter {
 	 * a `String` error.
 	 */
 	public static function assertTimesCalled(count:Int, method:String, ?message:String, ?debugErrors:Bool = false, ?pos:PosInfos):Void {
-		var actualCount:Int = counts.exists(method) ? counts[method] : 0;
+		final actualCount:Int = counts.exists(method) ? counts[method] : 0;
 		if(message == null) {
 			message = '$method expected $count ' + (count == 1 ? "time" : "times")
 				+ ', but was called $actualCount ' + (actualCount == 1 ? "time." : "times.");
 		}
-		var result:Bool = Assert.equals(count, actualCount, message, pos);
+		final result:Bool = Assert.equals(count, actualCount, message, pos);
 		
 		if(!result && debugErrors) {
-			var methodClass:String = method.substr(0, method.indexOf(".") + 1);
+			final methodClass:String = method.substr(0, method.indexOf(".") + 1);
 			if(methodClass.length == 0) {
 				throw 'The given method string ($method) has the wrong format.';
 			}
 			
-			var knownMethods:Array<String> = [];
+			final knownMethods:Array<String> = [];
 			for(key in counts.keys()) {
 				if(StringTools.startsWith(key, methodClass)) {
 					knownMethods.push(key.substr(methodClass.length));
@@ -68,14 +68,14 @@ class MethodCounter {
 	}
 	
 	@:noCompletion public static macro function build():Array<Field> {
-		var fields:Array<Field> = Context.getBuildFields();
+		final fields:Array<Field> = Context.getBuildFields();
 		
-		var className:String = Context.getLocalClass().get().name;
+		final className:String = Context.getLocalClass().get().name;
 		
 		for(field in fields) {
-			var body:Null<Array<Expr>> = field.getFunctionBody();
+			final body:Null<Array<Expr>> = field.getFunctionBody();
 			if(body != null) {
-				var key:String = '$className.${ field.name }';
+				final key:String = '$className.${ field.name }';
 				body.unshift(macro MethodCounter.count($v{ key }));
 			}
 		}

@@ -14,10 +14,10 @@ import haxe.macro.Type;
  */
 class Report {
 	@:allow(echoes.macro.ComponentStorageBuilder)
-	private static var componentNames:Array<String> = [];
+	private static final componentNames:Array<String> = [];
 	
 	@:allow(echoes.macro.ViewBuilder)
-	private static var viewNames:Array<String> = [];
+	private static final viewNames:Array<String> = [];
 	
 	private static var registered = false;
 	

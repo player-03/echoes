@@ -71,7 +71,7 @@ class SystemBuilder {
 	}
 	
 	private static function getPriority(meta:Metadata):Null<Int> {
-		var entry:MetadataEntry = getMeta(meta, PRIORITY_META);
+		final entry:MetadataEntry = getMeta(meta, PRIORITY_META);
 		switch(entry) {
 			case null:
 			case _.params => [_.expr => EConst(CInt(v))]:
@@ -93,7 +93,7 @@ class SystemBuilder {
 		
 		var substitutions:TypeSubstitutions = null;
 		var nameWithParams:String;
-		var classType:ClassType = switch(Context.getLocalType()) {
+		final classType:ClassType = switch(Context.getLocalType()) {
 			case TInst(_.get() => inst, types):
 				nameWithParams = inst.name;
 				
@@ -114,7 +114,7 @@ class SystemBuilder {
 		/**
 		 * `classType`, plus all superclasses in order, including `System`.
 		 */
-		var parentTypes:Array<ClassType> = [classType];
+		final parentTypes:Array<ClassType> = [classType];
 		{
 			var parentType:ClassType = classType;
 			while(parentType.superClass != null) {
@@ -157,19 +157,19 @@ class SystemBuilder {
 		/**
 		 * Names of views that should activate and deactivate with the system.
 		 */
-		var linkedViews:Array<String> = [];
+		final linkedViews:Array<String> = [];
 		
 		//Variable initializers can't actually call `getLinkedView()`, so locate
 		//and replace such calls.
 		for(field in fields) {
-			var expr:Expr = switch(field.kind) {
+			final expr:Expr = switch(field.kind) {
 				case FVar(_, expr), FProp(_, _, _, expr) if(expr != null):
 					expr;
 				default:
 					continue;
 			};
 			
-			var params:Array<Expr> = switch(expr.expr) {
+			final params:Array<Expr> = switch(expr.expr) {
 				case ECall(_.expr => EConst(CIdent("getLinkedView")) | EField(_, "getLinkedView"), params):
 					params;
 				default:
@@ -179,7 +179,7 @@ class SystemBuilder {
 			//Get the inactive view for now.
 			expr.expr = Echoes.getInactiveView(params).expr;
 			
-			var viewName:String = switch(expr.expr) {
+			final viewName:String = switch(expr.expr) {
 				case EField(_.expr => EConst(CIdent(name)), "instance"):
 					name;
 				default:
@@ -195,9 +195,9 @@ class SystemBuilder {
 		//Listener function priorities
 		//============================
 		
-		var updateListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, UPDATE_META)).filter(notNull);
-		var addListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, ADD_META)).filter(notNull);
-		var removeListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, REMOVE_META)).filter(notNull);
+		final updateListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, UPDATE_META)).filter(notNull);
+		final addListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, ADD_META)).filter(notNull);
+		final removeListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, REMOVE_META)).filter(notNull);
 		for(listener in addListeners.concat(removeListeners)) {
 			if(listener.wrapperFunction == null) {
 				Context.error("An @:add or @:remove listener must take at least one component. (Optional arguments don't count.)", listener.pos);
@@ -208,7 +208,7 @@ class SystemBuilder {
 		 * Update listeners that have `@:priority` tags. Each group of these
 		 * will be used to create a `ChildSystem`.
 		 */
-		var fixedPriorityUpdateListeners:Map<Int, Array<ListenerFunction>> = new Map();
+		final fixedPriorityUpdateListeners:Map<Int, Array<ListenerFunction>> = new Map();
 		for(listener in updateListeners) {
 			if(listener.priority != null) {
 				if(!fixedPriorityUpdateListeners.exists(listener.priority)) {
@@ -219,7 +219,7 @@ class SystemBuilder {
 			}
 		}
 		
-		var defaultPriority:Null<Int> = getPriority(classType.meta.get());
+		final defaultPriority:Null<Int> = getPriority(classType.meta.get());
 		if(defaultPriority != null) {
 			fields.pushFields(macro class DefaultPriority {
 				private override function __getDefaultPriority__():Int {
@@ -231,8 +231,8 @@ class SystemBuilder {
 		//Constructor
 		//===========
 		
-		var initializeChildren:Array<Expr> = [for(priority => listeners in fixedPriorityUpdateListeners) {
-			var body:Array<Expr> = [for(listener in listeners) listener.callDuringUpdate()];
+		final initializeChildren:Array<Expr> = [for(priority => listeners in fixedPriorityUpdateListeners) {
+			final body:Array<Expr> = [for(listener in listeners) listener.callDuringUpdate()];
 			body.unshift(macro __dt__ = dt);
 			
 			macro __addListenersWithPriority__($v{ priority }, function(dt:Float) $b{ body });
@@ -291,7 +291,7 @@ class SystemBuilder {
 		});
 		
 		//Add lifecycle functions no matter what.
-		var requiredFields:TypeDefinition = macro class RequiredFields {
+		final requiredFields:TypeDefinition = macro class RequiredFields {
 			private override function __activate__():Void {
 				if(!active) {
 					$b{ [for(view in linkedViews) macro $i{ view }.instance.activate()] }
@@ -319,7 +319,7 @@ class SystemBuilder {
 			
 			private override function __update__(dt:Float):Void {
 				#if echoes_profiling
-				var __timestamp__ = Date.now().getTime();
+				final __timestamp__ = Date.now().getTime();
 				#end
 				
 				${ if(parentTypes.length <= 2) {
@@ -374,7 +374,7 @@ class SystemBuilder {
 				return Context.fatalError("SystemBuilder only acts on classes.", Context.currentPos());
 		}
 		
-		var qualifiedName:String = classType.pack.concat([name]).join(".");
+		final qualifiedName:String = classType.pack.concat([name]).join(".");
 		if(genericSystemCache.exists(qualifiedName)) {
 			return genericSystemCache[qualifiedName];
 		}
@@ -383,9 +383,9 @@ class SystemBuilder {
 			return Context.fatalError(classType.name + " must extend System.", Context.currentPos());
 		}
 		
-		var superClass:ClassType = classType.superClass.t.get();
-		var superClassModule:String = superClass.module.split(".").pop();
-		var importsAndUsings:{ imports: Array<ImportExpr>, usings: Array<TypePath> }
+		final superClass:ClassType = classType.superClass.t.get();
+		final superClassModule:String = superClass.module.split(".").pop();
+		final importsAndUsings:{ imports: Array<ImportExpr>, usings: Array<TypePath> }
 			= TypeSubstitutions.getCachedImports(classType);
 		
 		Context.defineModule(qualifiedName, [{
@@ -405,7 +405,7 @@ class SystemBuilder {
 			}]
 		}], importsAndUsings.imports, importsAndUsings.usings);
 		
-		var type:ComplexType = TPath({
+		final type:ComplexType = TPath({
 			pack: classType.pack,
 			name: name
 		});
@@ -524,7 +524,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 			}
 			
 			//The arguments used in the wrapper function signature.
-			var args:Array<FunctionArg> =
+			final args:Array<FunctionArg> =
 				//The view always passes an `Entity` as the first argument.
 				[{ name: "entity", type: macro:echoes.Entity }]
 				//The remaining arguments must also be in the view's order.
@@ -560,7 +560,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	 * these values are available in the current context.
 	 */
 	private function call():Expr {
-		var args:Array<Expr> = [for(arg in this.args) {
+		final args:Array<Expr> = [for(arg in this.args) {
 			switch(arg.type.followComplexType()) {
 				case macro:StdTypes.Float:
 					//Defined as a private variable of `System`.
