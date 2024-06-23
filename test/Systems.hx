@@ -50,9 +50,9 @@ class NameSystem extends System implements IMethodCounter {
 }
 
 class OptionalComponentSystem extends System implements IMethodCounter {
-	@:add private function colorAndNameAdded(color:Color, ?shape:Shape, name:Name):Void {}
-	@:update private function colorAndNameUpdated(color:Color, ?shape:Shape, name:Name):Void {}
-	@:remove private function colorAndNameRemoved(color:Color, ?shape:Shape, name:Name):Void {}
+	@:add private inline function colorAndNameAdded(color:Color, ?shape:Shape, name:Name):Void {}
+	@:update private inline function colorAndNameUpdated(color:Color, ?shape:Shape, name:Name):Void {}
+	@:remove private inline function colorAndNameRemoved(color:Color, ?shape:Shape, name:Name):Void {}
 }
 
 class TimeCountSystem extends System implements IMethodCounter {
