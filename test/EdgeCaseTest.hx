@@ -209,15 +209,16 @@ class EdgeCaseTest extends Test {
 		new RecursiveEventSystem().activate();
 		
 		//Certain events should stop propagating after `RecursiveEventSystem`
-		//gets to them.
+		//gets to them. On some targets, this can happen when the entity ID is 0
+		//and reading past the end of an int array returns 0 instead of null.
 		Echoes.getView(One, Two).onAdded.push((entity, one, two)
-			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
+			-> Assert.fail('ComponentStorage.add() didn\'t stop iterating despite One component being removed from entity ${ entity.id }.'));
 		Echoes.getView(Two, Three).onAdded.push((entity, two, three)
-			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
+			-> Assert.fail('ComponentStorage.add() didn\'t stop iterating despite Two component being removed from entity ${ entity.id }.'));
 		Echoes.getView(Brief, One).onAdded.push((entity, brief, one)
-			-> Assert.fail("ComponentStorage.add() didn't stop iterating despite component being removed."));
+			-> Assert.fail('ComponentStorage.add() didn\'t stop iterating despite Brief component being removed from entity ${ entity.id }.'));
 		Echoes.getView(Brief).onAdded.push((entity, brief)
-			-> Assert.fail("ViewBuilder.dispatchAddedCallback() didn't stop iterating despite entity being removed."));
+			-> Assert.fail('ViewBuilder.dispatchAddedCallback() didn\'t stop iterating despite Brief component being removed from entity ${ entity.id }.'));
 		
 		//However, `RecursiveEventSystem` shouldn't be able to interrupt
 		//`onRemoved` events.
