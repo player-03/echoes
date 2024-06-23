@@ -545,7 +545,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 				kind: FFun({
 					args: args,
 					ret: macro:Void,
-					expr: call()
+					expr: call(macro entity, macro __dt__)
 				}),
 				pos: this.pos
 			};
@@ -559,21 +559,21 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	 * `entity`, and any required components, so it's important to ensure all of
 	 * these values are available in the current context.
 	 */
-	private function call():Expr {
+	private function call(getEntity:Expr, getDeltaTime:Expr):Expr {
 		final args:Array<Expr> = [for(arg in this.args) {
 			switch(arg.type.followComplexType()) {
 				case macro:StdTypes.Float:
 					//Defined as a private variable of `System`.
-					macro __dt__;
+					getDeltaTime;
 				case macro:echoes.Entity:
 					//Defined as a wrapper function's first argument, and also
 					//defined in `callDuringUpdate()`.
-					macro entity;
+					getEntity;
 				default:
 					if(arg.opt || arg.value != null) {
 						//Look up the optional component's value. (May be null
 						//and that's fine.)
-						EntityTools.get(macro entity, arg.type.followComplexType());
+						EntityTools.get(getEntity, arg.type.followComplexType());
 					} else {
 						//Defined as one of the wrapper function's arguments.
 						macro $i{ arg.name };
@@ -591,21 +591,22 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 		if(components.length > 0) {
 			//Iterate over a `View`'s entities.
 			return macro $view.iter($wrapper);
+		} else if(optionalComponents.length > 0) {
+			return macro for(entity in echoes.Echoes.activeEntities)
+				${ call(macro entity, macro __dt__) };
 		} else {
 			//No components to filter by, but there may still be an `Entity`
 			//argument. (And/or a `Float` argument, which isn't relevant.)
 			for(arg in this.args) {
-				switch(arg.type.followComplexType()) {
-					case macro:echoes.Entity:
-						//Iterate over all entities.
-						return macro for(entity in echoes.Echoes.activeEntities)
-							${ call() };
-					default:
+				if(arg.type.followComplexType().match(macro:echoes.Entity)) {
+					//Iterate over all entities.
+					return macro for(entity in echoes.Echoes.activeEntities)
+						${ call(macro entity, macro __dt__) };
 				}
 			}
 			
 			//Don't iterate over anything.
-			return call();
+			return call(macro throw "Unable to select an entity because this function has no required components", macro __dt__);
 		}
 	}
 }

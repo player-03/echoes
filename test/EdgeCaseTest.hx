@@ -22,6 +22,23 @@ class EdgeCaseTest extends Test {
 	
 	//Tests may be run in any order, but not in parallel.
 	
+	private function testAllArgumentsOptional():Void {
+		new OptionalListenerSystem().activate();
+		Echoes.update();
+		assertTimesCalled(0, "OptionalListenerSystem.optionalNameUpdated");
+		
+		final entity:Entity = new Entity();
+		entity.add(("name":Name));
+		Echoes.update();
+		assertTimesCalled(1, "OptionalListenerSystem.optionalNameUpdated");
+		
+		//When there are multiple entities, the function should be called for
+		//each, whether or not they have `Name` components.
+		new Entity();
+		Echoes.update();
+		assertTimesCalled(3, "OptionalListenerSystem.optionalNameUpdated");
+	}
+	
 	private function testChildSystems():Void {
 		new NameSubsystem().activate();
 		
@@ -340,4 +357,13 @@ class RecursiveEventSystem extends System implements IMethodCounter {
 		//would keep the component around permanently, hence the name.
 		entity.add(permanent);
 	}
+}
+
+class OptionalListenerSystem extends System implements IMethodCounter {
+	@:update private function optionalNameUpdated(?name:Name):Void {}
+	
+	//These aren't allowed, and would throw compile errors, preventing the tests
+	//from running at all.
+	//@:add private function optionalNameAdded(?name:Name):Void {}
+	//@:remove private function optionalNameRemoved(?name:Name):Void {}
 }
