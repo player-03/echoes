@@ -266,17 +266,24 @@ class SystemBuilder {
 				//Allow Haxe to throw an error.
 		}
 		
-		//Listener wrappers
-		//=================
+		//Listener wrappers and linked views
+		//==================================
 		
-		//Define wrapper functions for each listener.
-		for(listener in addListeners.concat(removeListeners).concat(updateListeners)) {
-			if(listener.wrapperFunction != null) {
+		//Add and remove listeners require wrapper functions.
+		for(listener in addListeners.concat(removeListeners)) {
+			if(listener.components.length > 0) {
 				if(!fields.exists(field -> field.name == listener.wrapperName))
 					fields.push(listener.wrapperFunction);
 				
 				if(!linkedViews.contains(listener.viewName))
 					linkedViews.push(listener.viewName);
+			}
+		}
+		
+		//Update listeners use `forEachEntityInView()`, with no wrapper.
+		for(listener in updateListeners) {
+			if(listener.components.length > 0 && !linkedViews.contains(listener.viewName)) {
+				linkedViews.push(listener.viewName);
 			}
 		}
 		
@@ -302,7 +309,7 @@ class SystemBuilder {
 					super.__activate__();
 					
 					//If any entities already exist, call the `@:add` listeners.
-					$b{ addListeners.map(listener -> macro ${ listener.view }.iter(${ listener.wrapper })) }
+					$b{ addListeners.map(listener -> listener.callDuringUpdate()) }
 				};
 			}
 			
@@ -450,17 +457,19 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 		if(this.components == null) {
 			this.components = [];
 			
+			//Find non-optional, non-reserved arguments.
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
-					//Float is reserved for delta time; Entity is reserved for
-					//the entity.
 					case macro:StdTypes.Float, macro:echoes.Entity:
+					case type if(!arg.opt && arg.value == null):
+						this.components.push(type);
 					default:
-						//There are two ways to mark an argument as optional.
-						if(!arg.opt && arg.value == null) {
-							this.components.push(arg.type.followComplexType());
-						}
 				}
+			}
+			
+			if(this.components.length > 0) {
+				//Make sure the `View` subclass gets built.
+				ViewBuilder.getComponentOrder(this.components);
 			}
 		}
 		
@@ -472,16 +481,13 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 		if(this.optionalComponents == null) {
 			this.optionalComponents = [];
 			
+			//Find optional, non-reserved arguments.
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
-					//Float is reserved for delta time; Entity is reserved for
-					//the entity.
 					case macro:StdTypes.Float, macro:echoes.Entity:
+					case type if(arg.opt || arg.value != null):
+						this.optionalComponents.push(type);
 					default:
-						//There are two ways to mark an argument as optional.
-						if(arg.opt || arg.value != null) {
-							this.optionalComponents.push(arg.type.followComplexType());
-						}
 				}
 			}
 		}
@@ -514,7 +520,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	
 	/**
 	 * A wrapper function for this. This wrapper can safely be passed to
-	 * `view.iter()`, `view.onAdded`, and/or `view.onRemoved`.
+	 * `view.onAdded` and/or `view.onRemoved`.
 	 */
 	public var wrapperFunction(get, never):Field;
 	private function get_wrapperFunction():Field {
@@ -589,8 +595,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	 */
 	public function callDuringUpdate():Expr {
 		if(components.length > 0) {
-			//Iterate over a `View`'s entities.
-			return macro $view.iter($wrapper);
+			return ViewBuilder.forEachEntityInView(macro @:pos(this.pos) $i{ this.name }, this.args, macro __dt__);
 		} else if(optionalComponents.length > 0) {
 			return macro for(entity in echoes.Echoes.activeEntities)
 				${ call(macro entity, macro __dt__) };

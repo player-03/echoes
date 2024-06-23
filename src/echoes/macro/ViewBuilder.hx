@@ -246,6 +246,27 @@ class ViewBuilder {
 		
 		return viewType;
 	}
+	
+	public static function forEachEntityInView(func:Expr, args:Array<FunctionArg>, getDeltaTime:Expr):Expr {
+		final requiredComponents:Array<ComplexType> = [];
+		final funcArgs:Array<Expr> = [for(arg in args) {
+			switch(arg.type.followComplexType()) {
+				case macro:StdTypes.Float:
+					getDeltaTime;
+				case macro:echoes.Entity:
+					macro entity;
+				case x:
+					if(!arg.opt && arg.value == null) {
+						requiredComponents.push(x);
+					}
+					macro ${ x.getComponentStorage() }.get(entity);
+			}
+		}];
+		
+		return macro for(entity in $i{ getViewName(requiredComponents) }.instance.entities) {
+			$func($a{ funcArgs });
+		};
+	}
 }
 
 #end
