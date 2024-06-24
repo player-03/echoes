@@ -444,6 +444,8 @@ class Main {
 }
 ```
 
+The argument to `@:priority` can be any integer expression. For instance, `@:priority(OtherSystem.DEFAULT_PRIORITY + 1)` will make the listener run before `OtherSystem`. The expression will be evaluated during the constructor, meaning it can access the constructor's `priority` argument.
+
 ### Update length
 
 As Glenn Fielder explains in his article ["Fix Your Timestep!"](https://www.gafferongames.com/post/fix_your_timestep/), games and physics simulations can be very sensitive to the length of each update. `@:update` listeners in Echoes are no exception.

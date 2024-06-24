@@ -70,12 +70,16 @@ class SystemBuilder {
 		return null;
 	}
 	
-	private static function getPriority(meta:Metadata):Null<Int> {
+	private static function getPriority(meta:Metadata, knownPriorities:Map<String, Expr>):String {
 		final entry:MetadataEntry = getMeta(meta, PRIORITY_META);
 		switch(entry) {
 			case null:
-			case _.params => [_.expr => EConst(CInt(v))]:
-				return Std.parseInt(v);
+			case _.params => [expr]:
+				final key:String = new Printer().printExpr(expr);
+				if(!knownPriorities.exists(key)) {
+					knownPriorities[key] = expr;
+				}
+				return key;
 			default:
 		}
 		return null;
@@ -195,9 +199,11 @@ class SystemBuilder {
 		//Listener function priorities
 		//============================
 		
-		final updateListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, UPDATE_META)).filter(notNull);
-		final addListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, ADD_META)).filter(notNull);
-		final removeListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, REMOVE_META)).filter(notNull);
+		final knownPriorities:Map<String, Expr> = new Map();
+		
+		final updateListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, UPDATE_META, knownPriorities)).filter(notNull);
+		final addListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, ADD_META, knownPriorities)).filter(notNull);
+		final removeListeners:Array<ListenerFunction> = fields.map(ListenerFunction.fromField.bind(_, REMOVE_META, knownPriorities)).filter(notNull);
 		for(listener in addListeners.concat(removeListeners)) {
 			if(listener.wrapperFunction == null) {
 				Context.error("An @:add or @:remove listener must take at least one component. (Optional arguments don't count.)", listener.pos);
@@ -208,7 +214,7 @@ class SystemBuilder {
 		 * Update listeners that have `@:priority` tags. Each group of these
 		 * will be used to create a `ChildSystem`.
 		 */
-		final fixedPriorityUpdateListeners:Map<Int, Array<ListenerFunction>> = new Map();
+		final fixedPriorityUpdateListeners:Map<String, Array<ListenerFunction>> = new Map();
 		for(listener in updateListeners) {
 			if(listener.priority != null) {
 				if(!fixedPriorityUpdateListeners.exists(listener.priority)) {
@@ -219,11 +225,11 @@ class SystemBuilder {
 			}
 		}
 		
-		final defaultPriority:Null<Int> = getPriority(classType.meta.get());
+		final defaultPriority:Null<String> = getPriority(classType.meta.get(), knownPriorities);
 		if(defaultPriority != null) {
 			fields.pushFields(macro class DefaultPriority {
 				private override function __getDefaultPriority__():Int {
-					return $v{ defaultPriority };
+					return ${ knownPriorities.get(defaultPriority) };
 				}
 			});
 		}
@@ -235,7 +241,7 @@ class SystemBuilder {
 			final body:Array<Expr> = [for(listener in listeners) listener.callDuringUpdate()];
 			body.unshift(macro __dt__ = dt);
 			
-			macro __addListenersWithPriority__($v{ priority }, function(dt:Float) $b{ body });
+			macro __addListenersWithPriority__(${ knownPriorities[priority] }, function(dt:Float) $b{ body });
 		}];
 		initializeChildren.push(macro if(parent != null) {
 			for(child in __children__) {
@@ -425,7 +431,7 @@ class SystemBuilder {
 	name:String,
 	args:Array<FunctionArg>,
 	pos:Position,
-	priority:Null<Int>,
+	priority:Null<String>,
 	?components:Array<ComplexType>,
 	?optionalComponents:Array<ComplexType>,
 	?viewName:String,
@@ -434,7 +440,7 @@ class SystemBuilder {
 
 @:forward
 abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
-	public static function fromField(field:Field, listenerType:String):ListenerFunction {
+	public static function fromField(field:Field, listenerType:String, knownPriorities:Map<String, Expr>):ListenerFunction {
 		switch(field.kind) {
 			case FFun(func):
 				if(SystemBuilder.getMeta(field.meta, listenerType) == null) {
@@ -445,7 +451,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 					name: field.name,
 					args: func.args,
 					pos: field.pos,
-					priority: SystemBuilder.getPriority(field.meta)
+					priority: SystemBuilder.getPriority(field.meta, knownPriorities)
 				};
 			default:
 				return null;

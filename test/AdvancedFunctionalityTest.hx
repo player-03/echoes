@@ -191,14 +191,16 @@ class AdvancedFunctionalityTest extends Test {
 		//Next, add a system with children.
 		final parent:UpdateOrderSystem = new UpdateOrderSystem();
 		Assert.equals(0, parent.priority);
-		Assert.equals(1, parent.__children__[0].priority);
-		Assert.equals(-1, parent.__children__[1].priority);
+		final positiveChild:System = Lambda.find(parent.__children__, child -> child.priority == 1);
+		Assert.notNull(positiveChild);
+		final negativeChild:System = Lambda.find(parent.__children__, child -> child.priority == -1);
+		Assert.notNull(negativeChild);
 		
 		list.add(parent);
 		assertListContents([
-			high, parent.__children__[0], //1
+			high, positiveChild, //1
 			middle, parent, //0
-			low, parent.__children__[1] //-1
+			low, negativeChild //-1
 		]);
 		
 		final updateOrder:Array<String> = [];
@@ -214,8 +216,8 @@ class AdvancedFunctionalityTest extends Test {
 		low.priority = -1;
 		assertListContents([
 			parent, //2
-			high, parent.__children__[0], //1
-			parent.__children__[1], middle, low //-1
+			high, positiveChild, //1
+			negativeChild, middle, low //-1
 		]);
 		
 		updateOrder.resize(0);
