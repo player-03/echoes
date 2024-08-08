@@ -5,4 +5,5 @@
 -lib utest
 -main Main
 -dce full
+-D haxe-next
 -D UTEST_DETAILED_MESSAGES
