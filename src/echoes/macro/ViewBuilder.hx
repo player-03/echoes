@@ -141,19 +141,8 @@ class ViewBuilder {
 			public final onAdded = new echoes.utils.Signal<$callbackType>();
 			public final onRemoved = new echoes.utils.Signal<$callbackType>();
 			
-			private function new() { }
-			
-			public override function activate():Void {
-				super.activate();
-				
-				if(activations == 1) $b{
-					[for(component in components) {
-						//Add this to the component's `_relatedViews`, so that
-						//given the component, you'll be able to find this view.
-						final storage:Expr = component.getComponentStorage();
-						macro $storage._relatedViews.push(this);
-					}]
-				}
+			private function new() {
+				super([$a{ { [for(component in components) macro ${ component.getComponentStorage() }]; } }]);
 			}
 			
 			private override function dispatchAddedCallback(entity:echoes.Entity):Void {
@@ -193,14 +182,6 @@ class ViewBuilder {
 				super.reset();
 				onAdded.clear();
 				onRemoved.clear();
-				
-				//Remove this from all `_relatedViews` arrays.
-				$b{
-					[for(component in components) {
-						final storage:Expr = component.getComponentStorage();
-						macro ${ storage }._relatedViews.remove(this);
-					}]
-				}
 			}
 			
 			public inline function iter(callback:$callbackType):Void {
@@ -210,28 +191,6 @@ class ViewBuilder {
 					args.unshift({ name: "entity", type: macro:echoes.Entity });
 					forEachEntityInView(macro callback, args, macro 0);
 				} }
-			}
-			
-			private override function isMatched(entity:echoes.Entity):Bool {
-				return ${ {
-					//The expression consists of several `exists()` checks. For
-					//instance, in a `View<Hue, Saturation>`, the two checks
-					//would be `HueContainer.instance.exists(entity)` and
-					//`SaturationContainer.instance.exists(entity)`.
-					final checks:Array<Expr> = [for(component in components)
-						macro ${ component.getComponentStorage() }.exists(entity)];
-					//The checks are joined by `&&` operators.
-					checks.fold((a, b) -> macro $a && $b, checks.shift());
-				} };
-			}
-			
-			public override function toString():String {
-				//Insert the value of a string formed by joining the component
-				//names. For instance, in a `View<Hue, Saturation>`, the string
-				//would be `"Hue, Saturation"`.
-				return $v{
-					components.map(new Printer().printComplexType).join(", ")
-				};
 			}
 		}
 		

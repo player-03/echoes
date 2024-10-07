@@ -44,7 +44,7 @@ class ComponentStorage<T> {
 		return _relatedViews;
 	}
 	
-	@:allow(echoes.ViewBase)
+	@:allow(echoes.DynamicComponentStorage)
 	private final _relatedViews:Array<ViewBase> = [];
 	
 	/**
@@ -191,6 +191,12 @@ class ComponentStorage<T> {
 abstract DynamicComponentStorage(ComponentStorage<Dynamic>) {
 	@:from private static inline function fromComponentStorage<T>(componentStorage:ComponentStorage<T>):DynamicComponentStorage {
 		return cast componentStorage;
+	}
+	
+	@:allow(echoes.ViewBase)
+	private var _relatedViews(get, never):Array<ViewBase>;
+	private inline function get__relatedViews():Array<ViewBase> {
+		return this._relatedViews;
 	}
 }
 

@@ -10,6 +10,15 @@ import echoes.utils.ReadOnlyData;
 class View<Rest> extends ViewBase { }
 
 class ViewBase {
+	private var activations:Int = 0;
+	public var active(get, never):Bool;
+	private inline function get_active():Bool return activations > 0;
+	
+	/**
+	 * All `ComponentStorage` instances related to this view.
+	 */
+	public final componentStorage:ReadOnlyArray<DynamicComponentStorage>;
+	
 	@:allow(echoes.Echoes) private final _entities:Array<Entity> = [];
 	/**
 	 * All entities in this view.
@@ -17,9 +26,9 @@ class ViewBase {
 	public var entities(get, never):ReadOnlyArray<Entity>;
 	private inline function get_entities():ReadOnlyArray<Entity> return _entities;
 	
-	private var activations:Int = 0;
-	public var active(get, never):Bool;
-	private inline function get_active():Bool return activations > 0;
+	public inline function new(componentStorage:Array<DynamicComponentStorage>) {
+		this.componentStorage = componentStorage;
+	}
 	
 	public function activate():Void {
 		activations++;
@@ -27,6 +36,9 @@ class ViewBase {
 			Echoes._activeViews.push(this);
 			for(e in Echoes.activeEntities) {
 				add(e);
+			}
+			for(storage in componentStorage) {
+				storage._relatedViews.push(this);
 			}
 		}
 	}
@@ -59,9 +71,15 @@ class ViewBase {
 	/**
 	 * Returns whether the entity has all of the view's required components.
 	 */
-	private function isMatched(entity:Entity):Bool {
-		//Overridden by `ViewBuilder`.
-		return false;
+	private inline function isMatched(entity:Entity):Bool {
+		var result:Bool = true;
+		for(storage in componentStorage) {
+			if(!storage.exists(entity)) {
+				result = false;
+				break;
+			}
+		}
+		return result;
 	}
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
@@ -85,9 +103,13 @@ class ViewBase {
 		activations = 0;
 		Echoes._activeViews.remove(this);
 		_entities.resize(0);
+		
+		for(storage in componentStorage) {
+			storage._relatedViews.remove(this);
+		}
 	}
 	
-	public function toString():String {
-		return "ViewBase";
+	public inline function toString():String {
+		return "View<" + [for(storage in componentStorage) storage.name].join(", ") + ">";
 	}
 }
