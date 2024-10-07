@@ -332,6 +332,15 @@ class NameSubsystem extends NameSystem {
 	private override function nameAdded(name:Name):Void {}
 }
 
+class OptionalListenerSystem extends System implements IMethodCounter {
+	@:update private function optionalNameUpdated(?name:Name):Void {}
+	
+	//These aren't allowed, and would throw compile errors, preventing the tests
+	//from running at all.
+	//@:add private function optionalNameAdded(?name:Name):Void {}
+	//@:remove private function optionalNameRemoved(?name:Name):Void {}
+}
+
 class RecursiveEventSystem extends System implements IMethodCounter {
 	@:add private function twoRemovesOne(two:Two, entity:Entity):Void {
 		entity.remove(One);
@@ -358,13 +367,4 @@ class RecursiveEventSystem extends System implements IMethodCounter {
 		//would keep the component around permanently, hence the name.
 		entity.add(permanent);
 	}
-}
-
-class OptionalListenerSystem extends System implements IMethodCounter {
-	@:update private function optionalNameUpdated(?name:Name):Void {}
-	
-	//These aren't allowed, and would throw compile errors, preventing the tests
-	//from running at all.
-	//@:add private function optionalNameAdded(?name:Name):Void {}
-	//@:remove private function optionalNameRemoved(?name:Name):Void {}
 }
