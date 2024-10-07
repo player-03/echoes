@@ -146,10 +146,10 @@ class ViewBuilder {
 			public override function activate():Void {
 				super.activate();
 				
-				//$b{} - Insert expressions from an `Array<Expr>`, in order.
 				if(activations == 1) $b{
-					//Each expression adds this `View` to a related list.
 					[for(component in components) {
+						//Add this to the component's `_relatedViews`, so that
+						//given the component, you'll be able to find this view.
 						final storage:Expr = component.getComponentStorage();
 						macro $storage._relatedViews.push(this);
 					}]
@@ -159,7 +159,6 @@ class ViewBuilder {
 			private override function dispatchAddedCallback(entity:echoes.Entity):Void {
 				var index:Int = entities.lastIndexOf(entity);
 				for(callback in onAdded) {
-					//$a{} - Insert function arguments from an `Array<Expr>`.
 					callback($a{ callbackArgs });
 					
 					//If the callback removed the entity, stop. Cache the index
@@ -179,7 +178,6 @@ class ViewBuilder {
 				var exception:haxe.Exception = null;
 				for(callback in onRemoved) {
 					try {
-						//$a{} - Insert function arguments from an `Array<Expr>`.
 						callback($a{ removedCallbackArgs });
 					} catch(e:haxe.Exception) {
 						exception = e;
@@ -196,9 +194,8 @@ class ViewBuilder {
 				onAdded.resize(0);
 				onRemoved.resize(0);
 				
-				//$b{} - Insert expressions from an `Array<Expr>`, in order.
+				//Remove this from all `_relatedViews` arrays.
 				$b{
-					//Each expression removes this `View` from a related list.
 					[for(component in components) {
 						final storage:Expr = component.getComponentStorage();
 						macro ${ storage }._relatedViews.remove(this);
@@ -208,14 +205,12 @@ class ViewBuilder {
 			
 			public inline function iter(callback:$callbackType):Void {
 				for(entity in entities) {
-					//$a{} - Insert function arguments from an `Array<Expr>`.
 					callback($a{ callbackArgs });
 				}
 			}
 			
 			private override function isMatched(entity:echoes.Entity):Bool {
-				//Insert a single long expression.
-				return ${{
+				return ${ {
 					//The expression consists of several `exists()` checks. For
 					//instance, in a `View<Hue, Saturation>`, the two checks
 					//would be `HueContainer.instance.exists(entity)` and
@@ -224,7 +219,7 @@ class ViewBuilder {
 						macro ${ component.getComponentStorage() }.exists(entity)];
 					//The checks are joined by `&&` operators.
 					checks.fold((a, b) -> macro $a && $b, checks.shift());
-				}};
+				} };
 			}
 			
 			public override function toString():String {
