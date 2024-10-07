@@ -270,6 +270,39 @@ class EdgeCaseTest extends Test {
 		Assert.equals(80.0, entity.get(Permanent));
 	}
 	
+	private function testRemoveDuringUpdate():Void {
+		final system:RemoveStringSystem = new RemoveStringSystem();
+		system.activate();
+		
+		final entity0:Entity = new Entity();
+		final entity1:Entity = new Entity();
+		final entity2:Entity = new Entity();
+		
+		entity0.add("remove");
+		entity1.add("keep");
+		Assert.equals(2, Echoes.getView(String).entities.length);
+		
+		Echoes.update();
+		assertTimesCalled(2, "RemoveStringSystem.removeString");
+		Assert.equals(1, Echoes.getView(String).entities.length);
+		
+		entity0.add("remove");
+		entity1.add("keep");
+		entity2.add("remove");
+		MethodCounter.reset();
+		Echoes.update();
+		assertTimesCalled(3, "RemoveStringSystem.removeString");
+		Assert.equals(1, Echoes.getView(String).entities.length);
+		
+		entity0.add("remove");
+		entity1.add("keep");
+		entity2.add("remove");
+		MethodCounter.reset();
+		Echoes.getView(String).iter(system.removeString);
+		assertTimesCalled(3, "RemoveStringSystem.removeString");
+		Assert.equals(1, Echoes.getView(String).entities.length);
+	}
+	
 	private function testSystemLists():Void {
 		final list0:SystemList = new SystemList();
 		final list1:SystemList = new SystemList();
@@ -366,5 +399,13 @@ class RecursiveEventSystem extends System implements IMethodCounter {
 		//This is not allowed, and should throw an error. If it was allowed, it
 		//would keep the component around permanently, hence the name.
 		entity.add(permanent);
+	}
+}
+
+class RemoveStringSystem extends System implements IMethodCounter {
+	@:update public function removeString(entity:Entity, string:String):Void {
+		if(string == "remove") {
+			entity.remove(String);
+		}
 	}
 }

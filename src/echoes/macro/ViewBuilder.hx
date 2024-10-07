@@ -204,9 +204,12 @@ class ViewBuilder {
 			}
 			
 			public inline function iter(callback:$callbackType):Void {
-				for(entity in entities) {
-					callback($a{ callbackArgs });
-				}
+				${ {
+					final args = [for(i => component in components)
+						{ name: "component" + i, type: component }];
+					args.unshift({ name: "entity", type: macro:echoes.Entity });
+					forEachEntityInView(macro callback, args, macro 0);
+				} }
 			}
 			
 			private override function isMatched(entity:echoes.Entity):Bool {
@@ -258,8 +261,19 @@ class ViewBuilder {
 			}
 		}];
 		
-		return macro for(entity in $i{ getViewName(requiredComponents) }.instance.entities) {
-			$func($a{ funcArgs });
+		return macro {
+			var i:Int = 0;
+			final entities:haxe.ds.ReadOnlyArray<echoes.Entity> = $i{ getViewName(requiredComponents) }.instance.entities;
+			while(i < entities.length) {
+				final entity:echoes.Entity = entities[i];
+				$func($a{ funcArgs });
+				
+				if(entity != entities[i] && !entities.contains(entity)) {
+					//Entity was removed; don't increment.
+				} else {
+					i++;
+				}
+			}
 		};
 	}
 }
