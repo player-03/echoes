@@ -191,8 +191,8 @@ class ViewBuilder {
 			
 			private override function reset():Void {
 				super.reset();
-				onAdded.resize(0);
-				onRemoved.resize(0);
+				onAdded.clear();
+				onRemoved.clear();
 				
 				//Remove this from all `_relatedViews` arrays.
 				$b{

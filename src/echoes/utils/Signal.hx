@@ -4,10 +4,14 @@ package echoes.utils;
 import haxe.macro.Expr;
 #end
 
-@:forward @:forward.new
+@:forward(iterator, keyValueIterator, length, push, pop) @:forward.new
 abstract Signal<T:haxe.Constraints.Function>(Array<T>) {
 	public inline function add(listener:T):Void {
 		this.push(listener);
+	}
+	
+	public inline function clear():Void {
+		this.resize(0);
 	}
 	
 	public function contains(listener:T):Bool {
