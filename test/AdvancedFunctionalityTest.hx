@@ -50,6 +50,45 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.isFalse(types.contains(String));
 	}
 	
+	private function testDynamicViews():Void {
+		final component0:ComponentStorage<Any> = new ComponentStorage<Any>("component0");
+		final component1:ComponentStorage<Any> = new ComponentStorage<Any>("component1");
+		
+		final view:DynamicView = new DynamicView(component0, component1);
+		view.activate();
+		var added:String = "";
+		view.onAdded.add((entity, components) -> added += components.join(""));
+		var removed:String = "";
+		view.onRemoved.add((entity, components) -> removed += components.join(""));
+		
+		final entity0:Entity = new Entity();
+		component0.add(entity0, "---");
+		component0.remove(entity0);
+		Assert.equals("", added);
+		Assert.equals("", removed);
+		
+		component1.add(entity0, "b");
+		component0.add(entity0, "a");
+		Assert.equals("ab", added);
+		Assert.equals("", removed);
+		
+		final entity1:Entity = new Entity();
+		entity1.add("string");
+		component0.add(entity1, 0);
+		component1.add(entity1, 1);
+		Assert.equals("ab01", added);
+		Assert.equals("", removed);
+		
+		var updated:String = "";
+		view.iter((entity, components) -> updated += components.join(""));
+		Assert.equals("ab01", updated);
+		
+		component1.remove(entity1);
+		component1.remove(entity0);
+		Assert.equals("ab01", added);
+		Assert.equals("01ab", removed);
+	}
+	
 	private function testEntityTemplates():Void {
 		new NameSystem().activate();
 		new AppearanceSystem().activate();

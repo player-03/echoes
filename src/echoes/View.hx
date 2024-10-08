@@ -3,6 +3,8 @@ package echoes;
 import echoes.ComponentStorage;
 import echoes.Entity;
 import echoes.utils.ReadOnlyData;
+import echoes.utils.Signal;
+import haxe.Exception;
 
 #if !macro
 @:genericBuild(echoes.macro.ViewBuilder.build())
@@ -111,5 +113,105 @@ class ViewBase {
 	
 	public inline function toString():String {
 		return "View<" + [for(storage in componentStorage) storage.name].join(", ") + ">";
+	}
+}
+
+/**
+ * A `View` that can be created at runtime.
+ * 
+ * Sample usage:
+ * 
+ * ```haxe
+ * //Storage for a custom component type. Because `entity.add(x)` only works at
+ * //compile time, you'll have to call `customComponent.add(entity, x)`.
+ * public final customComponent:ComponentStorage<Any>;
+ * 
+ * //A view of `customComponent` and `String`; it'll dispatch events for any
+ * //entity that has both components.
+ * public final view:DynamicView;
+ * 
+ * public function new() {
+ *     customComponent = new ComponentStorage<Any>("CustomComponent");
+ *     
+ *     view = new DynamicView(customComponent, Echoes.getComponentStorage(String));
+ *     
+ *     //Important: `DynamicView` doesn't activate itself.
+ *     view.activate();
+ *     
+ *     //Add/remove listeners work normally, except the components are untyped.
+ *     view.onAdded.add((entity:Entity, components:Array<Any>) -> trace('Entity $entity now has $components'));
+ *     view.onRemoved.add((entity:Entity, components:Array<Any>) -> trace('Entity $entity no longer has all of $components'));
+ * }
+ * 
+ * public function update(time:Float):Void {
+ *     //Like with any other view, `iter()` doesn't allow for a time argument.
+ *     //Here's one way to pass it in, but you could also simply leave it out.
+ *     view.iter(updateEntity.bind(time));
+ * }
+ * 
+ * private function updateEntity(time:Float, entity:Entity, components:Array<Any>):Void {
+ *     trace('Updating entity $entity that has $components ($time seconds elapsed)')
+ * }
+ * ```
+ */
+class DynamicView extends ViewBase {
+	public final onAdded:Signal<(Entity, Array<Any>) -> Void> = new Signal<(Entity, Array<Any>) -> Void>();
+	public final onRemoved:Signal<(Entity, Array<Any>) -> Void> = new Signal<(Entity, Array<Any>) -> Void>();
+	
+	public inline function new(...componentStorage:DynamicComponentStorage) {
+		super(componentStorage);
+	}
+	
+	private override function dispatchAddedCallback(entity:Entity):Void {
+		var index:Int = entities.lastIndexOf(entity);
+		for(callback in onAdded) {
+			callback(entity, [for(storage in componentStorage) storage.get(entity)]);
+			
+			//If the callback removed the entity, stop. Cache the index to save
+			//time in most cases. HashLink is known to return 0 when reading out
+			//of bounds, so it has to check length too.
+			if(#if hl macro index >= entities.length || #end entities[index] != entity) {
+				index = entities.lastIndexOf(entity);
+				if(index < 0) {
+					break;
+				}
+			}
+		}
+	}
+	
+	private override function dispatchRemovedCallback(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
+		var exception:Exception = null;
+		for(callback in onRemoved) {
+			try {
+				callback(entity, [for(storage in componentStorage)
+					storage == removedComponentStorage ? removedComponent : storage.get(entity)]);	
+			} catch(e:Exception) {
+				exception = e;
+			}
+		}
+		
+		if(exception != null) {
+			throw exception;
+		}
+	}
+	
+	private override function reset():Void {
+		super.reset();
+		onAdded.clear();
+		onRemoved.clear();
+	}
+	
+	public function iter(callback:(Entity, Array<Any>) -> Void):Void {
+		var i:Int = 0;
+		while(i < entities.length) {
+			final entity:Entity = entities[i];
+			callback(entity, [for(storage in componentStorage) storage.get(entity)]);
+			
+			if(entity != entities[i] && !entities.contains(entity)) {
+				//Entity was removed; don't increment.
+			} else {
+				i++;
+			}
+		}
 	}
 }

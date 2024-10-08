@@ -56,7 +56,7 @@ class ComponentStorage<T> {
 	private final storage:Array<Null<T>> = [];
 	#end
 	
-	private inline function new(componentType:String) {
+	public inline function new(componentType:String) {
 		this.componentType = componentType;
 		Echoes.componentStorage.push(this);
 		
@@ -184,8 +184,14 @@ class ComponentStorage<T> {
 }
 
 /**
- * A version of `ComponentStorage` that stores components of unknown type. As
- * this makes it unsafe to call `add()`, that function is disabled.
+ * A version of `ComponentStorage` that stores components of unknown type.
+ * `add()` is disabled because there's no way to make sure the added component
+ * is the correct type. `remove()` is still available because it doesn't need to
+ * check any types.
+ * 
+ * If you're creating the `ComponentStorage` at runtime and want to be able to
+ * add components, use `new ComponentStorage<Dynamic>()` instead. Obviously, no
+ * type checking will be performed.
  */
 @:forward(clear, componentType, exists, get, name, relatedViews, remove)
 abstract DynamicComponentStorage(ComponentStorage<Dynamic>) {

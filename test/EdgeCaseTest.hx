@@ -301,6 +301,21 @@ class EdgeCaseTest extends Test {
 		Echoes.getView(String).iter(system.removeString);
 		assertTimesCalled(3, "RemoveStringSystem.removeString");
 		Assert.equals(1, Echoes.getView(String).entities.length);
+		
+		final view:DynamicView = new DynamicView(Echoes.getComponentStorage(Bool));
+		view.activate();
+		var count:Int = 0;
+		entity0.add(false);
+		entity1.add(true);
+		entity2.add(true);
+		view.iter((entity, components) -> {
+			count++;
+			if(components[0] == true) {
+				entity.remove(Bool);
+			}
+		});
+		Assert.equals(1, view.entities.length);
+		Assert.equals(3, count);
 	}
 	
 	private function testSystemLists():Void {
