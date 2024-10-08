@@ -170,7 +170,7 @@ class DynamicView extends ViewBase {
 			//If the callback removed the entity, stop. Cache the index to save
 			//time in most cases. HashLink is known to return 0 when reading out
 			//of bounds, so it has to check length too.
-			if(#if hl macro index >= entities.length || #end entities[index] != entity) {
+			if(#if hl index >= entities.length || #end entities[index] != entity) {
 				index = entities.lastIndexOf(entity);
 				if(index < 0) {
 					break;
