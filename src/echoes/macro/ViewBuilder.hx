@@ -184,7 +184,7 @@ class ViewBuilder {
 				onRemoved.clear();
 			}
 			
-			public inline function iter(callback:$callbackType):Void {
+			public function iter(callback:$callbackType):Void {
 				${ {
 					final args = [for(i => component in components)
 						{ name: "component" + i, type: component }];
