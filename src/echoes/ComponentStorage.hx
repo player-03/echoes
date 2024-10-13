@@ -58,7 +58,7 @@ class ComponentStorage<T> {
 	
 	public inline function new(componentType:String) {
 		this.componentType = componentType;
-		Echoes.componentStorage.push(this);
+		Echoes._componentStorage.push(this);
 		
 		//Some platforms get confused by the declaration of `Array<Null<T>>`,
 		//and treat that as something like `Array<Dynamic>`, and then cast to

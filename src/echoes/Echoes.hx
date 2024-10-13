@@ -23,7 +23,9 @@ class Echoes {
 	#end
 	
 	@:allow(echoes.ComponentStorage)
-	private static final componentStorage:Array<DynamicComponentStorage> = [];
+	private static final _componentStorage:Array<DynamicComponentStorage> = [];
+	public static var componentStorage:ReadOnlyArray<DynamicComponentStorage>;
+	private static inline function get_componentStorage():ReadOnlyArray<DynamicComponentStorage> return _componentStorage;
 	
 	@:allow(echoes.Entity)
 	private static final _activeEntities:Array<Entity> = [];
@@ -153,7 +155,7 @@ class Echoes {
 			activeViews[i].reset();
 		}
 		
-		for(storage in componentStorage) {
+		for(storage in _componentStorage) {
 			storage.clear();
 		}
 		EntityComponents.components.resize(0);
