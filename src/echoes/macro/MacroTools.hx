@@ -136,7 +136,7 @@ class MacroTools {
 		final fieldChain:Null<String> = printFieldChain(e);
 		if(fieldChain != null) {
 			try {
-				return followMono(fieldChain.getType()).toComplexType();
+				return followMono(fieldChain.getType()).toComplexType() ?? macro:Dynamic;
 			} catch(err:Exception) { }
 		}
 		
