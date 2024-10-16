@@ -19,6 +19,8 @@ import haxe.Exception;
  * be sure to test the performance impact.
  */
 class ComponentStorage<T> {
+	private static final DOT_PATH:EReg = ~/(?:\w+\.)*(\w+)/g;
+	
 	/**
 	 * The component's fully-qualified type, in string form. For instance,
 	 * `Echoes.getComponentStorage(Bool).componentType` is `"StdTypes.Bool"`.
@@ -46,6 +48,15 @@ class ComponentStorage<T> {
 	
 	@:allow(echoes.DynamicComponentStorage)
 	private final _relatedViews:Array<ViewBase> = [];
+	
+	/**
+	 * As `componentType`, except without package information. This is easier to
+	 * read but may not be unique.
+	 */
+	public var shortComponentType(get, never):String;
+	private inline function get_shortComponentType():String {
+		return DOT_PATH.replace(componentType, "$1");
+	}
 	
 	/**
 	 * All components of this type.
@@ -193,7 +204,7 @@ class ComponentStorage<T> {
  * add components, use `new ComponentStorage<Dynamic>()` instead. Obviously, no
  * type checking will be performed.
  */
-@:forward(clear, componentType, exists, get, name, relatedViews, remove)
+@:forward(clear, componentType, exists, get, name, relatedViews, remove, shortComponentType)
 abstract DynamicComponentStorage(ComponentStorage<Dynamic>) {
 	@:from private static inline function fromComponentStorage<T>(componentStorage:ComponentStorage<T>):DynamicComponentStorage {
 		return cast componentStorage;

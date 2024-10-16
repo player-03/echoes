@@ -190,6 +190,7 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals("String", Echoes.getComponentStorage(String).componentType);
 		Assert.equals("Array<StdTypes.Bool>", Echoes.getComponentStorage((_:Array<Bool>)).componentType);
 		Assert.equals("ComponentStorage<StdTypes.Bool>", Std.string(Echoes.getComponentStorage(Bool)));
+		Assert.equals("ReadOnlyArray<Bool>", Echoes.getComponentStorage((_:haxe.ds.ReadOnlyArray<Bool>)).shortComponentType);
 		
 		final entity:Entity = new Entity();
 		entity.add(["xyz"]);
