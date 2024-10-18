@@ -50,6 +50,12 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.isFalse(types.contains(String));
 	}
 	
+	private function testCustomStorage():Void {
+		Assert.isTrue(Echoes.getComponentStorage(IntArray) is IntArrayStorage);
+		Assert.isFalse(Echoes.getComponentStorage((_:Array<Int>)) is IntArrayStorage);
+		Assert.isFalse(Echoes.getComponentStorage(EagerIntArray) is IntArrayStorage);
+	}
+	
 	private function testDynamicViews():Void {
 		final component0:ComponentStorage<Any> = new ComponentStorage<Any>("component0");
 		final component1:ComponentStorage<Any> = new ComponentStorage<Any>("component1");
@@ -392,5 +398,15 @@ class AdvancedFunctionalityTest extends Test {
 }
 
 typedef Alias<T> = T;
+
+@:echoes_storage(new AdvancedFunctionalityTest.IntArrayStorage())
 typedef IntArray = Array<Int>;
+
+@:echoes_storage(new AdvancedFunctionalityTest.IntArrayStorage()) //ignored
 @:eager typedef EagerIntArray = Array<Int>;
+
+class IntArrayStorage extends ComponentStorage<IntArray> {
+	public function new() {
+		super("IntArray");
+	}
+}

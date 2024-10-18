@@ -214,6 +214,30 @@ class MacroTools {
 	}
 	
 	/**
+	 * Gets the underlying `BaseType`, if available.
+	 */
+	public static function toBaseType(type:Type):Null<BaseType> {
+		for(_ in 0...10) {
+			switch(type) {
+				case TAbstract(t, _):
+					return t.get();
+				case TEnum(t, _):
+					return t.get();
+				case TInst(t, _):
+					return t.get();
+				case TType(t, _):
+					return t.get();
+				case TDynamic(t), TLazy(_() => t), TMono(_.get() => t):
+					type = t;
+				default:
+					return null;
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * Converts `type` to a valid Haxe identifier.
 	 * @param qualify Whether to include package and module information. Setting
 	 * this to false makes the output more readable but less unique.

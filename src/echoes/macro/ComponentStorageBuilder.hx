@@ -5,6 +5,7 @@ package echoes.macro;
 import haxe.macro.CompilationServer;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
+import haxe.macro.Type;
 import haxe.PosInfos;
 
 using echoes.macro.MacroTools;
@@ -37,13 +38,22 @@ class ComponentStorageBuilder {
 		
 		final componentTypeName:String = new Printer().printComplexType(componentComplexType);
 		final storageTypePath:TypePath = { pack: [], name: storageTypeName };
-		final storageType:ComplexType = TPath(storageTypePath);
-		final def:TypeDefinition = macro class $storageTypeName extends echoes.ComponentStorage<$componentComplexType> {
-			public static final instance:$storageType = new $storageTypePath();
-			
-			private function new() {
-				super($v{ componentTypeName });
-			}
+		var getInstance:Expr = macro new echoes.ComponentStorage<$componentComplexType>($v{ componentTypeName });
+		
+		//If a custom singleton is defined, use that instead.
+		final componentBaseType:BaseType = componentComplexType.toType().toBaseType();
+		switch(componentBaseType?.meta?.extract(":echoes_storage")) {
+			case null, []:
+			case x if(componentBaseType.params.length > 0):
+				Context.error("@:echoes_storage doesn't work with type params, for type " + new Printer().printComplexType(componentComplexType), Context.currentPos());
+			case [_.params => [customSingleton]]:
+				getInstance = customSingleton;
+			default:
+		}
+		
+		final def:TypeDefinition = macro class $storageTypeName {
+			public static final instance:echoes.ComponentStorage<$componentComplexType>
+				= $getInstance;
 		};
 		
 		storageCache.set(storageTypeName, def);
