@@ -255,6 +255,15 @@ Echoes also supports the standard "optional argument" syntax.
 
 ## Advanced
 
+### Type check syntax
+Due to how Haxe parses code, components with type parameters don't work normally, and special syntax is required.
+
+For instance, `entity.add(["my", "string", "array"]))` adds a string array to an entity, but `entity.remove(Array<String>)` won't compile. In this context, Haxe interprets `Array<String>` as "`Array` is less than `String` is greater than (nothing)", and it complains that it expected a value after `>`.
+
+To get around this, Echoes accepts [type check syntax](https://haxe.org/manual/expression-type-check.html) anywhere it accepts a `Class<T>`. The left side of the expression will be ignored, so you can use an identifier that doesn't exist, like `_`. Because this alerts Haxe to expect a type, it will successfully parse anything entered on the right side.
+
+For instance, to remove the string array from the above example, call `entity.remove((_:Array<String>))`.
+
 ### Update order
 
 To make an app run smoothly, you often need to run updates in a specific order. For simple apps, all you need to do is call `Echoes.addSystem()` in the correct order and pay attention to the order of each system's `@:update` functions. The systems will run in the order you added them, and within each system, the `@:update` functions will run from top to bottom.
