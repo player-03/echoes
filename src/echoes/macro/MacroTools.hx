@@ -11,7 +11,6 @@ using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
 using Lambda;
 
-@:dce
 class MacroTools {
 	public static function compareStrings(a:String, b:String):Int {
 		a = a.toLowerCase();
