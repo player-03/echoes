@@ -3,6 +3,7 @@ package echoes.macro;
 #if macro
 
 import haxe.Exception;
+import haxe.macro.Compiler;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 import haxe.macro.Type;
@@ -211,6 +212,16 @@ class MacroTools {
 				destination.push(field);
 			}
 		}
+	}
+	
+	public static function registerDescriptionFiles():Void {
+		var path:String = ((?infos:haxe.PosInfos) -> infos.fileName)();
+		if(!StringTools.endsWith(path, "src/echoes/macro/MacroTools.hx")) {
+			throw "MacroTools.hx moved, please update its path.";
+		}
+		path = path.substring(0, path.length - "src/echoes/macro/MacroTools.hx".length);
+		
+		Compiler.registerMetadataDescriptionFile(path + "meta.json", "echoes");
 	}
 	
 	/**

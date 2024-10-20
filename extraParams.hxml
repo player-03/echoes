@@ -1,1 +1,2 @@
 --macro echoes.macro.ComponentStorageBuilder.invalidate()
+--macro echoes.macro.MacroTools.registerDescriptionFiles()

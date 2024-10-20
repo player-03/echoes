@@ -1,0 +1,77 @@
+[
+	{
+		"metadata": ":add",
+		"doc": "Makes a system function handle add events. The function will be called once an entity has the required components.",
+		"targets": ["TClassField"],
+		"links": ["./README.md#usage"]
+	},
+	{
+		"metadata": ":echoes_add",
+		"doc": "Disambiguation alias for @:add.",
+		"targets": ["TClassField"],
+		"links": ["./README.md#usage"]
+	},
+	{
+		"metadata": ":update",
+		"doc": "Makes a system function handle updates. Each update, it will be called for every entity that has the required components.",
+		"targets": ["TClassField"],
+		"links": ["./README.md#usage"]
+	},
+	{
+		"metadata": ":echoes_update",
+		"doc": "Disambiguation alias for @:update.",
+		"targets": ["TClassField"],
+		"links": ["./README.md#usage"]
+	},
+	{
+		"metadata": ":remove",
+		"doc": "Makes a system function handle remove events. The function will be called when an entity loses one of the required components, if it previously had all of them.",
+		"targets": ["TClassField"],
+		"links": ["./README.md#usage"]
+	},
+	{
+		"metadata": ":echoes_remove",
+		"doc": "Disambiguation alias for @:remove.",
+		"targets": ["TClassField"],
+		"links": ["./README.md#usage"]
+	},
+	{
+		"metadata": ":echoes_replace",
+		"doc": "Marks a type so that when added to an entity, if it already had a component of that type, a remove event will be dispatched first.",
+		"targets": ["TAbstract", "TClass", "TEnum", "TTypedef"]
+	},
+	{
+		"metadata": ":priority",
+		"doc": "Sets the priority of a system or system function. Higher priorities happen first, and negative priorities are possible. The default priority is 0.",
+		"params": ["Integer"],
+		"targets": ["TClass", "TClassField"],
+		"links": ["./README.md#priority"]
+	},
+	{
+		"metadata": ":echoes_priority",
+		"doc": "Disambiguation alias for @:priority.",
+		"params": ["Integer"],
+		"targets": ["TClass", "TClassField"],
+		"links": ["./README.md#priority"]
+	},
+	{
+		"metadata": ":arguments",
+		"doc": "One or more component types to be taken as arguments in the entity template's constructor. Requires @:build(echoes.Entity.build()).",
+		"params": ["Type or type check"],
+		"targets": ["TAbstract"],
+		"links": ["./README.md#entity-templates", "./README.md#type-check-syntax"]
+	},
+	{
+		"metadata": ":optionalArguments",
+		"doc": "One or more component types to be taken as optional arguments in the entity template's constructor. Requires @:build(echoes.Entity.build()).",
+		"params": ["Type or type check"],
+		"targets": ["TAbstract"],
+		"links": ["./README.md#entity-templates", "./README.md#type-check-syntax"]
+	},
+	{
+		"metadata": ":echoes_storage",
+		"doc": "Sets the ComponentStorage instance used to store components of this type.",
+		"params": ["Constructor call or singleton instance"],
+		"targets": ["TAbstract", "TClass", "TEnum", "TTypedef"]
+	}
+]
