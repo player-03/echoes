@@ -216,6 +216,7 @@ class MacroTools {
 	}
 	
 	public static function registerDescriptionFiles():Void {
+		#if (haxe_ver >= 4.3)
 		var path:String = ((?infos:haxe.PosInfos) -> infos.fileName)();
 		if(!StringTools.endsWith(path, "src/echoes/macro/MacroTools.hx")) {
 			throw "MacroTools.hx moved, please update its path.";
@@ -223,6 +224,7 @@ class MacroTools {
 		path = path.substring(0, path.length - "src/echoes/macro/MacroTools.hx".length);
 		
 		Compiler.registerMetadataDescriptionFile(path + "meta.json", "echoes");
+		#end
 	}
 	
 	/**
