@@ -42,13 +42,16 @@ class ComponentStorageBuilder {
 		
 		//If a custom singleton is defined, use that instead.
 		final componentBaseType:BaseType = componentComplexType.toType().toBaseType();
-		switch(componentBaseType?.meta?.extract(":echoes_storage")) {
-			case null, []:
-			case x if(componentBaseType.params.length > 0):
-				Context.error("@:echoes_storage doesn't work with type params, for type " + new Printer().printComplexType(componentComplexType), Context.currentPos());
-			case [_.params => [customSingleton]]:
-				getInstance = customSingleton;
-			default:
+		final meta:MetaAccess = componentBaseType != null ? componentBaseType.meta : null;
+		if(meta != null) {
+			switch(meta.extract(":echoes_storage")) {
+				case null, []:
+				case x if(componentBaseType.params.length > 0):
+					Context.error("@:echoes_storage doesn't work with type params, for type " + new Printer().printComplexType(componentComplexType), Context.currentPos());
+				case [_.params => [customSingleton]]:
+					getInstance = customSingleton;
+				default:
+			}
 		}
 		
 		final def:TypeDefinition = macro class $storageTypeName {
