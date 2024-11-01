@@ -92,6 +92,10 @@ class SystemBuilder {
 	private static function buildInternal(isGenericBuild:Bool):Array<Field> {
 		var fields:Array<Field> = Context.getBuildFields();
 		
+		if(Context.defined("display")) {
+			return fields;
+		}
+		
 		//Information gathering
 		//=====================
 		
