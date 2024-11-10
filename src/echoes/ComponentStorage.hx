@@ -105,13 +105,24 @@ class ComponentStorage<T> {
 		components.addComponentStorage(this);
 		
 		if(entity.active) {
+			var exception:Exception = null;
 			for(view in relatedViews) {
-				view.add(entity);
+				try {
+					view.add(entity);
+				} catch(e:Exception) {
+					if(exception == null) {
+						exception = e;
+					}
+				}
 				
 				//Stop dispatching events if a listener removed it.
 				if(!exists(entity)) {
-					return;
+					break;
 				}
+			}
+			
+			if(exception != null) {
+				throw exception;
 			}
 		}
 	}
@@ -165,7 +176,9 @@ class ComponentStorage<T> {
 					try {
 						view.remove(entity, this, removedComponent);
 					} catch(e:Exception) {
-						exception = e;
+						if(exception == null) {
+							exception = e;
+						}
 					}
 				}
 				
@@ -182,10 +195,28 @@ class ComponentStorage<T> {
 	 * Dispatches a `@:remove` event (if applicable) before adding `component`.
 	 * To use this for a given component, tag the type with `@:echoes_replace`.
 	 */
-	public inline function replace(entity:Entity, component:T):Void {
+	public function replace(entity:Entity, component:T):Void {
 		if(get(entity) != component) {
-			remove(entity);
-			add(entity, component);
+			var exception:Exception = null;
+			try {
+				remove(entity);
+			} catch(e:Exception) {
+				if(exception == null) {
+					exception = e;
+				}
+			}
+			
+			try {
+				add(entity, component);
+			} catch(e:Exception) {
+				if(exception == null) {
+					exception = e;
+				}
+			}
+			
+			if(exception != null) {
+				throw exception;
+			}
 		}
 	}
 	
