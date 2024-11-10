@@ -47,7 +47,15 @@ class ViewBase {
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
 	private inline function add(entity:Entity):Void {
-		if(isMatched(entity)) {
+		var hasAllComponents:Bool = true;
+		for(storage in componentStorage) {
+			if(!storage.exists(entity)) {
+				hasAllComponents = false;
+				break;
+			}
+		}
+		
+		if(hasAllComponents) {
 			if(!entities.contains(entity)) {
 				_entities.push(entity);
 			}
@@ -68,20 +76,6 @@ class ViewBase {
 	
 	private function dispatchRemovedCallback(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
 		//Overridden by `ViewBuilder`.
-	}
-	
-	/**
-	 * Returns whether the entity has all of the view's required components.
-	 */
-	private inline function isMatched(entity:Entity):Bool {
-		var result:Bool = true;
-		for(storage in componentStorage) {
-			if(!storage.exists(entity)) {
-				result = false;
-				break;
-			}
-		}
-		return result;
 	}
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
