@@ -125,9 +125,15 @@ class AdvancedFunctionalityTest extends Test {
 		assertTimesCalled(3, "NameSystem.nameAdded");
 		assertTimesCalled(1, "NameSystem.nameRemoved");
 		
-		Assert.equals(NameStringEntity.DEFAULT_NAME, new NameStringEntity().name);
+		NameStringEntity.applyTemplateTo(visualEntity);
+		Assert.equals(NameStringEntity.DEFAULT_NAME, namedEntity.name);
 		assertTimesCalled(4, "NameSystem.nameAdded");
 		assertTimesCalled(1, "NameSystem.nameRemoved");
+		
+		NamedEntity.removeTemplateFrom(namedEntity);
+		Assert.isNull(namedEntity.name);
+		Assert.notNull(namedEntity.get(String));
+		assertTimesCalled(2, "NameSystem.nameRemoved");
 		
 		final nullEntity:Null<NamedEntity> = null;
 		Assert.isNull(nullEntity);

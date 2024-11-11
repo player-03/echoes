@@ -369,9 +369,51 @@ class EntityTemplateBuilder {
 		
 		//Add `applyTemplateToSelf()`; it must not be static because
 		//`knownComponents` may refer to instance properties or functions.
-		addFunctions((macro class ApplyToSelf {
+		addFunctions(macro class ApplyToSelf {
 			@:noCompletion private function applyTemplateToSelf():Void $b{ applyToSelfExprs }
-		}));
+		});
+		
+		//"Remove" functions
+		//------------------
+		
+		final removeFromSelfExprs:Array<Expr> = [];
+		for(component in knownComponents) {
+			final type:ComplexType = component.type;
+			removeFromSelfExprs.push(macro this.remove((_:$type)));
+		}
+		if(parents.length > 1) {
+			removeFromSelfExprs.push(macro if(recursive) @:privateAccess this.removeTemplateFromSelf(true));
+		}
+		
+		fields = (macro class RemoveTemplate {
+			@:noCompletion public static inline function removeTemplateFrom(entity:$templateType, ?recursive:Bool = false):echoes.Entity {
+				entity.removeTemplateFromSelf(${ parents.length > 1 ? macro recursive : macro false });
+				return cast entity;
+			}
+			
+			@:noCompletion private function removeTemplateFromSelf(recursive:Bool):Void $b{ removeFromSelfExprs }
+		}).fields.concat(fields);
+		
+		if(parents.length <= 1) {
+			switch(fields[0].kind) {
+				case FFun(f):
+					f.args.pop();
+				default:
+			}
+		}
+		
+		final parentNames:Array<String> = [for(i in 0...(parents.length - 1))
+			"`" + parents[i].abstractType.name + "`"
+		];
+		if(parentNames.length > 2) {
+			parentNames.push("and " + parentNames.pop());
+		}
+		fields[0].doc =
+			(knownComponents.length == 1
+				? 'Removes `${ new Printer().printComplexType(knownComponents[0].type) }`'
+				: 'Removes `${ type.name }`\'s ${ knownComponents.length } components')
+			+ " from the given entity.\n\nCaution: this feature is experimental, and may be subject to change."
+			+ (parents.length > 1 ? '\n@param recursive Also removes components inherited from ${ parentNames.join(", ") }.' : "");
 		
 		return fields;
 	}
