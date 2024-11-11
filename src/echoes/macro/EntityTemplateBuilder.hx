@@ -386,8 +386,8 @@ class EntityTemplateBuilder {
 		}
 		
 		fields = (macro class RemoveTemplate {
-			@:noCompletion public static inline function removeTemplateFrom(entity:$templateType, ?recursive:Bool = false):echoes.Entity {
-				entity.removeTemplateFromSelf(${ parents.length > 1 ? macro recursive : macro false });
+			@:noCompletion public static inline function removeTemplateFrom(entity:echoes.Entity, ?recursive:Bool = false):echoes.Entity {
+				(cast entity:$templateType).removeTemplateFromSelf(${ parents.length > 1 ? macro recursive : macro false });
 				return cast entity;
 			}
 			
