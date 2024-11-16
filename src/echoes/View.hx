@@ -106,7 +106,7 @@ class ViewBase {
 	}
 	
 	public inline function toString():String {
-		return "View<" + [for(storage in componentStorage) storage.name].join(", ") + ">";
+		return "View<" + [for(storage in componentStorage) storage.componentType].join(", ") + ">";
 	}
 }
 
