@@ -32,18 +32,32 @@ class MacroTools {
 	 * unless they're marked `@:eager`. Normally, it only follows monomorphs
 	 * and `Null<T>` types.
 	 */
-	public static function followMono(type:Type):Type {
+	public static function followMono(type:Type, ?importAliases:Array<String>):Type {
+		if(importAliases == null) {
+			importAliases = [];
+			for(i in Context.getLocalImports()) {
+				switch(i.mode) {
+					case IAsName(alias):
+						importAliases.push(alias);
+					default:
+				}
+			}
+		}
+		
 		return switch(type) {
 			case null:
 				null;
 			case TMono(_.get() => innerType):
-				followMono(innerType);
+				followMono(innerType, importAliases);
 			case TAbstract(_.get() => { name: "Null" }, [innerType]):
-				followMono(innerType);
+				followMono(innerType, importAliases);
+			case TType(_.get() => { name: name, type: innerType }, _)
+				if(importAliases.contains(name)):
+				followMono(innerType, importAliases);
 			case TAbstract(_.get() => { type: innerType, meta: meta }, _)
 				| TType(_.get() => { type: innerType, meta: meta }, _)
 				if(meta.has(":eager")):
-				followMono(innerType);
+				followMono(innerType, importAliases);
 			default:
 				type;
 		};

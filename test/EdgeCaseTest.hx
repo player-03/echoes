@@ -1,6 +1,7 @@
 package;
 
 import Components;
+import Components.Color as ColorAlias;
 import echoes.Echoes;
 import echoes.Entity;
 import echoes.System;
@@ -138,6 +139,18 @@ class EdgeCaseTest extends Test {
 		assertOrder([a]);
 		
 		#end
+	}
+	
+	private function testImportAs():Void {
+		final entity:Entity = new Entity();
+		
+		Assert.notNull(Echoes.getComponentStorage(ColorAlias));
+		
+		entity.add((0x112233:ColorAlias));
+		Assert.equals(0x112233, entity.get(Color));
+		
+		entity.remove(Color);
+		Assert.isFalse(entity.exists(ColorAlias));
 	}
 	
 	private function testNullComponents():Void {
