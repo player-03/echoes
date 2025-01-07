@@ -24,7 +24,7 @@ class Echoes {
 	
 	@:allow(echoes.ComponentStorage)
 	private static final _componentStorage:Array<DynamicComponentStorage> = [];
-	public static var componentStorage:ReadOnlyArray<DynamicComponentStorage>;
+	public static var componentStorage(get, never):ReadOnlyArray<DynamicComponentStorage>;
 	private static inline function get_componentStorage():ReadOnlyArray<DynamicComponentStorage> return _componentStorage;
 	
 	@:allow(echoes.Entity)
