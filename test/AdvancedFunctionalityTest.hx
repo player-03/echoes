@@ -277,6 +277,67 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals("update, update2, pre_update, post_update", updateOrder.join(", "));
 	}
 	
+	private function testSerialization():Void {
+		final entity0:Entity = new Entity();
+		final entity1:Entity = new Entity();
+		final entity2:Entity = new Entity();
+		
+		entity0.add(("zero":Name));
+		entity0.add((0xFFFFFF:Color));
+		entity0.deactivate();
+		
+		entity1.add(("one":Name));
+		entity1.add((0.5:Alias<Float>));
+		entity1.add(["red", "green", "blue"]);
+		entity1.deactivate();
+		entity1.activate();
+		
+		entity2.add(("two":Name));
+		entity2.add((4:Alias<Float>));
+		
+		Assert.same([2, 1], @:privateAccess Echoes.activeEntities);
+		Assert.same([null, 1, 0], @:privateAccess Echoes.activeEntityIndices);
+		
+		//Bulk serialization
+		
+		final data:String = Echoes.serialize();
+		Echoes.reset();
+		Echoes.unserialize(data);
+		
+		Assert.same([2, 1], @:privateAccess Echoes.activeEntities);
+		Assert.same([null, 1, 0], @:privateAccess Echoes.activeEntityIndices);
+		Assert.isFalse(entity0.active);
+		Assert.isTrue(entity1.active && entity2.active);
+		
+		Assert.equals("zero", entity0.get(Name));
+		Assert.equals(0xFFFFFF, entity0.get(Color));
+		
+		Assert.equals("one", entity1.get(Name));
+		Assert.equals(0.5, entity1.get((_:Alias<Float>)));
+		Assert.same(["red", "green", "blue"], entity1.get((_:Array<String>)));
+		
+		Assert.equals("two", entity2.get(Name));
+		Assert.equals(4.0, entity2.get((_:Alias<Float>)));
+		
+		//Single-component serialization
+		
+		entity2.remove(Name);
+		final data:String = Echoes.getComponentStorage(Name).serialize();
+		
+		entity0.remove(Name);
+		entity1.add(("entity1":Name));
+		entity2.add(("":Name));
+		Echoes.getComponentStorage(Name).unserialize(data);
+		
+		Assert.equals("zero", entity0.get(Name));
+		Assert.equals("one", entity1.get(Name));
+		Assert.isNull(entity2.get(Name));
+		
+		Assert.isTrue(entity0.getComponents().contains(Name));
+		Assert.isTrue(entity1.getComponents().contains(Name));
+		Assert.isFalse(entity2.getComponents().contains(Name));
+	}
+	
 	private function testSignals():Void {
 		count1 = 0;
 		var count2:Int = 0;

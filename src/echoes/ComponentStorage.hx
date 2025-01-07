@@ -6,6 +6,8 @@ import echoes.utils.ComponentTypes;
 import echoes.utils.ReadOnlyData;
 import echoes.View;
 import haxe.Exception;
+import haxe.Serializer;
+import haxe.Unserializer;
 
 /**
  * A central location to store all components of a given type. For example, the
@@ -61,6 +63,7 @@ class ComponentStorage<T> {
 	/**
 	 * All components of this type.
 	 */
+	@:allow(echoes.Echoes)
 	#if (echoes_storage == "Map")
 	private final storage:Map<Int, T> = new Map();
 	#else
@@ -220,8 +223,47 @@ class ComponentStorage<T> {
 		}
 	}
 	
+	/**
+	 * Saves all components of this type to string.
+	 * @see `Echoes.serialize()` to save all components at once.
+	 */
+	public function serialize():String {
+		return Serializer.run(storage);
+	}
+	
 	private inline function toString():String {
 		return name;
+	}
+	
+	/**
+	 * Restores all components of this type from string, overwriting any
+	 * existing components. No `@:remove` or `@:add` events are dispatched.
+	 * 
+	 * Caution: serializing and unserializing are not well-tested. Use this at
+	 * your own risk, and especially avoid unserializing if the component type
+	 * could have changed. Even a minor change, such as changing `Int` to
+	 * `Float`, can cause errors on some targets.
+	 * @see `Echoes.unserialize()` to restore all components at once.
+	 */
+	public function unserialize(data:String):Void {
+		for(components in EntityComponents.components) {
+			if(components != null) {
+				components.removeComponentStorage(this);
+			}
+		}
+		
+		unserializeFromData(Unserializer.run(data));
+	}
+	
+	@:allow(echoes.Echoes)
+	private function unserializeFromData(data:#if (echoes_storage == "Map") Map<Int, T> #else Array<Null<T>> #end) {
+		clear();
+		
+		if(data != null) {
+			for(entity => component in data) {
+				add(cast entity, component);
+			}
+		}
 	}
 }
 

@@ -5,6 +5,8 @@ import echoes.Entity;
 import echoes.utils.Clock;
 import echoes.utils.ReadOnlyData;
 import echoes.View;
+import haxe.Serializer;
+import haxe.Unserializer;
 
 #if macro
 import haxe.macro.Expr;
@@ -220,6 +222,49 @@ class Echoes {
 			$view.activate();
 			$view;
 		};
+	}
+	
+	public static function serialize():String {
+		final data:Dynamic = {
+			"echoes.Echoes.activeEntities": activeEntities
+		};
+		
+		for(storage in componentStorage) {
+			final components = (cast storage:ComponentStorage<Dynamic>).storage;
+			
+			//Omit empty arrays. It isn't as easy to check if a map is empty, so
+			//just include all of them.
+			if(#if (echoes_storage == "Map") true #else components.length > 0 #end) {
+				Reflect.setField(data, storage.componentType, components);
+			}
+		}
+		
+		return Serializer.run(data);
+	}
+	
+	/**
+	 * Restores all entities and components recorded by `serialize()`,
+	 * overwriting any existing entities or components.
+	 * 
+	 * Caution: serializing and unserializing are not well-tested. Use this at
+	 * your own risk, and especially avoid unserializing if the component types
+	 * could have changed. Even a minor change, such as changing `Int` to
+	 * `Float`, can cause errors on some targets.
+	 */
+	public static function unserialize(data:String):Void {
+		activeEntityIndices.resize(0);
+		_activeEntities.resize(0);
+		EntityComponents.components.resize(0);
+		
+		final data:Dynamic = Unserializer.run(data);
+		for(entity in (Reflect.field(data, "echoes.Echoes.activeEntities"):Array<Entity>)) {
+			activeEntityIndices[entity.id] = _activeEntities.length;
+			_activeEntities.push(entity);
+		}
+		
+		for(storage in componentStorage) {
+			(cast storage:ComponentStorage<Dynamic>).unserializeFromData(Reflect.field(data, storage.componentType));
+		}
 	}
 }
 
