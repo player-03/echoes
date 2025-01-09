@@ -301,6 +301,10 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.same([0, 1, 2], @:privateAccess Echoes.activeEntities);
 		
 		entity0.deactivate();
+		#if echoes_stable_order
+		entity1.deactivate();
+		entity1.activate();
+		#end
 		Assert.same([2, 1], @:privateAccess Echoes.activeEntities);
 		Assert.same([null, 1, 0], @:privateAccess Echoes.activeEntityIndices);
 		
