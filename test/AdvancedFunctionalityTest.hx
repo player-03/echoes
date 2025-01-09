@@ -278,23 +278,29 @@ class AdvancedFunctionalityTest extends Test {
 	}
 	
 	private function testSerialization():Void {
+		var addNameCount:Int = 0;
+		final named:View<Name> = Echoes.getView(Name);
+		named.onAdded.add((entity, name) -> addNameCount++);
+		
 		final entity0:Entity = new Entity();
 		final entity1:Entity = new Entity();
 		final entity2:Entity = new Entity();
 		
 		entity0.add(("zero":Name));
 		entity0.add((0xFFFFFF:Color));
-		entity0.deactivate();
 		
 		entity1.add(("one":Name));
 		entity1.add((0.5:Alias<Float>));
 		entity1.add(["red", "green", "blue"]);
-		entity1.deactivate();
-		entity1.activate();
 		
 		entity2.add(("two":Name));
 		entity2.add((4:Alias<Float>));
 		
+		Assert.equals(3, addNameCount);
+		Assert.equals(3, named.entities.length);
+		Assert.same([0, 1, 2], @:privateAccess Echoes.activeEntities);
+		
+		entity0.deactivate();
 		Assert.same([2, 1], @:privateAccess Echoes.activeEntities);
 		Assert.same([null, 1, 0], @:privateAccess Echoes.activeEntityIndices);
 		
@@ -302,6 +308,11 @@ class AdvancedFunctionalityTest extends Test {
 		
 		final data:String = Echoes.serialize();
 		Echoes.reset();
+		
+		addNameCount = 0;
+		named.activate();
+		named.onAdded.add((entity, name) -> addNameCount++);
+		
 		Echoes.unserialize(data);
 		
 		Assert.same([2, 1], @:privateAccess Echoes.activeEntities);
@@ -319,6 +330,12 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals("two", entity2.get(Name));
 		Assert.equals(4.0, entity2.get((_:Alias<Float>)));
 		
+		Assert.equals(2, addNameCount);
+		Assert.equals(2, named.entities.length);
+		entity0.activate();
+		Assert.equals(3, addNameCount);
+		Assert.equals(3, named.entities.length);
+		
 		//Single-component serialization
 		
 		entity2.remove(Name);
@@ -327,7 +344,15 @@ class AdvancedFunctionalityTest extends Test {
 		entity0.remove(Name);
 		entity1.add(("entity1":Name));
 		entity2.add(("":Name));
+		
+		addNameCount = 0;
+		var removeNameCount:Int = 0;
+		named.onRemoved.add((entity, name) -> removeNameCount++);
 		Echoes.getComponentStorage(Name).unserialize(data);
+		
+		Assert.equals(2, addNameCount);
+		Assert.equals(2, removeNameCount);
+		Assert.equals(2, named.entities.length);
 		
 		Assert.equals("zero", entity0.get(Name));
 		Assert.equals("one", entity1.get(Name));

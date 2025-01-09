@@ -21,7 +21,8 @@ class ViewBase {
 	 */
 	public final componentStorage:ReadOnlyArray<DynamicComponentStorage>;
 	
-	@:allow(echoes.Echoes) private final _entities:Array<Entity> = [];
+	@:allow(echoes.Echoes) @:allow(echoes.ComponentStorage)
+	private final _entities:Array<Entity> = [];
 	/**
 	 * All entities in this view.
 	 */

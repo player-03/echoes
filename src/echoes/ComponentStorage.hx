@@ -195,6 +195,17 @@ class ComponentStorage<T> {
 	}
 	
 	/**
+	 * Removes all components of this type from all entities.
+	 */
+	public inline function removeAll():Void {
+		for(entity => component in storage) {
+			if(component != null) {
+				remove(cast entity);
+			}
+		}
+	}
+	
+	/**
 	 * Dispatches a `@:remove` event (if applicable) before adding `component`.
 	 * To use this for a given component, tag the type with `@:echoes_replace`.
 	 */
@@ -237,7 +248,7 @@ class ComponentStorage<T> {
 	
 	/**
 	 * Restores all components of this type from string, overwriting any
-	 * existing components. No `@:remove` or `@:add` events are dispatched.
+	 * existing components.
 	 * 
 	 * Caution: serializing and unserializing are not well-tested. Use this at
 	 * your own risk, and especially avoid unserializing if the component type
@@ -246,11 +257,7 @@ class ComponentStorage<T> {
 	 * @see `Echoes.unserialize()` to restore all components at once.
 	 */
 	public function unserialize(data:String):Void {
-		for(components in EntityComponents.components) {
-			if(components != null) {
-				components.removeComponentStorage(this);
-			}
-		}
+		removeAll();
 		
 		unserializeFromData(Unserializer.run(data));
 	}
@@ -277,7 +284,7 @@ class ComponentStorage<T> {
  * add components, use `new ComponentStorage<Dynamic>()` instead. Obviously, no
  * type checking will be performed.
  */
-@:forward(clear, componentType, exists, get, name, relatedViews, remove, shortComponentType)
+@:forward(clear, componentType, exists, get, name, relatedViews, remove, removeAll, shortComponentType)
 abstract DynamicComponentStorage(ComponentStorage<Dynamic>) {
 	@:from private static inline function fromComponentStorage<T>(componentStorage:ComponentStorage<T>):DynamicComponentStorage {
 		return cast componentStorage;

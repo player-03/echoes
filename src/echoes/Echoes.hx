@@ -252,9 +252,12 @@ class Echoes {
 	 * `Float`, can cause errors on some targets.
 	 */
 	public static function unserialize(data:String):Void {
+		for(storage in _componentStorage) {
+			storage.removeAll();
+		}
+		
 		activeEntityIndices.resize(0);
 		_activeEntities.resize(0);
-		EntityComponents.components.resize(0);
 		
 		final data:Dynamic = Unserializer.run(data);
 		for(entity in (Reflect.field(data, "echoes.Echoes.activeEntities"):Array<Entity>)) {
