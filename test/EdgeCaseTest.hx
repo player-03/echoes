@@ -86,19 +86,24 @@ class EdgeCaseTest extends Test {
 	@:access(echoes.Entity)
 	private function testEntityIDSerialization():Void {
 		final entity0:Entity = new Entity();
-		new Entity();
-		Assert.equals(2, Entity.nextId);
-		Assert.same([], Entity.idPool);
+		final entity1:Entity = new Entity();
+		final entity2:Entity = new Entity();
 		
-		final savedData = Echoes.serialize();
+		entity1.destroy();
+		Assert.equals(3, Entity.nextId);
+		Assert.same([1], Entity.idPool);
+		Assert.same([0, 2], Echoes.activeEntities);
+		
+		final savedData:String = Echoes.serialize();
+		
 		entity0.destroy();
-		Assert.same([0], Entity.idPool);
-		Assert.same([1], Echoes.activeEntities);
+		Assert.same([1, 0], Entity.idPool);
+		Assert.same([2], Echoes.activeEntities);
 		
 		Echoes.unserialize(savedData);
-		Assert.same([0], Entity.idPool);
-		Assert.equals(2, Entity.nextId);
-		Assert.same([1], Echoes.activeEntities);
+		Assert.equals(3, Entity.nextId);
+		Assert.same([1], Entity.idPool);
+		Assert.same([0, 2], Echoes.activeEntities);
 	}
 	
 	private function testEntityIndices():Void {
