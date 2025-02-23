@@ -87,7 +87,7 @@ class EdgeCaseTest extends Test {
 	private function testEntityIDSerialization():Void {
 		final entity0:Entity = new Entity();
 		new Entity();
-		Assert.equals(2, Entity.nextID);
+		Assert.equals(2, Entity.nextId);
 		Assert.same([], Entity.idPool);
 		
 		final savedData = Echoes.serialize();
@@ -97,7 +97,7 @@ class EdgeCaseTest extends Test {
 		
 		Echoes.unserialize(savedData);
 		Assert.same([0], Entity.idPool);
-		Assert.equals(2, Entity.nextID);
+		Assert.equals(2, Entity.nextId);
 		Assert.same([1], Echoes.activeEntities);
 	}
 	
