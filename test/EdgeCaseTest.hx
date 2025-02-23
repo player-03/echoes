@@ -83,6 +83,24 @@ class EdgeCaseTest extends Test {
 		assertTimesCalled(2, "ComponentsExistSystem.nameRemoved");
 	}
 	
+	@:access(echoes.Entity)
+	private function testEntityIDSerialization():Void {
+		final entity0:Entity = new Entity();
+		new Entity();
+		Assert.equals(2, Entity.nextID);
+		Assert.same([], Entity.idPool);
+		
+		final savedData = Echoes.serialize();
+		entity0.destroy();
+		Assert.same([0], Entity.idPool);
+		Assert.same([1], Echoes.activeEntities);
+		
+		Echoes.unserialize(savedData);
+		Assert.same([0], Entity.idPool);
+		Assert.equals(2, Entity.nextID);
+		Assert.same([1], Echoes.activeEntities);
+	}
+	
 	private function testEntityIndices():Void {
 		inline function assertOrder(order:Array<Entity>, ?posInfos:PosInfos):Void {
 			if(Assert.equals(order.length, Echoes.activeEntities.length, posInfos)) {
@@ -353,18 +371,6 @@ class EdgeCaseTest extends Test {
 		Assert.equals(infos, entity.get(PosInfos));
 		Assert.equals(infos, entity.get(haxe.PosInfos));
 		Assert.equals(infos, entity.get(infos));
-	}
-
-	private function testDestroyWithSerialization():Void {
-		final entity:Entity = new Entity();
-		final savedData = Echoes.serialize();
-		entity.destroy();
-		Echoes.unserialize(savedData);
-		entity.destroy();
-
-		final entity1:Entity = new Entity();
-		final entity2:Entity = new Entity();
-		Assert.notEquals(entity1.id, entity2.id);
 	}
 }
 
