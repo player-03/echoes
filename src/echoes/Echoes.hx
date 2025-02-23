@@ -224,6 +224,9 @@ class Echoes {
 		};
 	}
 	
+	//Serialization
+	//=============
+	
 	public static function serialize():String {
 		final data:Dynamic = {
 			"echoes.Echoes.activeEntities": activeEntities,
