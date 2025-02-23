@@ -231,7 +231,7 @@ class Echoes {
 		final data:Dynamic = {
 			"echoes.Echoes.activeEntities": activeEntities,
 			"echoes.Entity.idPool": Entity.idPool,
-			"echoes.Entity.nextID": Entity.nextID
+			"echoes.Entity.nextId": Entity.nextId
 		};
 		
 		for(storage in componentStorage) {
@@ -270,7 +270,7 @@ class Echoes {
 			_activeEntities.push(entity);
 		}
 		
-		Entity.nextID = Reflect.field(data, "echoes.Entity.nextID");
+		Entity.nextId = Reflect.field(data, "echoes.Entity.nextId");
 		Entity.idPool.resize(0);
 		for(id in (Reflect.field(data, "echoes.Entity.idPool"):Array<Int>)) {
 			Entity.idPool.push(id);
