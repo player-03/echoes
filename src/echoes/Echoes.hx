@@ -227,7 +227,7 @@ class Echoes {
 	public static function serialize():String {
 		final data:Dynamic = {
 			"echoes.Echoes.activeEntities": activeEntities,
-			"echoes.Entity.idPool": Entity.idPool.copy()
+			"echoes.Entity.idPool": Entity.idPool
 		};
 		
 		for(storage in componentStorage) {
