@@ -226,7 +226,8 @@ class Echoes {
 	
 	public static function serialize():String {
 		final data:Dynamic = {
-			"echoes.Echoes.activeEntities": activeEntities
+			"echoes.Echoes.activeEntities": activeEntities,
+			"echoes.Entity.idPool": Entity.idPool.copy()
 		};
 		
 		for(storage in componentStorage) {
@@ -263,6 +264,11 @@ class Echoes {
 		for(entity in (Reflect.field(data, "echoes.Echoes.activeEntities"):Array<Entity>)) {
 			activeEntityIndices[entity.id] = _activeEntities.length;
 			_activeEntities.push(entity);
+		}
+		
+		Entity.idPool.resize(0);
+		for(id in (Reflect.field(data, "echoes.Entity.idPool"):Array<Int>)) {
+			Entity.idPool.push(id);
 		}
 		
 		for(storage in componentStorage) {

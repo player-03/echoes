@@ -354,6 +354,18 @@ class EdgeCaseTest extends Test {
 		Assert.equals(infos, entity.get(haxe.PosInfos));
 		Assert.equals(infos, entity.get(infos));
 	}
+
+	private function testDestroyWithSerialization():Void {
+		final entity:Entity = new Entity();
+		final savedData = Echoes.serialize();
+		entity.destroy();
+		Echoes.unserialize(savedData);
+		entity.destroy();
+
+		final entity1:Entity = new Entity();
+		final entity2:Entity = new Entity();
+		Assert.notEquals(entity1.id, entity2.id);
+	}
 }
 
 typedef One = Int;
