@@ -83,6 +83,29 @@ class EdgeCaseTest extends Test {
 		assertTimesCalled(2, "ComponentsExistSystem.nameRemoved");
 	}
 	
+	@:access(echoes.Entity)
+	private function testEntityIDSerialization():Void {
+		final entity0:Entity = new Entity();
+		final entity1:Entity = new Entity();
+		final entity2:Entity = new Entity();
+		
+		entity1.destroy();
+		Assert.equals(3, Entity.nextId);
+		Assert.same([1], Entity.idPool);
+		Assert.same([0, 2], Echoes.activeEntities);
+		
+		final savedData:String = Echoes.serialize();
+		
+		entity0.destroy();
+		Assert.same([1, 0], Entity.idPool);
+		Assert.same([2], Echoes.activeEntities);
+		
+		Echoes.unserialize(savedData);
+		Assert.equals(3, Entity.nextId);
+		Assert.same([1], Entity.idPool);
+		Assert.same([0, 2], Echoes.activeEntities);
+	}
+	
 	private function testEntityIndices():Void {
 		inline function assertOrder(order:Array<Entity>, ?posInfos:PosInfos):Void {
 			if(Assert.equals(order.length, Echoes.activeEntities.length, posInfos)) {
