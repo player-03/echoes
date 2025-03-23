@@ -85,7 +85,7 @@ class ComponentStorage<T> {
 		#end
 	}
 	
-	public function add(entity:Entity, component:T):Void {
+	public function add(entity:Entity, component:Null<T>):Void {
 		if(component == null) {
 			remove(entity);
 			return;
@@ -209,7 +209,7 @@ class ComponentStorage<T> {
 	 * Dispatches a `@:remove` event (if applicable) before adding `component`.
 	 * To use this for a given component, tag the type with `@:echoes_replace`.
 	 */
-	public function replace(entity:Entity, component:T):Void {
+	public function replace(entity:Entity, component:Null<T>):Void {
 		if(get(entity) != component) {
 			var exception:Exception = null;
 			try {
