@@ -279,22 +279,31 @@ class EntityTemplateBuilder {
 				default:
 			}
 			
+			final isFinal = (field.access != null) && field.access.contains(AFinal);
+			
 			//Convert the field to a property, and remove the expression.
-			field.kind = FProp("get", "set", macro:Null<$componentType>, null);
+			field.kind = FProp("get", if (isFinal) "never" else "set", macro:Null<$componentType>, null);
 			
 			final getter:String = "get_" + field.name;
-			final setter:String = "set_" + field.name;
-			
-			fields.pushFields(macro class Accessors {
+			fields.pushFields(macro class Getter {
 				private inline function $getter():Null<$componentType> {
 					return this.get((_:$componentType));
 				}
-				
-				private inline function $setter(value:Null<$componentType>):Null<$componentType> {
-					this.add(value);
-					return value;
-				}
 			});
+
+			if (!isFinal) {
+				final setter:String = "set_" + field.name;
+				fields.pushFields(macro class Setter {
+					private inline function $setter(value:Null<$componentType>):Null<$componentType> {
+						this.add(value);
+						return value;
+					}
+				});
+			}
+
+			if(isFinal) {
+				field.access.remove(AFinal);
+			}
 		}
 		
 		if(!optionalValuesRemaining.empty()) {
