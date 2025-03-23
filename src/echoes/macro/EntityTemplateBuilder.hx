@@ -274,8 +274,8 @@ class EntityTemplateBuilder {
 			switch(componentType) {
 				case macro:Entity, macro:echoes.Entity:
 					Context.fatalError("Entity is reserved. Consider using a typedef, abstract, or Int", field.pos);
-				case macro:Float, macro:StdTypes.Float:
-					Context.fatalError("Float is reserved for lengths of time. Consider using a typedef or abstract", field.pos);
+				case macro:Ticks, macro:echoes.Ticks:
+					Context.fatalError("Ticks is reserved for lengths of time. Consider using a typedef or abstract", field.pos);
 				default:
 			}
 			

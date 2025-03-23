@@ -44,12 +44,12 @@ class Clock {
 	 * Setting `minTickLength` and `maxTickLength` to the same value creates a
 	 * fixed tick length.
 	 */
-	public var maxTickLength:Float = Math.POSITIVE_INFINITY;
+	public var maxTickLength:Ticks = Ticks.MAX;
 	
 	/**
 	 * `time` will be capped to this value.
 	 */
-	public var maxTime:Float = Math.POSITIVE_INFINITY;
+	public var maxTime:Ticks = Ticks.MAX;
 	
 	/**
 	 * Once `time` falls below this value, the `Clock` will stop ticking. Any
@@ -58,7 +58,7 @@ class Clock {
 	 * Setting `minTickLength` and `maxTickLength` to the same value creates a
 	 * fixed tick length.
 	 */
-	public var minTickLength:Float = 1e-16;
+	public var minTickLength:Ticks = Ticks.ONE;
 	
 	/**
 	 * Prevents `time` from increasing, but doesn't prevent iterating over
@@ -72,12 +72,12 @@ class Clock {
 	public var tickCount:Int = 0;
 	
 	/**
-	 * The amount of time left on the `Clock`, in seconds.
+	 * The amount of time left on the `Clock`, in ticks.
 	 * 
 	 * To calculate [the blending factor](https://www.gafferongames.com/post/fix_your_timestep/#the-final-touch)
 	 * described in "Fix Your Timestep!", divide `time` by `minTickLength`.
 	 */
-	public var time(default, null):Float = 0;
+	public var time(default, null):Ticks = Ticks.ZERO;
 	
 	/**
 	 * Multiplies all added time. This can speed time up (if `timeScale > 1`),
@@ -88,7 +88,7 @@ class Clock {
 	public inline function new() {
 	}
 	
-	public function addTime(time:Float):Void {
+	public function addTime(time:Ticks):Void {
 		if(!paused) {
 			this.time += time * timeScale;
 			
@@ -101,11 +101,11 @@ class Clock {
 	}
 	
 	public inline function hasNext():Bool {
-		return time >= minTickLength;
+		return !(minTickLength > time);
 	}
 	
-	public function next():Float {
-		final tick:Float = time > maxTickLength ? maxTickLength : time;
+	public function next():Ticks {
+		final tick:Ticks = time > maxTickLength ? maxTickLength : time;
 		time -= tick;
 		tickCount++;
 		return tick;
@@ -115,7 +115,7 @@ class Clock {
 	 * Sets `minTickLength` and `maxTickLength` to the given value, ensuring
 	 * that every time this clock ticks, the tick will be the same length.
 	 */
-	public inline function setFixedTickLength(fixedTickLength:Float):Void {
+	public inline function setFixedTickLength(fixedTickLength:Ticks):Void {
 		minTickLength = maxTickLength = fixedTickLength;
 	}
 }

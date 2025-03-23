@@ -68,12 +68,12 @@ import haxe.rtti.Meta;
 #end
 class System {
 	#if echoes_profiling
-	@:noCompletion private var __updateTime__:Int = 0;
+	@:noCompletion private var __updateTime__:Ticks = Ticks.ZERO;
 	#end
 	
 	@:noCompletion private final __children__:Array<ChildSystem> = [];
 	
-	@:noCompletion private var __dt__:Float = 0;
+	@:noCompletion private var __dt__:Ticks = Ticks.ZERO;
 	
 	public var active(default, null):Bool = false;
 	
@@ -122,7 +122,7 @@ class System {
 	private function __activate__():Void {
 		if(!active) {
 			active = true;
-			__dt__ = 0;
+			__dt__ = Ticks.ZERO;
 			
 			#if !macro
 			onActivate.dispatch();
@@ -131,7 +131,7 @@ class System {
 	}
 	
 	@:noCompletion
-	private inline function __addListenersWithPriority__(priority:Int, runUpdateListeners:(Float) -> Void):Void {
+	private inline function __addListenersWithPriority__(priority:Int, runUpdateListeners:(Ticks) -> Void):Void {
 		__children__.push(new ChildSystem(this, priority, runUpdateListeners));
 	}
 	
@@ -154,7 +154,7 @@ class System {
 	}
 	
 	@:allow(echoes.Echoes)
-	private function __update__(dt:Float):Void {
+	private function __update__(dt:Ticks):Void {
 		__dt__ = dt;
 		
 		//Everything else is handled by macro.
@@ -216,24 +216,24 @@ class System {
 private class ChildSystem extends System {
 	private final parentSystem:System;
 	
-	private final runUpdateListeners:(Float) -> Void;
+	private final runUpdateListeners:(Ticks) -> Void;
 	
-	public inline function new(parentSystem:System, priority:Int, runUpdateListeners:(Float) -> Void) {
+	public inline function new(parentSystem:System, priority:Int, runUpdateListeners:(Ticks) -> Void) {
 		super(priority);
 		
 		this.parentSystem = parentSystem;
 		this.runUpdateListeners = runUpdateListeners;
 	}
 	
-	private override function __update__(dt:Float):Void {
+	private override function __update__(dt:Ticks):Void {
 		#if echoes_profiling
-		final __timestamp__ = Date.now().getTime();
+		final __timestamp__ = Ticks.now();
 		#end
 		
 		runUpdateListeners(dt);
 		
 		#if echoes_profiling
-		this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__);
+		this.__updateTime__ = Ticks.now() - __timestamp__;
 		#end
 	}
 	

@@ -245,7 +245,7 @@ class SystemBuilder {
 			final body:Array<Expr> = [for(listener in listeners) listener.callDuringUpdate()];
 			body.unshift(macro __dt__ = dt);
 			
-			macro __addListenersWithPriority__(${ knownPriorities[priority] }, function(dt:Float) $b{ body });
+			macro __addListenersWithPriority__(${ knownPriorities[priority] }, function(dt:Ticks) $b{ body });
 		}];
 		initializeChildren.push(macro if(parent != null) {
 			for(child in __children__) {
@@ -334,9 +334,9 @@ class SystemBuilder {
 				}
 			}
 			
-			private override function __update__(dt:Float):Void {
+			private override function __update__(dt:echoes.Ticks):Void {
 				#if echoes_profiling
-				final __timestamp__ = Date.now().getTime();
+				final __timestamp__ = Ticks.now();
 				#end
 				
 				${ if(parentTypes.length <= 2) {
@@ -364,7 +364,7 @@ class SystemBuilder {
 				} } */
 				
 				#if echoes_profiling
-				this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__);
+				this.__updateTime__ = Ticks.now() - __timestamp__;
 				#end
 			}
 		};
@@ -470,7 +470,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 			//Find non-optional, non-reserved arguments.
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
-					case macro:StdTypes.Float, macro:echoes.Entity:
+					case macro:echoes.Ticks, macro:echoes.Entity:
 					case type if(!arg.opt && arg.value == null):
 						this.components.push(type);
 					default:
@@ -494,7 +494,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 			//Find optional, non-reserved arguments.
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
-					case macro:StdTypes.Float, macro:echoes.Entity:
+					case macro:echoes.Ticks, macro:echoes.Entity:
 					case type if(arg.opt || arg.value != null):
 						this.optionalComponents.push(type);
 					default:
@@ -578,7 +578,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	private function call(getEntity:Expr, getDeltaTime:Expr):Expr {
 		final args:Array<Expr> = [for(arg in this.args) {
 			switch(arg.type.followComplexType()) {
-				case macro:StdTypes.Float:
+				case macro:echoes.Ticks:
 					//Defined as a private variable of `System`.
 					getDeltaTime;
 				case macro:echoes.Entity:
@@ -611,7 +611,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 				${ call(macro entity, macro __dt__) };
 		} else {
 			//No components to filter by, but there may still be an `Entity`
-			//argument. (And/or a `Float` argument, which isn't relevant.)
+			//argument. (And/or a `Ticks` argument, which isn't relevant.)
 			for(arg in this.args) {
 				if(arg.type.followComplexType().match(macro:echoes.Entity)) {
 					//Iterate over all entities.

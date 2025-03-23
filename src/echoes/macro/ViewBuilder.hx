@@ -208,7 +208,7 @@ class ViewBuilder {
 		final requiredComponents:Array<ComplexType> = [];
 		final funcArgs:Array<Expr> = [for(arg in args) {
 			switch(arg.type.followComplexType()) {
-				case macro:StdTypes.Float:
+				case macro:echoes.Ticks:
 					getDeltaTime;
 				case macro:echoes.Entity:
 					macro entity;
@@ -225,7 +225,7 @@ class ViewBuilder {
 			final entities:haxe.ds.ReadOnlyArray<echoes.Entity> = $i{ getViewName(requiredComponents) }.instance.entities;
 			while(i < entities.length) {
 				final entity:echoes.Entity = entities[i];
-				$func($a{ funcArgs });
+				@:nullSafety(Off) $func($a{ funcArgs });
 				
 				if(entity != entities[i] && !entities.contains(entity)) {
 					//Entity was removed; don't increment.

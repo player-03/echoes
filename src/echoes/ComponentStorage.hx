@@ -85,7 +85,7 @@ class ComponentStorage<T> {
 		#end
 	}
 	
-	public function add(entity:Entity, component:T):Void {
+	public function add(entity:Entity, component:Null<T>):Void {
 		if(component == null) {
 			remove(entity);
 			return;

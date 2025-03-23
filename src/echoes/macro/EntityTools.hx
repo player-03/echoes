@@ -31,8 +31,7 @@ class EntityTools {
 			
 			$b{ [for(component in components) {
 				final type:Type = component.parseComponentType();
-				
-				final operation:String = switch(type) {
+				final operation:String = switch(@:nullSafety(Off) type) {
 					case TEnum(_.get().meta => m, _),
 						TInst(_.get().meta => m, _),
 						TType(_.get().meta => m, _),

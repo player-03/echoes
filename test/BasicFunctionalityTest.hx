@@ -4,6 +4,7 @@ import Components;
 import echoes.Echoes;
 import echoes.Entity;
 import echoes.SystemList;
+import echoes.Ticks;
 import echoes.utils.Clock;
 import MethodCounter.assertTimesCalled;
 import Systems;
@@ -265,7 +266,7 @@ class BasicFunctionalityTest extends Test {
 		star.add((0xFFFFFF:Color));
 
 		//Simulate time passing without actually waiting for it.
-		Echoes.lastUpdate -= 0.001;
+		Echoes.lastUpdate -= Ticks.ONE;
 		
 		//Run another few updates. (`colorTime` should now increment twice per
 		//update, since now two entities have color.)
@@ -275,7 +276,7 @@ class BasicFunctionalityTest extends Test {
 		Assert.equals(2.0, timeCountSystem.shapeTime);
 		Assert.equals(1.0, timeCountSystem.colorAndShapeTime);
 		
-		Echoes.lastUpdate -= 0.001;
+		Echoes.lastUpdate -= Ticks.ONE;
 		Echoes.update();
 		Assert.equals(3.0, timeCountSystem.totalTime);
 		Assert.equals(5.0, timeCountSystem.colorTime);
@@ -289,7 +290,7 @@ class BasicFunctionalityTest extends Test {
  * regardless of the real-world time elapsed.
  */
 class OneSecondClock extends Clock {
-	public override function addTime(time:Float):Void {
-		super.addTime(1);
+	public override function addTime(time:Ticks):Void {
+		super.addTime(Ticks.fromMilliseconds(1000));
 	}
 }

@@ -119,7 +119,7 @@ class TypeSubstitutions {
 			final type:ComplexType = types[i].followMono().toComplexType();
 			addSubstitution(param.name, type);
 			
-			//Check for `Entity` and `Float`.
+			//Check for `Entity` and `Ticks`.
 			final error:String = type.getReservedComponentMessage();
 			if(error != null && !codeCompletionMode) {
 				Context.error('$className.${ param.name }: ' + error, Context.currentPos());

@@ -78,9 +78,9 @@ class SystemList extends System {
 		}
 	}
 	
-	private override function __update__(dt:Float):Void {
+	private override function __update__(dt:Ticks):Void {
 		#if echoes_profiling
-		final startTime:Float = haxe.Timer.stamp();
+		final startTime:Ticks = Ticks.now();
 		#end
 		
 		__dt__ = dt;
@@ -92,7 +92,7 @@ class SystemList extends System {
 		}
 		
 		#if echoes_profiling
-		__updateTime__ = Std.int((haxe.Timer.stamp() - startTime) * 1000);
+		__updateTime__ = Ticks.now() - startTime;
 		#end
 	}
 	

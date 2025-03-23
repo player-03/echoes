@@ -4,6 +4,7 @@ import echoes.ComponentStorage;
 import echoes.Entity;
 import echoes.utils.Clock;
 import echoes.utils.ReadOnlyData;
+import echoes.Ticks;
 import echoes.View;
 import haxe.Serializer;
 import haxe.Unserializer;
@@ -73,7 +74,7 @@ class Echoes {
 	public static final activeSystems:SystemList = {
 		final activeSystems:SystemList = new SystemList();
 		activeSystems.__activate__();
-		activeSystems.clock.maxTime = 1;
+		activeSystems.clock.maxTime = Ticks.fromMilliseconds(1000000);
 		activeSystems;
 	};
 	
@@ -88,18 +89,21 @@ class Echoes {
 	}
 	
 	#if echoes_profiling
-	private static var lastUpdateLength:Int = 0;
+	private static var lastUpdateLength:Ticks = Ticks.ZERO;
 	#end
 	
-	private static var lastUpdate:Float = haxe.Timer.stamp();
+	#if !echoes_no_timer
+	private static var lastUpdate:Ticks = Ticks.now();
 	private static var updateTimer:haxe.Timer;
+	#end
 	
+	#if !echoes_no_timer
 	/**
 	 * @param fps The number of updates to perform each second. If this is zero,
 	 * you will need to call `Echoes.update()` yourself.
 	 */
 	public static function init(?fps:Float = 60):Void {
-		lastUpdate = haxe.Timer.stamp();
+		lastUpdate = Ticks.now();
 		
 		if(updateTimer != null) {
 			updateTimer.stop();
@@ -110,6 +114,7 @@ class Echoes {
 			updateTimer.run = update;
 		}
 	}
+	#end
 	
 	/**
 	 * Returns statistics about the app in JSON-compatible form.
@@ -130,17 +135,23 @@ class Echoes {
 	/**
 	 * Updates all active systems.
 	 */
+	#if !echoes_no_timer
 	public static function update():Void {
-		final startTime:Float = haxe.Timer.stamp();
-		final dt:Float = startTime - lastUpdate;
+		final startTime:Ticks = Ticks.now();
+		final dt:Ticks = startTime - lastUpdate;
 		lastUpdate = startTime;
 		
 		activeSystems.__update__(dt);
 		
 		#if echoes_profiling
-		lastUpdateLength = Std.int((haxe.Timer.stamp() - startTime) * 1000);
+		lastUpdateLength = Ticks.now() - startTime;
 		#end
 	}
+	#else
+	public static function update(dt: Ticks):Void {
+		activeSystems.__update__(dt);
+	}
+	#end
 	
 	/**
 	 * Deactivates all views and systems, destroys all entities, and cancels the
@@ -165,7 +176,9 @@ class Echoes {
 		Entity.idPool.resize(0);
 		Entity.nextId = 0;
 		
+	#if !echoes_no_timer
 		init(0);
+	#end
 	}
 	
 	//Singleton getters
@@ -285,6 +298,6 @@ typedef SystemDetails = {
 	var name:String;
 	@:optional var children:Array<SystemDetails>;
 	#if echoes_profiling
-	var deltaTime:Int;
+	var deltaTime:Ticks;
 	#end
 };

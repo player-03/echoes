@@ -41,9 +41,9 @@ using Lambda;
  * //trace(entity.exists(Array<String>)); //syntax error
  * trace(entity.exists((_:Array<String>))); //true
  * 
- * //`Float` and `Entity` are reserved. To use them as components, you must
+ * //`Ticks` and `Entity` are reserved. To use them as components, you must
  * //first wrap them in a `typedef` or `abstract`.
- * typedef MyFloat = Float;
+ * typedef MyFloat = Ticks;
  * entity.add((1.1:MyFloat));
  * 
  * abstract MyEntity(Entity) from Entity to Entity { }
