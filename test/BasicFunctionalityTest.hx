@@ -4,6 +4,7 @@ import Components;
 import echoes.Echoes;
 import echoes.Entity;
 import echoes.SystemList;
+import echoes.Time;
 import echoes.utils.Clock;
 import MethodCounter.assertTimesCalled;
 import Systems;
@@ -234,62 +235,44 @@ class BasicFunctionalityTest extends Test {
 		assertTimesCalled(2, "AppearanceSystem.shapeRemoved");
 	}
 	
-	@:access(echoes.Echoes.lastUpdate)
+	@:access(echoes.SystemList.__update__)
 	private function testUpdateEvents():Void {
-		//Create a `TimeCountSystem` and use a custom `Clock`.
-		final systems:SystemList = new SystemList(new OneSecondClock());
-		systems.activate();
-		
 		final timeCountSystem:TimeCountSystem = new TimeCountSystem();
-		Assert.equals(0.0, timeCountSystem.totalTime);
+		Assert.equals((0:Time), timeCountSystem.totalTime);
 		
-		systems.add(timeCountSystem);
+		timeCountSystem.activate();
 		
 		//Create some entities, but none with both color and shape.
 		final green:Entity = new Entity().add((0x00FF00:Color));
-		Assert.equals(0.0, timeCountSystem.colorTime);
+		Assert.equals((0:Time), timeCountSystem.colorTime);
 		
 		final star:Entity = new Entity().add(STAR, ("Proxima Centauri":Name));
-		Assert.equals(0.0, timeCountSystem.shapeTime);
+		Assert.equals((0:Time), timeCountSystem.shapeTime);
 		
 		Assert.isNull(star.get(Color), star.get(Color) + " should be null. See ComponentStorage constructor for details.");
 		
 		//Run an update.
-		Echoes.update();
-		Assert.equals(1.0, timeCountSystem.totalTime);
-		Assert.equals(1.0, timeCountSystem.colorTime);
-		Assert.equals(1.0, timeCountSystem.shapeTime);
-		Assert.equals(0.0, timeCountSystem.colorAndShapeTime);
+		Echoes.activeSystems.__update__(1);
+		Assert.equals((1:Time), timeCountSystem.totalTime);
+		Assert.equals((1:Time), timeCountSystem.colorTime);
+		Assert.equals((1:Time), timeCountSystem.shapeTime);
+		Assert.equals((0:Time), timeCountSystem.colorAndShapeTime);
 		
 		//Give one entity both a color and shape.
 		star.add((0xFFFFFF:Color));
-
-		//Simulate time passing without actually waiting for it.
-		Echoes.lastUpdate -= 0.001;
 		
 		//Run another few updates. (`colorTime` should now increment twice per
 		//update, since now two entities have color.)
-		Echoes.update();
-		Assert.equals(2.0, timeCountSystem.totalTime);
-		Assert.equals(3.0, timeCountSystem.colorTime);
-		Assert.equals(2.0, timeCountSystem.shapeTime);
-		Assert.equals(1.0, timeCountSystem.colorAndShapeTime);
+		Echoes.activeSystems.__update__(1);
+		Assert.equals((2:Time), timeCountSystem.totalTime);
+		Assert.equals((3:Time), timeCountSystem.colorTime);
+		Assert.equals((2:Time), timeCountSystem.shapeTime);
+		Assert.equals((1:Time), timeCountSystem.colorAndShapeTime);
 		
-		Echoes.lastUpdate -= 0.001;
-		Echoes.update();
-		Assert.equals(3.0, timeCountSystem.totalTime);
-		Assert.equals(5.0, timeCountSystem.colorTime);
-		Assert.equals(3.0, timeCountSystem.shapeTime);
-		Assert.equals(2.0, timeCountSystem.colorAndShapeTime);
-	}
-}
-
-/**
- * A custom `Clock` that advances 1 second whenever `Echoes.update()` is called,
- * regardless of the real-world time elapsed.
- */
-class OneSecondClock extends Clock {
-	public override function addTime(time:Float):Void {
-		super.addTime(1);
+		Echoes.activeSystems.__update__(1);
+		Assert.equals((3:Time), timeCountSystem.totalTime);
+		Assert.equals((5:Time), timeCountSystem.colorTime);
+		Assert.equals((3:Time), timeCountSystem.shapeTime);
+		Assert.equals((2:Time), timeCountSystem.colorAndShapeTime);
 	}
 }

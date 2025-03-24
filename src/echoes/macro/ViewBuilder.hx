@@ -208,7 +208,9 @@ class ViewBuilder {
 		final requiredComponents:Array<ComplexType> = [];
 		final funcArgs:Array<Expr> = [for(arg in args) {
 			switch(arg.type.followComplexType()) {
-				case macro:StdTypes.Float:
+				case macro:echoes.Time:
+					getDeltaTime;
+				case macro:StdTypes.Float if(!Context.defined("echoes_millisecond_time")):
 					getDeltaTime;
 				case macro:echoes.Entity:
 					macro entity;

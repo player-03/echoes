@@ -271,12 +271,9 @@ class EntityTemplateBuilder {
 			}
 			
 			//Check for reserved types.
-			switch(componentType) {
-				case macro:Entity, macro:echoes.Entity:
-					Context.fatalError("Entity is reserved. Consider using a typedef, abstract, or Int", field.pos);
-				case macro:Float, macro:StdTypes.Float:
-					Context.fatalError("Float is reserved for lengths of time. Consider using a typedef or abstract", field.pos);
-				default:
+			var reservedMessage:String = componentType.getReservedComponentMessage();
+			if(reservedMessage != null) {
+				Context.fatalError(reservedMessage, field.pos);
 			}
 			
 			//Convert the field to a property, and remove the expression.
