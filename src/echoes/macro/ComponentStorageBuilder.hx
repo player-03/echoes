@@ -72,8 +72,10 @@ class ComponentStorageBuilder {
 	}
 	
 	public static function invalidate():Void {
-		final filePath:String = ((?infos:PosInfos) -> infos.fileName)();
-		CompilationServer.invalidateFiles([filePath]);
+		if(!Context.defined("display") && Sys.args().indexOf("--no-output") < 0) {
+			final filePath:String = ((?infos:PosInfos) -> infos.fileName)();
+			CompilationServer.invalidateFiles([filePath]);
+		}
 	}
 }
 
