@@ -20,6 +20,10 @@ class ComponentStorageBuilder {
 	private static var registered:Bool = false;
 	
 	public static inline function getComponentStorage(componentComplexType:ComplexType):Expr {
+		if(Context.defined("display") || Sys.args().indexOf("--no-output") >= 0) {
+			return macro new echoes.ComponentStorage<$componentComplexType>("For code completion only. If you see this at runtime, it's an error.");
+		}
+		
 		return macro @:pos(Context.currentPos()) $i{ getComponentStorageName(componentComplexType) }.instance;
 	}
 	
@@ -72,8 +76,10 @@ class ComponentStorageBuilder {
 	}
 	
 	public static function invalidate():Void {
-		final filePath:String = ((?infos:PosInfos) -> infos.fileName)();
-		CompilationServer.invalidateFiles([filePath]);
+		if(!Context.defined("display") && Sys.args().indexOf("--no-output") < 0) {
+			final filePath:String = ((?infos:PosInfos) -> infos.fileName)();
+			CompilationServer.invalidateFiles([filePath]);
+		}
 	}
 }
 
