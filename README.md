@@ -585,6 +585,10 @@ Echoes offers a few ways to customize compilation.
 
 ## Breaking changes
 
+### Since v1.0.0
+
+- Creating a view with two of the same component is now an error.
+
 ### Since v1.0.0-rc.5
 
 - `Echoes.addSystem()`, `Echoes.hasSystem()`, and `Echoes.removeSystem()` have been replaced by `system.activate()`, `system.active`, and `system.deactivate()`, respectively.

@@ -451,6 +451,19 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 					return null;
 				}
 				
+				//Check for duplicates. `ViewBuilder` will also check this
+				//later, but its error message would be less specific.
+				final argTypes:Array<String> = [for(arg in func.args) arg.type != null
+					? new Printer().printComplexType(arg.type.followComplexType())
+					: Context.error('${ arg.name } requires a type.', field.pos)];
+				for(i in 0...argTypes.length) {
+					for(j in 0...i) {
+						if(argTypes[i] == argTypes[j]) {
+							Context.error('${ func.args[j].name } and ${ func.args[i].name } both have type ${ argTypes[i] }.', field.pos);
+						}
+					}
+				}
+				
 				return {
 					name: field.name,
 					args: func.args,

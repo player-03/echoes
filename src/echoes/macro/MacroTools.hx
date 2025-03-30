@@ -115,12 +115,6 @@ class MacroTools {
 		};
 	}
 	
-	public static function joinNames(types:Array<ComplexType>, sep:String, ?qualify:Bool = true):String {
-		final typeNames:Array<String> = [for(type in types) toIdentifier(type, qualify)];
-		typeNames.sort(compareStrings);
-		return typeNames.join(sep);
-	}
-	
 	public static function makeTypePath(parts:Array<String>):TypePath {
 		final typePath:TypePath = {
 			pack: parts,

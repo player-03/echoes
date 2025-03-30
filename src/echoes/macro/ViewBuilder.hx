@@ -44,11 +44,11 @@ class ViewBuilder {
 	 */
 	public static function getViewName(components:Array<ComplexType>):String {
 		//Use the fully-qualified component names to generate a unique hash.
-		final md5:String = "_" + Md5.encode(components.joinNames("_")).substr(0, 5);
+		final md5:String = "_" + Md5.encode(joinNames(components)).substr(0, 5);
 		
 		//Use the unqualified component names for the final result, as they're
 		//easier to read. Include part of the hash to avoid collisions.
-		final name:String = "ViewOf_" + components.joinNames("_", false) + md5;
+		final name:String = "ViewOf_" + joinNames(components, false) + md5;
 		
 		if(Context.defined("cpp")) {
 			var maxLength:Null<Int> = null;
@@ -63,6 +63,12 @@ class ViewBuilder {
 		}
 		
 		return name;
+	}
+	
+	private static function joinNames(types:Array<ComplexType>, ?qualify:Bool = true):String {
+		final typeNames:Array<String> = [for(type in types) type.toIdentifier(qualify)];
+		typeNames.sort(MacroTools.compareStrings);
+		return typeNames.join("_");
 	}
 	
 	public static function build():Type {
@@ -82,6 +88,15 @@ class ViewBuilder {
 		if(viewCache.exists(viewClassName)) {
 			return viewCache[viewClassName].type;
 		}
+		
+		//Check for duplicate components.
+		components.map(MacroTools.followName).sort(function(a:String, b:String):Int {
+			final diff:Int = MacroTools.compareStrings(a, b);
+			if(diff == 0) {
+				Context.error('More than one component of type $a.', Context.currentPos());
+			}
+			return diff;
+		});
 		
 		final viewTypePath:TypePath = { pack: [], name: viewClassName };
 		final viewComplexType:ComplexType = TPath(viewTypePath);
