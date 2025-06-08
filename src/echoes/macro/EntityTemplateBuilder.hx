@@ -210,6 +210,10 @@ class EntityTemplateBuilder {
 				continue;
 			}
 			
+			if(field.access != null && field.access.contains(AFinal)) {
+				Context.error("Components cannot have the final keyword.", field.pos);
+			}
+			
 			//Parse the field.
 			var componentType:Null<ComplexType>;
 			var expr:Null<Expr>;
