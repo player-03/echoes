@@ -168,7 +168,7 @@ class ViewBuilder {
 					//If the callback removed the entity, stop. Cache the index
 					//to save time in most cases. HashLink is known to return 0
 					//when reading out of bounds, so it has to check length too.
-					if(${ Context.defined("hl") ? macro index >= entities.length : macro false }
+					if(${ Context.defined("hl") || Context.defined("cpp") ? macro index >= entities.length : macro false }
 						|| entities[index] != entity) {
 						index = entities.lastIndexOf(entity);
 						if(index < 0) {
