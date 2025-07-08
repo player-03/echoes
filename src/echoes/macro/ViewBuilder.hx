@@ -14,7 +14,7 @@ using haxe.macro.Context;
 using Lambda;
 
 class ViewBuilder {
-	private static final viewCache:Map<String, { cls:ComplexType, components:Array<ComplexType>, type:Type }> = new Map();
+	private static final viewCache:Map<String, { type:ComplexType, components:Array<ComplexType> }> = new Map();
 	
 	public static inline function isView(name:String):Bool {
 		return viewCache.exists(name);
@@ -71,7 +71,7 @@ class ViewBuilder {
 		return typeNames.join("_");
 	}
 	
-	public static function build():Type {
+	public static function build():ComplexType {
 		switch(Context.getLocalType()) {
 			case TInst(_, types) if(types != null && types.length > 0):
 				return createViewType([for(type in types)
@@ -82,7 +82,7 @@ class ViewBuilder {
 		}
 	}
 	
-	public static function createViewType(components:Array<ComplexType>):Type {
+	public static function createViewType(components:Array<ComplexType>):ComplexType {
 		final viewClassName:String = getViewName(components);
 		
 		if(viewCache.exists(viewClassName)) {
@@ -211,12 +211,11 @@ class ViewBuilder {
 		
 		Context.defineType(def);
 		
-		final viewType:Type = viewComplexType.toType();
-		viewCache.set(viewClassName, { cls: viewComplexType, components: components, type: viewType });
+		viewCache.set(viewClassName, { type: viewComplexType, components: components });
 		
 		Report.viewNames.push(viewClassName);
 		
-		return viewType;
+		return viewComplexType;
 	}
 	
 	public static function forEachEntityInView(func:Expr, args:Array<FunctionArg>, getDeltaTime:Expr):Expr {
