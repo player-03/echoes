@@ -209,6 +209,10 @@ class ViewBuilder {
 			}
 		}
 		
+		if(viewCache.exists(viewClassName)) {
+			return viewCache[viewClassName].type;
+		}
+		
 		Context.defineType(def);
 		
 		viewCache.set(viewClassName, { type: viewComplexType, components: components });
