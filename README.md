@@ -358,7 +358,7 @@ class Main {
 		midFrame.add(new MidFrameSystem2());
 		
 		//Any later additions to `physics` will still run during `physics`,
-		//which means after `MidFrameSystem2`.
+		//which means after `MidFrameSystem` and before `MidFrameSystem2`.
 		physics.add(new CollisionSystem());
 		
 		var exitFrame:SystemList = new SystemList();
