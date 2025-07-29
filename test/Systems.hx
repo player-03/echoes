@@ -3,6 +3,7 @@ package;
 import Components;
 import echoes.Entity;
 import echoes.System;
+import echoes.Time;
 import haxe.extern.EitherType;
 import MethodCounter;
 
@@ -56,24 +57,24 @@ class OptionalComponentSystem extends System implements IMethodCounter {
 }
 
 class TimeCountSystem extends System implements IMethodCounter {
-	public var colorTime:Float = 0;
-	public var shapeTime:Float = 0;
-	public var colorAndShapeTime:Float = 0;
-	public var totalTime:Float = 0;
+	public var colorTime:Time = 0;
+	public var shapeTime:Time = 0;
+	public var colorAndShapeTime:Time = 0;
+	public var totalTime:Time = 0;
 	
-	@:update private function colorUpdated(color:Color, time:Float):Void {
+	@:update private function colorUpdated(color:Color, time:Time):Void {
 		colorTime += time;
 	}
 	
-	@:update private function shapeUpdated(shape:Shape, time:Float):Void {
+	@:update private function shapeUpdated(shape:Shape, time:Time):Void {
 		shapeTime += time;
 	}
 	
-	@:update private function colorAndShapeUpdated(color:Color, shape:Shape, time:Float):Void {
+	@:update private function colorAndShapeUpdated(color:Color, shape:Shape, time:Time):Void {
 		colorAndShapeTime += time;
 	}
 	
-	@:update private function update(time:Float):Void {
+	@:update private function update(time:Time):Void {
 		totalTime += time;
 	}
 }

@@ -245,7 +245,7 @@ class SystemBuilder {
 			final body:Array<Expr> = [for(listener in listeners) listener.callDuringUpdate()];
 			body.unshift(macro __dt__ = dt);
 			
-			macro __addListenersWithPriority__(${ knownPriorities[priority] }, function(dt:Float) $b{ body });
+			macro __addListenersWithPriority__(${ knownPriorities[priority] }, function(dt:echoes.Time) $b{ body });
 		}];
 		initializeChildren.push(macro if(parent != null) {
 			for(child in __children__) {
@@ -334,7 +334,7 @@ class SystemBuilder {
 				}
 			}
 			
-			private override function __update__(dt:Float):Void {
+			private override function __update__(dt:echoes.Time):Void {
 				#if echoes_profiling
 				final __timestamp__ = Date.now().getTime();
 				#end
@@ -483,7 +483,8 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 			//Find non-optional, non-reserved arguments.
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
-					case macro:StdTypes.Float, macro:echoes.Entity:
+					case macro:echoes.Entity, macro:echoes.Time:
+					case macro:StdTypes.Float if(!Context.defined("echoes_millisecond_time")):
 					case type if(!arg.opt && arg.value == null):
 						this.components.push(type);
 					default:
@@ -507,7 +508,8 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 			//Find optional, non-reserved arguments.
 			for(arg in this.args) {
 				switch(arg.type.followComplexType()) {
-					case macro:StdTypes.Float, macro:echoes.Entity:
+					case macro:echoes.Entity, macro:echoes.Time:
+					case macro:StdTypes.Float if(!Context.defined("echoes_millisecond_time")):
 					case type if(arg.opt || arg.value != null):
 						this.optionalComponents.push(type);
 					default:
@@ -591,7 +593,10 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	private function call(getEntity:Expr, getDeltaTime:Expr):Expr {
 		final args:Array<Expr> = [for(arg in this.args) {
 			switch(arg.type.followComplexType()) {
-				case macro:StdTypes.Float:
+				case macro:echoes.Time:
+					//Defined as a private variable of `System`.
+					getDeltaTime;
+				case macro:StdTypes.Float if(!Context.defined("echoes_millisecond_time")):
 					//Defined as a private variable of `System`.
 					getDeltaTime;
 				case macro:echoes.Entity:
@@ -624,7 +629,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 				${ call(macro entity, macro __dt__) };
 		} else {
 			//No components to filter by, but there may still be an `Entity`
-			//argument. (And/or a `Float` argument, which isn't relevant.)
+			//argument. (And/or a `Time` argument, which isn't relevant.)
 			for(arg in this.args) {
 				if(arg.type.followComplexType().match(macro:echoes.Entity)) {
 					//Iterate over all entities.

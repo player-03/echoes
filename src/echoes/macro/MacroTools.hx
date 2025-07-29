@@ -96,14 +96,17 @@ class MacroTools {
 	 * @return An error message if `type` is reserved, or null otherwise.
 	 */
 	public static function getReservedComponentMessage(type:ComplexType):Null<String> {
-		return switch(type) {
-			case TPath({ pack: [] | ["echoes"], name: "Entity"}):
-				"Entity is not an allowed component type. Try using a typedef, an abstract, or Int instead.";
-			case TPath({ pack: [], name: "Float" } | { name: "StdTypes", sub: "Float" }):
-				"Float is not an allowed component type. Try using a typedef or an abstract instead.";
+		switch(type) {
+			case macro:echoes.Entity, macro:echoes.Time:
+				//Error, see below.
+			case macro:StdTypes.Float if(!Context.defined("echoes_millisecond_time")):
+				//Error, see below.
 			default:
-				null;
-		};
+				return null;
+		}
+		
+		return new Printer().printComplexType(type) + " is not an allowed component type. "
+			+ "Try using a typedef or an abstract instead.";
 	}
 	
 	public static inline function isResolvable(p:TypePath):Bool {

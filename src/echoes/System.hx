@@ -73,7 +73,7 @@ class System {
 	
 	@:noCompletion private final __children__:Array<ChildSystem> = [];
 	
-	@:noCompletion private var __dt__:Float = 0;
+	@:noCompletion private var __dt__:Time = 0;
 	
 	public var active(default, null):Bool = false;
 	
@@ -131,7 +131,7 @@ class System {
 	}
 	
 	@:noCompletion
-	private inline function __addListenersWithPriority__(priority:Int, runUpdateListeners:(Float) -> Void):Void {
+	private inline function __addListenersWithPriority__(priority:Int, runUpdateListeners:(Time) -> Void):Void {
 		__children__.push(new ChildSystem(this, priority, runUpdateListeners));
 	}
 	
@@ -154,7 +154,7 @@ class System {
 	}
 	
 	@:allow(echoes.Echoes)
-	private function __update__(dt:Float):Void {
+	private function __update__(dt:Time):Void {
 		__dt__ = dt;
 		
 		//Everything else is handled by macro.
@@ -216,16 +216,16 @@ class System {
 private class ChildSystem extends System {
 	private final parentSystem:System;
 	
-	private final runUpdateListeners:(Float) -> Void;
+	private final runUpdateListeners:(Time) -> Void;
 	
-	public inline function new(parentSystem:System, priority:Int, runUpdateListeners:(Float) -> Void) {
+	public inline function new(parentSystem:System, priority:Int, runUpdateListeners:(Time) -> Void) {
 		super(priority);
 		
 		this.parentSystem = parentSystem;
 		this.runUpdateListeners = runUpdateListeners;
 	}
 	
-	private override function __update__(dt:Float):Void {
+	private override function __update__(dt:Time):Void {
 		#if echoes_profiling
 		final __timestamp__ = Date.now().getTime();
 		#end
