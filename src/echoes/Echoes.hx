@@ -132,10 +132,10 @@ class Echoes {
 	 */
 	public static function update():Void {
 		final startTime:Float = haxe.Timer.stamp();
-		final dt:Float = startTime - lastUpdate;
+		final deltaTime:Float = startTime - lastUpdate;
 		lastUpdate = startTime;
 		
-		activeSystems.__update__(dt);
+		activeSystems.update(deltaTime);
 		
 		#if echoes_profiling
 		lastUpdateLength = Std.int((haxe.Timer.stamp() - startTime) * 1000);

@@ -243,7 +243,7 @@ class SystemBuilder {
 		
 		final initializeChildren:Array<Expr> = [for(priority => listeners in fixedPriorityUpdateListeners) {
 			final body:Array<Expr> = [for(listener in listeners) listener.callDuringUpdate()];
-			body.unshift(macro __dt__ = dt);
+			body.unshift(macro __deltaTime__ = dt);
 			
 			macro __addListenersWithPriority__(${ knownPriorities[priority] }, function(dt:Float) $b{ body });
 		}];
@@ -334,15 +334,15 @@ class SystemBuilder {
 				}
 			}
 			
-			private override function __update__(dt:Float):Void {
+			private override function __update__(deltaTime:Float):Void {
 				#if echoes_profiling
 				final __timestamp__ = Date.now().getTime();
 				#end
 				
 				${ if(parentTypes.length <= 2) {
-					macro __dt__ = dt;
+					macro __deltaTime__ = deltaTime;
 				} else {
-					macro super.__update__(dt);
+					macro super.__update__(deltaTime);
 				} }
 				
 				$b{ {
@@ -574,7 +574,7 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 				kind: FFun({
 					args: args,
 					ret: macro:Void,
-					expr: call(macro entity, macro __dt__)
+					expr: call(macro entity, macro __deltaTime__)
 				}),
 				pos: this.pos
 			};
@@ -584,9 +584,9 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	}
 	
 	/**
-	 * Calls this listener. The returned expression will refer to `__dt__`,
-	 * `entity`, and any required components, so it's important to ensure all of
-	 * these values are available in the current context.
+	 * Calls this listener. The returned expression will refer to
+	 * `__deltaTime__`, `entity`, and any required components, so it's important
+	 * to ensure all of these values are available in the current context.
 	 */
 	private function call(getEntity:Expr, getDeltaTime:Expr):Expr {
 		final args:Array<Expr> = [for(arg in this.args) {
@@ -618,10 +618,10 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 	 */
 	public function callDuringUpdate():Expr {
 		if(components.length > 0) {
-			return ViewBuilder.forEachEntityInView(macro @:pos(this.pos) $i{ this.name }, this.args, macro __dt__);
+			return ViewBuilder.forEachEntityInView(macro @:pos(this.pos) $i{ this.name }, this.args, macro __deltaTime__);
 		} else if(optionalComponents.length > 0) {
 			return macro for(entity in echoes.Echoes.activeEntities)
-				${ call(macro entity, macro __dt__) };
+				${ call(macro entity, macro __deltaTime__) };
 		} else {
 			//No components to filter by, but there may still be an `Entity`
 			//argument. (And/or a `Float` argument, which isn't relevant.)
@@ -629,12 +629,12 @@ abstract ListenerFunction(ListenerFunctionData) from ListenerFunctionData {
 				if(arg.type.followComplexType().match(macro:echoes.Entity)) {
 					//Iterate over all entities.
 					return macro for(entity in echoes.Echoes.activeEntities)
-						${ call(macro entity, macro __dt__) };
+						${ call(macro entity, macro __deltaTime__) };
 				}
 			}
 			
 			//Don't iterate over anything.
-			return call(macro throw "Unable to select an entity because this function has no required components", macro __dt__);
+			return call(macro throw "Unable to select an entity because this function has no required components", macro __deltaTime__);
 		}
 	}
 }

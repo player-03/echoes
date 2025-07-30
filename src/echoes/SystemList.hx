@@ -78,13 +78,24 @@ class SystemList extends System {
 		}
 	}
 	
-	private override function __update__(dt:Float):Void {
+	/**
+	 * Runs all systems in this list for the given amount of time. This time may
+	 * be modified by `clock`.
+	 * 
+	 * For convenience, you may wish to call `Echoes.update()` instead. It will
+	 * calculate `deltaTime` for you, based on real time elapsed.
+	 */
+	public inline function update(deltaTime:Float):Void {
+		__update__(deltaTime);
+	}
+	
+	private override function __update__(deltaTime:Float):Void {
 		#if echoes_profiling
 		final startTime:Float = haxe.Timer.stamp();
 		#end
 		
-		__dt__ = dt;
-		clock.addTime(dt);
+		__deltaTime__ = deltaTime;
+		clock.addTime(deltaTime);
 		for(step in clock) {
 			for(system in systems) {
 				system.__update__(step);

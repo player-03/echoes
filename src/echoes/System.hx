@@ -73,7 +73,7 @@ class System {
 	
 	@:noCompletion private final __children__:Array<ChildSystem> = [];
 	
-	@:noCompletion private var __dt__:Float = 0;
+	@:noCompletion private var __deltaTime__:Float = 0;
 	
 	public var active(default, null):Bool = false;
 	
@@ -122,7 +122,7 @@ class System {
 	private function __activate__():Void {
 		if(!active) {
 			active = true;
-			__dt__ = 0;
+			__deltaTime__ = 0;
 			
 			#if !macro
 			onActivate.dispatch();
@@ -154,8 +154,8 @@ class System {
 	}
 	
 	@:allow(echoes.Echoes)
-	private function __update__(dt:Float):Void {
-		__dt__ = dt;
+	private function __update__(deltaTime:Float):Void {
+		__deltaTime__ = deltaTime;
 		
 		//Everything else is handled by macro.
 	}
@@ -225,12 +225,12 @@ private class ChildSystem extends System {
 		this.runUpdateListeners = runUpdateListeners;
 	}
 	
-	private override function __update__(dt:Float):Void {
+	private override function __update__(deltaTime:Float):Void {
 		#if echoes_profiling
 		final __timestamp__ = Date.now().getTime();
 		#end
 		
-		runUpdateListeners(dt);
+		runUpdateListeners(deltaTime);
 		
 		#if echoes_profiling
 		this.__updateTime__ = Std.int(Date.now().getTime() - __timestamp__);

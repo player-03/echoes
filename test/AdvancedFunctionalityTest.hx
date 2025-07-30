@@ -258,7 +258,7 @@ class AdvancedFunctionalityTest extends Test {
 		final updateOrder:Array<String> = [];
 		new Entity(true).add(updateOrder);
 		list.__activate__();
-		list.__update__(1);
+		list.update(1);
 		Assert.equals("pre_update, update, update2, post_update", updateOrder.join(", "));
 		
 		//Update the priority of existing systems. Setting `low` to -1 should
@@ -273,7 +273,7 @@ class AdvancedFunctionalityTest extends Test {
 		]);
 		
 		updateOrder.resize(0);
-		list.__update__(1);
+		list.update(1);
 		Assert.equals("update, update2, pre_update, post_update", updateOrder.join(", "));
 	}
 	
