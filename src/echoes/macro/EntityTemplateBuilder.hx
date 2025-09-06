@@ -183,7 +183,7 @@ class EntityTemplateBuilder {
 		
 		//Forward all parent fields.
 		if(!type.meta.has(":forward")) {
-			type.meta.add(":forward", [], type.pos);
+			type.meta.add(":forward", [], Context.currentPos());
 		}
 		
 		//Allow converting to all parent types.
