@@ -4,6 +4,7 @@ import echoes.Echoes;
 import echoes.Entity;
 import echoes.utils.ComponentTypes;
 import echoes.utils.ReadOnlyData;
+import echoes.utils.Signal;
 import echoes.View;
 import haxe.Exception;
 import haxe.Serializer;
@@ -22,6 +23,24 @@ import haxe.Unserializer;
  */
 class ComponentStorage<T> {
 	private static final DOT_PATH:EReg = ~/(?:\w+\.)*(\w+)/g;
+	
+	/**
+	 * Dispatched for each error encountered during `@:add` and `@:remove`
+	 * events. If this has at least one listener, it will prevent the error from
+	 * being rethrown. If this has no listeners, the error will be rethrown,
+	 * crashing the app unless caught.
+	 * 
+	 * The `Exception` passed to the listener will contain the entire stack
+	 * trace, split into two parts. `exception.previous.stack` is the inner
+	 * portion (from `throw` to `ComponentStorage`). `exception.stack` is the
+	 * outer portion (from `ComponentStorage` to the main function). Use
+	 * `exception.details()` to print both parts in order.
+	 * 
+	 * Caution: if you neither use `onError` nor catch the rethrown error, the
+	 * target determines how to print it. Some targets will only print the outer
+	 * portion of the stack trace, omitting the most specific lines.
+	 */
+	public static final onError:Signal<(Exception) -> Void> = new Signal();
 	
 	/**
 	 * The component's fully-qualified type, in string form. For instance,
@@ -113,7 +132,9 @@ class ComponentStorage<T> {
 				try {
 					view.add(entity);
 				} catch(e:Exception) {
-					if(exception == null) {
+					if(onError.length > 0) {
+						onError.dispatch(new Exception('Error while adding $componentType to entity ${ entity.id }.', e));
+					} else if(exception == null) {
 						exception = e;
 					}
 				}
@@ -125,6 +146,7 @@ class ComponentStorage<T> {
 			}
 			
 			if(exception != null) {
+				//If you get an error here, see `onError`.
 				throw exception;
 			}
 		}
@@ -179,7 +201,9 @@ class ComponentStorage<T> {
 					try {
 						view.remove(entity, this, removedComponent);
 					} catch(e:Exception) {
-						if(exception == null) {
+						if(onError.length > 0) {
+							onError.dispatch(new Exception('Error while removing $componentType from entity ${ entity.id }.', e));
+						} else if(exception == null) {
 							exception = e;
 						}
 					}
@@ -188,6 +212,7 @@ class ComponentStorage<T> {
 				ongoingRemovals.remove(entity.id);
 				
 				if(exception != null) {
+					//If you get an error here, see `onError`.
 					throw exception;
 				}
 			}
@@ -229,6 +254,7 @@ class ComponentStorage<T> {
 			}
 			
 			if(exception != null) {
+				//If you get an error here, see `onError`.
 				throw exception;
 			}
 		}

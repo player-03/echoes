@@ -2,6 +2,7 @@ package;
 
 import Components;
 import Components.Color as ColorAlias;
+import echoes.ComponentStorage;
 import echoes.Echoes;
 import echoes.Entity;
 import echoes.System;
@@ -304,6 +305,18 @@ class EdgeCaseTest extends Test {
 		//`remove()` should only prevent adding `Permanent` while it's ongoing.
 		entity.add((80:Permanent));
 		Assert.equals(80.0, entity.get(Permanent));
+		
+		//The removal behavior should work the same with an `onError` listener.
+		var onErrorCount:Int = 0;
+		permanentRemoveFlags = 0;
+		ComponentStorage.onError.add(_ -> onErrorCount++);
+		
+		entity.remove(Permanent);
+		Assert.equals(1, onErrorCount);
+		Assert.isFalse(entity.exists(Permanent));
+		Assert.equals(1 | 2, permanentRemoveFlags);
+		
+		ComponentStorage.onError.clear();
 	}
 	
 	private function testRemoveDuringUpdate():Void {
