@@ -1,6 +1,7 @@
 package echoes.utils;
 
 #if macro
+import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
 
@@ -26,7 +27,7 @@ abstract Signal<T:haxe.Constraints.Function>(Array<T>) {
 	
 	public macro function dispatch(self:Expr, args:Array<Expr>):Expr {
 		return macro for(listener in $self) {
-			listener($a{ args });
+			@:pos(Context.currentPos()) listener($a{ args });
 		};
 	}
 	
