@@ -21,7 +21,7 @@ using Lambda;
 class EntityTemplateBuilder {
 	static inline final ARGUMENTS_TAG:String = ":arguments";
 	static inline final OPTIONAL_ARGUMENTS_TAG:String = ":optionalArguments";
-
+	
 	@:allow(echoes)
 	private static function build():Array<Field> {
 		var fields:Array<Field> = Context.getBuildFields();
@@ -108,19 +108,19 @@ class EntityTemplateBuilder {
 		 * Adds the given value to `parameters` and `arguments` unless it's
 		 * redundant. Also adds it to `superArguments` if the flag is set.
 		 */
-		inline function addParams(params:Array<Expr>, inherited:Bool, optional:Bool):Void {
+		inline function addParams(params:Array<Expr>, parentType:Null<AbstractType>, optional:Bool):Void {
 			for(param in params) {
 				var name:String = null;
-				var type:ComplexType = null;
+				var paramType:ComplexType = null;
 				switch(param.expr) {
 					case EParenthesis({ expr:ECheckType(_.expr => EConst(CIdent(n)), t) }):
 						name = n;
-						type = t.followComplexType();
+						paramType = t.followComplexType();
 					default:
 						final fieldChain:Null<String> = param.printFieldChain();
 						if(fieldChain != null) {
 							try {
-								type = fieldChain.getType().followMono().toComplexType();
+								paramType = fieldChain.getType().followMono().toComplexType();
 								
 								name = fieldChain.split(".").pop();
 								name = name.charAt(0).toLowerCase() + name.substr(1);
@@ -128,11 +128,15 @@ class EntityTemplateBuilder {
 						}
 						
 						if(name == null) {
-							Context.fatalError("Expected component type or type check.", param.pos);
+							if(parentType != null && fieldChain != null) {
+								Context.fatalError('Unable to find type $fieldChain; please import it. This is required because ${ parentType.name } takes it as an argument.', Context.currentPos());
+							} else {
+								Context.fatalError("Expected component type or type check.", param.pos);
+							}
 						}
 				}
 				
-				final storage:String = type.getComponentStorageName();
+				final storage:String = paramType.getComponentStorageName();
 				var existingName:String = null;
 				for(existing in parameters) {
 					if(existing.storage == storage) {
@@ -143,16 +147,16 @@ class EntityTemplateBuilder {
 				
 				if(existingName == null) {
 					existingName = name;
-					parameters.push({ name: name, type: type, storage: storage, opt: optional });
+					parameters.push({ name: name, type: paramType, storage: storage, opt: optional });
 					
 					arguments.push(macro $i{ existingName });
 					
 					if(optional) {
-						optionalValuesRemaining[storage] = type;
+						optionalValuesRemaining[storage] = paramType;
 					}
 				}
 				
-				if(inherited) {
+				if(parentType != null) {
 					superArguments.push(macro $i{ existingName });
 				}
 			}
@@ -160,21 +164,21 @@ class EntityTemplateBuilder {
 		
 		//Add parameters from this type.
 		for(entry in type.meta.extract(ARGUMENTS_TAG)) {
-			addParams(entry.params, false, false);
+			addParams(entry.params, null, false);
 		}
 		for(entry in type.meta.extract(OPTIONAL_ARGUMENTS_TAG)) {
-			addParams(entry.params, false, true);
+			addParams(entry.params, null, true);
 		}
 		
 		//Add inherited parameters.
 		for(parent in parents) {
 			for(entry in parent.abstractType.meta.extract(ARGUMENTS_TAG)) {
-				addParams(entry.params, true, false);
+				addParams(entry.params, parent.abstractType, false);
 			}
 			
 			//Currently, don't inherit optional parameters.
 			/* for(entry in parent.abstractType.meta.extract(OPTIONAL_ARGUMENTS_TAG)) {
-				addParams(entry.params, true, false);
+				addParams(entry.params, parent.abstractType, true);
 			} */
 		}
 		
