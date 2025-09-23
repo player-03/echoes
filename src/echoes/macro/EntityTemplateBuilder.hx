@@ -1,5 +1,8 @@
 package echoes.macro;
 
+#if macro
+
+import haxe.Exception;
 import haxe.macro.ComplexTypeTools;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
@@ -21,6 +24,8 @@ using Lambda;
 class EntityTemplateBuilder {
 	static inline final ARGUMENTS_TAG:String = ":arguments";
 	static inline final OPTIONAL_ARGUMENTS_TAG:String = ":optionalArguments";
+	
+	static final paramTypeCache:Map<String, ComplexType> = new Map();
 	
 	@:allow(echoes)
 	private static function build():Array<Field> {
@@ -118,21 +123,29 @@ class EntityTemplateBuilder {
 						paramType = t.followComplexType();
 					default:
 						final fieldChain:Null<String> = param.printFieldChain();
-						if(fieldChain != null) {
-							try {
-								paramType = fieldChain.getType().followMono().toComplexType();
-								
-								name = fieldChain.split(".").pop();
-								name = name.charAt(0).toLowerCase() + name.substr(1);
-							} catch(err:haxe.Exception) { }
+						if(fieldChain == null) {
+							Context.fatalError("Expected component type or type check.", param.pos);
 						}
 						
-						if(name == null) {
-							if(parentType != null && fieldChain != null) {
-								Context.fatalError('Unable to find type $fieldChain; please import it. This is required because ${ parentType.name } takes it as an argument.', Context.currentPos());
-							} else {
-								Context.fatalError("Expected component type or type check.", param.pos);
+						name = fieldChain.split(".").pop();
+						name = name.charAt(0).toLowerCase() + name.substr(1);
+						
+						//Use the cached type if possible.
+						if(parentType != null) {
+							paramType = paramTypeCache[parentType.module + ":" + fieldChain];
+						}
+						
+						if(paramType == null) {
+							try {
+								paramType = fieldChain.getType().followMono().toComplexType();
+							} catch(error:Exception) {
+								Context.fatalError('Could not find type $fieldChain.', param.pos);
 							}
+						}
+						
+						//Cache the type for later.
+						if(parentType == null) {
+							paramTypeCache[type.module + ":" + fieldChain] = paramType;
 						}
 				}
 				
@@ -234,7 +247,7 @@ class EntityTemplateBuilder {
 				if(expr != null) {
 					try {
 						componentType = expr.parseComponentType().toComplexType();
-					} catch(e:haxe.Exception) {
+					} catch(e:Exception) {
 					}
 				}
 				
@@ -426,3 +439,5 @@ class EntityTemplateBuilder {
 		return fields;
 	}
 }
+
+#end
