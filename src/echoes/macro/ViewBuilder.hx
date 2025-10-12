@@ -178,7 +178,7 @@ class ViewBuilder {
 				}
 			}
 			
-			private override function dispatchRemovedCallback(entity:echoes.Entity, ?removedComponentStorage:echoes.ComponentStorage.DynamicComponentStorage, ?removedComponent:Any):Void {
+			private override function dispatchRemovedCallback(entity:echoes.Entity, removedComponentStorage:echoes.ComponentStorage.DynamicComponentStorage, removedComponent:Any):Void {
 				var exception:haxe.Exception = null;
 				for(callback in onRemoved) {
 					try {

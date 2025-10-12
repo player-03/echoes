@@ -75,12 +75,12 @@ class ViewBase {
 		//Overridden by `ViewBuilder`.
 	}
 	
-	private function dispatchRemovedCallback(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
+	private function dispatchRemovedCallback(entity:Entity, removedComponentStorage:DynamicComponentStorage, removedComponent:Any):Void {
 		//Overridden by `ViewBuilder`.
 	}
 	
 	@:allow(echoes.Entity) @:allow(echoes.ComponentStorage)
-	private inline function remove(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
+	private inline function remove(entity:Entity, removedComponentStorage:DynamicComponentStorage, removedComponent:Any):Void {
 		//Many applications will have a mix of short-lived and long-lived
 		//entities. An entity being removed is more likely to be short-lived,
 		//meaning it's near the end of the array.
@@ -174,7 +174,7 @@ class DynamicView extends ViewBase {
 		}
 	}
 	
-	private override function dispatchRemovedCallback(entity:Entity, ?removedComponentStorage:DynamicComponentStorage, ?removedComponent:Any):Void {
+	private override function dispatchRemovedCallback(entity:Entity, removedComponentStorage:DynamicComponentStorage, removedComponent:Any):Void {
 		var exception:Exception = null;
 		for(callback in onRemoved) {
 			try {

@@ -180,8 +180,9 @@ abstract Entity(Int) {
 			}
 			
 			for(storage in getComponents()) {
+				final component:Dynamic = storage.get(abstract);
 				for(view in storage.relatedViews) {
-					view.remove(cast this);
+					view.remove(cast this, storage, component);
 				}
 			}
 		}
