@@ -99,7 +99,7 @@ abstract Entity(Int) {
 		
 		if(active) {
 			Echoes.activeEntityIndices[this] = Echoes._activeEntities.length;
-			Echoes._activeEntities.push(abstract);
+			Echoes._activeEntities.push(cast this);
 		}
 	}
 	
@@ -109,11 +109,11 @@ abstract Entity(Int) {
 	public function activate():Void {
 		if(!active) {
 			Echoes.activeEntityIndices[this] = Echoes._activeEntities.length;
-			Echoes._activeEntities.push(abstract);
+			Echoes._activeEntities.push(cast this);
 			
 			for(storage in getComponents()) {
 				for(view in storage.relatedViews) {
-					view.add(abstract);
+					view.add(cast this);
 				}
 			}
 		}
@@ -182,7 +182,7 @@ abstract Entity(Int) {
 			for(storage in getComponents()) {
 				final component:Dynamic = storage.get(abstract);
 				for(view in storage.relatedViews) {
-					view.remove(abstract, storage, component);
+					view.remove(cast this, storage, component);
 				}
 			}
 		}
@@ -224,7 +224,7 @@ abstract Entity(Int) {
 	 * @see `get()` for a faster way to look up individual components.
 	 */
 	public inline function getComponents():EntityComponents {
-		return EntityComponents.forEntity(abstract);
+		return EntityComponents.forEntity(cast this);
 	}
 	
 	/**
@@ -243,7 +243,7 @@ abstract Entity(Int) {
 	 * entity, that component may remain afterwards.
 	 */
 	public inline function removeAll():Void {
-		EntityComponents.removeAll(abstract);
+		EntityComponents.removeAll(cast this);
 	}
 }
 
