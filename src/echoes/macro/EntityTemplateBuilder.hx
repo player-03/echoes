@@ -130,7 +130,9 @@ class EntityTemplateBuilder {
 						name = fieldChain.split(".").pop();
 						name = name.charAt(0).toLowerCase() + name.substr(1);
 						
-						//Use the cached type if possible.
+						//Use the cached type if possible. If Haxe builds the
+						//types in the correct order, this saves the user the
+						//trouble of importing it.
 						if(parentType != null) {
 							paramType = paramTypeCache[parentType.module + ":" + fieldChain];
 						}
@@ -139,7 +141,7 @@ class EntityTemplateBuilder {
 							try {
 								paramType = fieldChain.getType().followMono().toComplexType();
 							} catch(error:Exception) {
-								Context.fatalError('Could not find type $fieldChain.', param.pos);
+								Context.fatalError('Could not find type $fieldChain, but ${ parentType.name } takes it as an argument. Please import it here too.', type.pos);
 							}
 						}
 						
