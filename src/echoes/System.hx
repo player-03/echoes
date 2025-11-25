@@ -173,7 +173,9 @@ class System {
 	 * Removes this from `activeSystems`, deactivating it.
 	 */
 	public inline function deactivate():Void {
-		parent.remove(this);
+		if(parent != null) {
+			parent.remove(this);
+		}
 	}
 	
 	/**
