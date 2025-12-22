@@ -40,9 +40,36 @@ class ComponentStorageBuilder {
 			return storageTypeName;
 		}
 		
+		final valueType:Expr = switch(componentComplexType.toType().followWithAbstracts()) {
+			case TInst(_.get() => classType, _):
+				final parts:Array<String> = classType.pack.copy();
+				parts.push(classType.module);
+				if(classType.name != classType.module) {
+					parts.push(classType.name);
+				}
+				macro TClass($p{ parts });
+			case TEnum(_.get() => enumType, _):
+				final parts:Array<String> = enumType.pack.copy();
+				parts.push(enumType.module);
+				if(enumType.name != enumType.module) {
+					parts.push(enumType.name);
+				}
+				macro TEnum($p{ parts });
+			case TFun(_, _):
+				macro TFunction;
+			case TAnonymous(_):
+				macro TObject;
+			case TAbstract(_.get() => { pack: [], module: "StdTypes", name: name }, _)
+				if(name == "Float" || name == "Int" || name == "Bool"):
+				final name:String = "T" + name;
+				macro $i{ name };
+			default:
+				macro TUnknown;
+		};
+		
 		final componentTypeName:String = new Printer().printComplexType(componentComplexType);
 		final storageTypePath:TypePath = { pack: [], name: storageTypeName };
-		var getInstance:Expr = macro new echoes.ComponentStorage<$componentComplexType>($v{ componentTypeName });
+		var getInstance:Expr = macro new echoes.ComponentStorage<$componentComplexType>($v{ componentTypeName }, $valueType);
 		
 		//If a custom singleton is defined, use that instead.
 		final componentBaseType:BaseType = componentComplexType.toType().toBaseType();

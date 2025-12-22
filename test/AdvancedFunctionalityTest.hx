@@ -56,9 +56,50 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.isFalse(Echoes.getComponentStorage(EagerIntArray) is IntArrayStorage);
 	}
 	
+	#if !echoes_no_addDynamic
+	
+	private function testDynamicComponents():Void {
+		final entity:Entity = new Entity();
+		
+		final string:ComponentStorage<String> = Echoes.getComponentStorage(String);
+		Assert.isFalse(string.addDynamic(entity, 5));
+		Assert.isFalse(string.addDynamic(entity, ["string"]));
+		Assert.isFalse(string.exists(entity));
+		
+		Assert.isTrue(string.addDynamic(entity, "string"));
+		Assert.isTrue(string.exists(entity));
+		
+		final array:ComponentStorage<Array<String>> = Echoes.getComponentStorage((_:Array<String>));
+		Assert.isFalse(array.addDynamic(entity, 5));
+		Assert.isFalse(array.addDynamic(entity, "string"));
+		Assert.isFalse(array.exists(entity));
+		
+		Assert.isTrue(array.addDynamic(entity, ["string"]));
+		Assert.isTrue(array.exists(entity));
+		
+		Assert.isTrue(array.addDynamic(entity, [1, 2]),
+			"Int array was (correctly but unexpectedly) rejected. If Haxe can now distinguish array types, please update the tests and documentation.");
+		
+		final func:ComponentStorage<() -> Void> = Echoes.getComponentStorage((_:() -> Void));
+		Assert.isFalse(func.addDynamic(entity, (x:Int) -> x + 1),
+			"Function was accepted despite having the wrong signature.");
+		Assert.isFalse(func.addDynamic(entity, () -> trace("Hello, world")),
+			"Function with the correct signature was unexpectedly accepted. If functions can now be verified, please update the tests and documentation.");
+		
+		final dyn:DynamicComponentStorage = new DynamicComponentStorage("component");
+		Assert.isTrue(dyn.addDynamic(entity, 5));
+		Assert.isTrue(dyn.addDynamic(entity, []));
+		Assert.isTrue(dyn.addDynamic(entity, () -> ""));
+		
+		final bool:DynamicComponentStorage = new DynamicComponentStorage("bool", TBool);
+		Assert.isFalse(bool.addDynamic(entity, 5));
+		Assert.isFalse(bool.addDynamic(entity, []));
+		Assert.isTrue(bool.addDynamic(entity, false));
+	}
+	
 	private function testDynamicViews():Void {
-		final component0:ComponentStorage<Any> = new ComponentStorage<Any>("component0");
-		final component1:ComponentStorage<Any> = new ComponentStorage<Any>("component1");
+		final component0:DynamicComponentStorage = new DynamicComponentStorage("component0");
+		final component1:DynamicComponentStorage = new DynamicComponentStorage("component1");
 		
 		final view:DynamicView = new DynamicView(component0, component1);
 		view.activate();
@@ -68,20 +109,20 @@ class AdvancedFunctionalityTest extends Test {
 		view.onRemoved.add((entity, components) -> removed += components.join(""));
 		
 		final entity0:Entity = new Entity();
-		component0.add(entity0, "---");
+		component0.addDynamic(entity0, "---");
 		component0.remove(entity0);
 		Assert.equals("", added);
 		Assert.equals("", removed);
 		
-		component1.add(entity0, "b");
-		component0.add(entity0, "a");
+		component1.addDynamic(entity0, "b");
+		component0.addDynamic(entity0, "a");
 		Assert.equals("ab", added);
 		Assert.equals("", removed);
 		
 		final entity1:Entity = new Entity();
 		entity1.add("string");
-		component0.add(entity1, 0);
-		component1.add(entity1, 1);
+		component0.addDynamic(entity1, 0);
+		component1.addDynamic(entity1, 1);
 		Assert.equals("ab01", added);
 		Assert.equals("", removed);
 		
@@ -94,6 +135,8 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals("ab01", added);
 		Assert.equals("01ab", removed);
 	}
+	
+	#end
 	
 	private function testEntityTemplates():Void {
 		new NameSystem().activate();

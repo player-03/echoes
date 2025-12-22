@@ -117,16 +117,15 @@ class ViewBase {
  * Sample usage:
  * 
  * ```haxe
- * //Storage for a custom component type. Because `entity.add(x)` only works at
- * //compile time, you'll have to call `customComponent.add(entity, x)`.
- * public final customComponent:ComponentStorage<Any>;
+ * //Storage for a custom component type.
+ * public final customComponent:DynamicComponentStorage;
  * 
  * //A view of `customComponent` and `String`; it'll dispatch events for any
  * //entity that has both components.
  * public final view:DynamicView;
  * 
  * public function new() {
- *     customComponent = new ComponentStorage<Any>("CustomComponent");
+ *     customComponent = new DynamicComponentStorage("CustomComponent");
  *     
  *     view = new DynamicView(customComponent, Echoes.getComponentStorage(String));
  *     

@@ -9,6 +9,7 @@ import echoes.View;
 import haxe.Exception;
 import haxe.Serializer;
 import haxe.Unserializer;
+import Type;
 
 /**
  * A central location to store all components of a given type. For example, the
@@ -89,8 +90,11 @@ class ComponentStorage<T> {
 	private final storage:Array<Null<T>> = [];
 	#end
 	
-	public inline function new(componentType:String) {
+	private final valueType:ValueType;
+	
+	public inline function new(componentType:String, ?valueType:ValueType) {
 		this.componentType = componentType;
+		this.valueType = valueType != null ? valueType : TUnknown;
 		Echoes._componentStorage.push(this);
 		
 		//Some platforms get confused by the declaration of `Array<Null<T>>`,
@@ -152,6 +156,26 @@ class ComponentStorage<T> {
 		}
 	}
 	
+	#if !echoes_no_addDynamic
+	
+	/**
+	 * Adds the given component if it's the correct type. Returns whether the
+	 * component was successfully added.
+	 * 
+	 * Caution: this only checks type information that's available at runtime,
+	 * which means it can't verify type parameters.
+	 */
+	public function addDynamic(entity:Entity, component:Dynamic):Bool {
+		if(isCorrectType(component)) {
+			add(entity, cast component);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	#end
+	
 	@:allow(echoes.Echoes)
 	private inline function clear():Void {
 		#if (echoes_storage == "Map")
@@ -179,6 +203,42 @@ class ComponentStorage<T> {
 	
 	public inline function get(entity:Entity):Null<T> {
 		return storage[entity.id];
+	}
+	
+	/**
+	 * Checks whether the given component can be added to this storage.
+	 * 
+	 * Due to limitations of Haxe's type system, this can only verify basic
+	 * types, class instances, and enum values. It will always return false for
+	 * functions and anonymous structures.
+	 * 
+	 * Also, type parameters cannot be checked at runtime, so (for instance)
+	 * this will treat `Array<Int>` and `Array<String>` as the same.
+	 */
+	public function isCorrectType(component:Dynamic):Bool {
+		switch(valueType) {
+			case TNull:
+				//Special case: `TNull` means this was created as a
+				//`DynamicComponentStorage` and should accept all components.
+				return true;
+			case TBool:
+				return Std.isOfType(component, Bool);
+			case TInt:
+				return Std.isOfType(component, Int);
+			case TFloat:
+				return Std.isOfType(component, Float);
+			case TClass(c):
+				return c == Type.getClass(component);
+			case TEnum(e):
+				switch(Type.typeof(component)) {
+					case TEnum(e2):
+						return e == e2;
+					default:
+						return false;
+				}
+			default:
+				return false;
+		}
 	}
 	
 	public function remove(entity:Entity):Void {
@@ -311,18 +371,18 @@ class ComponentStorage<T> {
 
 /**
  * A version of `ComponentStorage` that stores components of unknown type.
- * `add()` is disabled because there's no way to make sure the added component
- * is the correct type. `remove()` is still available because it doesn't need to
- * check any types.
- * 
- * If you're creating the `ComponentStorage` at runtime and want to be able to
- * add components, use `new ComponentStorage<Dynamic>()` instead. Obviously, no
- * type checking will be performed.
+ * Since this strips the compile-time type checks, you must use `addDynamic()`
+ * instead of `add()`.
  */
-@:forward(clear, componentType, exists, get, name, relatedViews, remove, removeAll, shortComponentType)
+@:forward(clear, componentType, exists, get, isCorrectType, name, relatedViews, remove, removeAll, shortComponentType #if !echoes_no_addDynamic , addDynamic #end)
 abstract DynamicComponentStorage(ComponentStorage<Dynamic>) {
 	@:from private static inline function fromComponentStorage<T>(componentStorage:ComponentStorage<T>):DynamicComponentStorage {
 		return cast componentStorage;
+	}
+	
+	public inline function new(componentType:String, ?valueType:ValueType) {
+		this = new ComponentStorage<Dynamic>(componentType,
+			valueType != null ? valueType : TNull);
 	}
 	
 	@:allow(echoes.ViewBase)
