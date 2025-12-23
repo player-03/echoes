@@ -10,6 +10,7 @@ import haxe.macro.Type;
 
 using haxe.macro.ComplexTypeTools;
 using haxe.macro.Context;
+using haxe.macro.MacroStringTools;
 using Lambda;
 
 class MacroTools {
@@ -257,6 +258,17 @@ class MacroTools {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Converts a type to a `Class<T>` or `Enum<T>` expression.
+	 */
+	public static inline function toClassExpr(type:BaseType, ?pos:Position):Expr {
+		final parts:Array<String> = type.module.split(".");
+		if(type.name != parts[parts.length - 1]) {
+			parts.push(type.name);
+		}
+		return parts.toFieldExpr(pos);
 	}
 	
 	/**

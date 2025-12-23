@@ -210,7 +210,7 @@ class ComponentStorage<T> {
 	 * 
 	 * Due to limitations of Haxe's type system, this can only verify basic
 	 * types, class instances, and enum values. It will always return false for
-	 * functions and anonymous structures.
+	 * functions, anonymous structures, and private types.
 	 * 
 	 * Also, type parameters cannot be checked at runtime, so (for instance)
 	 * this will treat `Array<Int>` and `Array<String>` as the same.

@@ -41,20 +41,10 @@ class ComponentStorageBuilder {
 		}
 		
 		final valueType:Expr = switch(componentComplexType.toType().followWithAbstracts()) {
-			case TInst(_.get() => classType, _):
-				final parts:Array<String> = classType.pack.copy();
-				parts.push(classType.module);
-				if(classType.name != classType.module) {
-					parts.push(classType.name);
-				}
-				macro TClass($p{ parts });
-			case TEnum(_.get() => enumType, _):
-				final parts:Array<String> = enumType.pack.copy();
-				parts.push(enumType.module);
-				if(enumType.name != enumType.module) {
-					parts.push(enumType.name);
-				}
-				macro TEnum($p{ parts });
+			case TInst(_.get() => classType, _) if(!classType.isPrivate):
+				macro TClass(${ classType.toClassExpr() });
+			case TEnum(_.get() => enumType, _) if(!enumType.isPrivate):
+				macro TEnum(${ enumType.toClassExpr() });
 			case TFun(_, _):
 				macro TFunction;
 			case TAnonymous(_):
