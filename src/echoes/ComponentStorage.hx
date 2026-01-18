@@ -317,7 +317,9 @@ class ComponentStorage<T> {
 			try {
 				add(entity, component);
 			} catch(e:Exception) {
-				if(exception == null) {
+				if(onError.length > 0) {
+					onError.dispatch(new Exception('Error while replacing $componentType on entity ${ entity.id }.', e));
+				} else if(exception == null) {
 					exception = e;
 				}
 			}
