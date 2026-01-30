@@ -67,17 +67,32 @@ class ComponentStorageBuilder {
 		if(meta != null) {
 			switch(meta.extract(":echoes_storage")) {
 				case null, []:
-				case x if(componentBaseType.params.length > 0):
-					Context.error("@:echoes_storage doesn't work with type params, for type " + new Printer().printComplexType(componentComplexType), Context.currentPos());
-				case [_.params => [customSingleton]]:
-					getInstance = customSingleton;
+				case [_.params => [expr = _.expr => ENew(t, params)]]:
+					if(t.params.length > 0) {
+						switch(componentComplexType) {
+							case TPath(_.params => args) if(args != null):
+								final args:Array<ComplexType> = [for(arg in args) switch(arg) {
+									case TPType(t):
+										t;
+									case TPExpr(_):
+										break;
+								}];
+								if(args.length == t.params.length) {
+									expr = new TypeSubstitutions(componentBaseType, args).substituteExpr(expr);
+								}
+							default:
+						}
+					}
+					
+					getInstance = expr;
+				case [_.params => [expr]]:
+					getInstance = expr;
 				default:
 			}
 		}
 		
 		final def:TypeDefinition = macro class $storageTypeName {
-			public static final instance:echoes.ComponentStorage<$componentComplexType>
-				= $getInstance;
+			public static final instance = $getInstance;
 		};
 		
 		storageCache.set(storageTypeName, def);

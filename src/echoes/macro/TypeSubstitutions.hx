@@ -40,7 +40,7 @@ class TypeSubstitutions {
 	 * @param args The type arguments specified by the user when creating an
 	 * instance of `classType`.
 	 */
-	public static inline function applyDefaultTypeParams(classType:ClassType, args:Array<Type>):Void {
+	public static inline function applyDefaultTypeParams(classType:BaseType, args:Array<Type>):Void {
 		final params:Array<TypeParameter> = classType.params;
 		
 		if(params.length != args.length) {
@@ -68,7 +68,7 @@ class TypeSubstitutions {
 		}
 	}
 	
-	public static inline function getCachedImports(classType:ClassType):CachedImports {
+	public static inline function getCachedImports(classType:BaseType):CachedImports {
 		final qualifiedClassName:String = classType.pack.join(".") + "." + classType.name;
 		return cache[qualifiedClassName];
 	}
@@ -79,7 +79,7 @@ class TypeSubstitutions {
 	 */
 	public final className:String;
 	
-	private final classType:ClassType;
+	private final classType:BaseType;
 	
 	/**
 	 * Maps type parameter names onto the user's specified types. For
@@ -92,12 +92,22 @@ class TypeSubstitutions {
 	/**
 	 * @param types Omit this to perform default substitutions instead, based on
 	 * type constraints. Will be modified in place to apply default values.
+	 * @param complexTypes Include this if `classType` is already built and is
+	 * being referenced from outside. This skips the automatic checks and
+	 * default substitutions that would apply while building `classType`.
 	 */
-	public inline function new(classType:ClassType, ?types:Array<Type>) {
+	public inline function new(classType:BaseType, ?types:Array<Type>, ?complexTypes:Array<ComplexType>) {
 		className = classType.name;
 		this.classType = classType;
 		
 		final params:Array<TypeParameter> = classType.params;
+		
+		if(complexTypes != null) {
+			for(i => param in params) {
+				addSubstitution(param.name, complexTypes[i]);
+			}
+			return;
+		}
 		
 		final codeCompletionMode:Bool = types == null;
 		if(codeCompletionMode) {
@@ -133,7 +143,7 @@ class TypeSubstitutions {
 			cache[qualifiedClassName] = {
 				imports: Context.getLocalImports(),
 				usings: [for(u in Context.getLocalUsing()) if(u != null) {
-					final usingType:ClassType = u.get();
+					final usingType:BaseType = u.get();
 					final parts:Array<String> = usingType.module.split(".");
 					if(parts[parts.length - 1] != usingType.name) {
 						parts.push(usingType.name);
