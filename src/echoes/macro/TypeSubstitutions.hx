@@ -104,7 +104,7 @@ class TypeSubstitutions {
 		
 		if(complexTypes != null) {
 			for(i => param in params) {
-				addSubstitution(param.name, complexTypes[i]);
+				addSubstitution(param.name, complexTypes[i], true);
 			}
 			return;
 		}
@@ -177,13 +177,18 @@ class TypeSubstitutions {
 		}
 	}
 	
-	public inline function addSubstitution(identifier:String, type:ComplexType):Void {
+	public inline function addSubstitution(identifier:String, type:ComplexType, ?allowUnderscoreSyntax:Bool):Void {
 		if(!substitutions.exists(identifier)) {
 			substitutions[identifier] = type;
 			
 			final printedType:String = new Printer().printComplexType(type);
 			if(printedType.indexOf("<") < 0) {
 				substitutionExprs[identifier] = printedType.parse(Context.currentPos()).expr;
+			} else if(allowUnderscoreSyntax) {
+				substitutionExprs[identifier] = EParenthesis({
+					expr: ECheckType(macro _, type),
+					pos: Context.currentPos()
+				});
 			}
 		}
 	}
