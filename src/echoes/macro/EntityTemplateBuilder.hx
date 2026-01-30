@@ -141,7 +141,11 @@ class EntityTemplateBuilder {
 							try {
 								paramType = fieldChain.getType().followMono().toComplexType();
 							} catch(error:Exception) {
-								Context.fatalError('Could not find type $fieldChain, but ${ parentType.name } takes it as an argument. Please import it here too.', type.pos);
+								if(parentType != null) {
+									Context.fatalError('Could not find type $fieldChain, but ${ parentType.name } takes it as an argument. Please import it here too.', type.pos);
+								} else {
+									Context.fatalError('Could not find type $fieldChain. There may have been an error when generating it or a type it imports.', type.pos);
+								}
 							}
 						}
 						
