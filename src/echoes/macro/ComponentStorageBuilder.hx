@@ -59,6 +59,7 @@ class ComponentStorageBuilder {
 		
 		final componentTypeName:String = new Printer().printComplexType(componentComplexType);
 		final storageTypePath:TypePath = { pack: [], name: storageTypeName };
+		var instanceType:ComplexType = macro:echoes.ComponentStorage<$componentComplexType>;
 		var getInstance:Expr = macro new echoes.ComponentStorage<$componentComplexType>($v{ componentTypeName }, $valueType);
 		
 		//If a custom singleton is defined, use that instead.
@@ -78,13 +79,19 @@ class ComponentStorageBuilder {
 										break;
 								}];
 								if(args.length == t.params.length) {
-									expr = new TypeSubstitutions(componentBaseType, args).substituteExpr(expr);
+									final substitutions = new TypeSubstitutions(componentBaseType, args);
+									expr = substitutions.substituteExpr(expr);
+									t = substitutions.substituteTypePath(t);
+								} else {
+									final printer:Printer = new Printer();
+									Context.warning('Could not apply type parameters: expected ${ t.params.length }, got ${ args.map(printer.printComplexType) }', Context.currentPos());
 								}
 							default:
 						}
 					}
 					
 					getInstance = expr;
+					instanceType = TPath(t);
 				case [_.params => [expr]]:
 					getInstance = expr;
 				default:
@@ -92,7 +99,7 @@ class ComponentStorageBuilder {
 		}
 		
 		final def:TypeDefinition = macro class $storageTypeName {
-			public static final instance = $getInstance;
+			public static final instance:$instanceType = $getInstance;
 		};
 		
 		storageCache.set(storageTypeName, def);
