@@ -62,10 +62,10 @@ class Echoes {
 	 * contain `SystemList`s containing `SystemList`s. All active systems will
 	 * be somewhere in this tree.
 	 * 
-	 * Adding a system to this list (whether directly, via `addSystem()`, or by
+	 * Adding a system to this list (whether directly, via `activate()`, or by
 	 * adding a list containing that system) activates that system.
 	 * 
-	 * Removing a system from this list (whether directly, via `removeSystem()`,
+	 * Removing a system from this list (whether directly, via `deactivate()`,
 	 * or by removing a list containing that system) deactivates that system.
 	 * 
 	 * To search the full tree, use `activeSystems.find()`.

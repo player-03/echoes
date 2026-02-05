@@ -10,9 +10,11 @@ This framework was [designed and implemented by deepcake](https://github.com/dee
   - Usage: Create an entity with `entity = new echoes.Entity()`. Next, call `entity.add(new Component())` for each component you want to add.
 - A [system](src/echoes/System.hx) updates and modifies entities. Whereas in object-oriented programming, objects usually have instance methods to update themselves, here that job is reserved for systems.
   - Systems use [views](src/echoes/View.hx) to filter entities. `View<A, B>` lists all entities with both the `A` component and the `B` component, which is convenient when a system wants to modify that specific data.
-  - Usage: Create a class that extends `echoes.System`, and write functions that take components as arguments. Echoes will automatically find entities with those components, allowing you to modify the data. See [usage](#usage) for details.
+  - Usage: Create a class that extends `echoes.System`, and write functions that take components as arguments. Echoes will automatically find entities with those components, allowing you to modify the data.
+    - To make a new system run, either call `system.activate()` or add it to an already-active `SystemList`.
+    - See [usage](#usage) for details.
 - The [`Echoes` class](src/echoes/Echoes.hx) tracks all active entities and systems.
-  - Usage: Call `Echoes.init()` when the app loads, then call `Echoes.addSystem()` to activate each of your systems.
+  - Usage: Call `Echoes.init()` when the app loads, or manually call `Echoes.update()` once per frame.
 
 ## Usage
 
@@ -266,15 +268,15 @@ For instance, to remove the string array from the above example, call `entity.re
 
 ### Update order
 
-To make an app run smoothly, you often need to run updates in a specific order. For simple apps, all you need to do is call `Echoes.addSystem()` in the correct order and pay attention to the order of each system's `@:update` functions. The systems will run in the order you added them, and within each system, the `@:update` functions will run from top to bottom.
+To make an app run smoothly, you often need to run updates in a specific order. For simple apps, all you need to do is call `activate()` in the correct order and pay attention to the order of each system's `@:update` functions. The systems will run in the order you added them, and within each system, the `@:update` functions will run from top to bottom.
 
 ```haxe
 class Main {
 	public static function main():Void {
 		Echoes.init();
 		
-		Echoes.add(new FirstSystem());
-		Echoes.add(new SecondSystem());
+		new FirstSystem().activate();
+		new SecondSystem().activate();
 	}
 }
 
@@ -393,13 +395,13 @@ class Main {
 		
 		//Priority 1 > priority 0, so `HighPrioritySystem` will run first
 		//despite being added second.
-		Echoes.add(new AverageSystem());
-		Echoes.add(new HighPrioritySystem());
+		new AverageSystem().activate();
+		new HighPrioritySystem().activate();
 		
 		//Alternatively, the default system constructor allows setting priority
 		//on a case-by-case basis. Priority -1 is the lowest of the three, so
 		//this will run last.
-		Echoes.add(new HighPrioritySystem(-1));
+		new HighPrioritySystem(-1).activate();
 	}
 }
 ```
@@ -593,7 +595,7 @@ Echoes offers a few ways to customize compilation.
 
 - `Echoes.addSystem()`, `Echoes.hasSystem()`, and `Echoes.removeSystem()` have been replaced by `system.activate()`, `system.active`, and `system.deactivate()`, respectively.
 - `Entity.getComponents()` now returns a list of `ComponentStorage` instances, instead of a map. If you prefer the old format, you can perform an implicit cast: `var map:Map<String, Dynamic> = Entity.getComponents()`.
-- Systems no longer receive `@:remove` events when deactivated. For instance, a system removed by `Echoes.removeSystem()` won't receive a bunch of events.
+- Systems no longer receive `@:remove` events when deactivated.
 - `View.entities` is now an `Array` rather than a `List`. You can still iterate over it as before, but you'll have to call `contains()` rather than `has()` if you want to check existence.
 - `Echoes.activeEntities` and `View.entities` may be re-ordered when entities or their components are removed. You can set `-D echoes_stable_order` to preserve the order, potentially at the cost of speed.
 - `@:remove` listeners are no longer allowed to add back the component that's currently being removed. They may still add other components as normal.

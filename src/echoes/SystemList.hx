@@ -10,7 +10,7 @@ import echoes.utils.Clock;
  * var physics:SystemList = new SystemList("Physics");
  * physics.add(new MovementSystem());
  * physics.add(new CollisionSystem());
- * Echoes.add(physics);
+ * physics.activate();
  * ```
  * 
  * Because `SystemList` extends `System`, you can add one `SystemList` to
