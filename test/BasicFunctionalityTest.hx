@@ -12,7 +12,7 @@ import utest.Test;
 
 class BasicFunctionalityTest extends Test {
 	private function teardown():Void {
-		Echoes.reset();
+		//Echoes.reset() is called by echoes.test.UTest.
 		MethodCounter.reset();
 	}
 	
