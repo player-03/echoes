@@ -11,9 +11,9 @@ jobs:
         haxe-version: [4.2.5, 4.3.1]
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       
-      - uses: krdlab/setup-haxe@v1
+      - uses: krdlab/setup-haxe@v2
         with:
           haxe-version: ${{ matrix.haxe-version }}
       
