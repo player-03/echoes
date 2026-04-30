@@ -35,6 +35,10 @@ class ComponentStorageBuilder {
 			Context.error(error, Context.currentPos());
 		}
 		
+		if(componentComplexType.match(macro:Dynamic)) {
+			Context.error("Can't use Dynamic as a component type.", Context.currentPos());
+		}
+		
 		final storageTypeName:String = PREFIX + componentComplexType.toIdentifier();
 		if(storageCache.exists(storageTypeName)) {
 			return storageTypeName;
