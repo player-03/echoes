@@ -196,15 +196,24 @@ class EntityTemplateBuilder {
 		}
 		
 		//Add inherited parameters.
-		for(parent in parents) {
+		for(i => parent in parents) {
 			for(entry in parent.abstractType.meta.extract(ARGUMENTS_TAG)) {
 				addParams(entry, parent.abstractType, false);
 			}
 			
-			//Currently, don't inherit optional parameters.
-			/* for(entry in parent.abstractType.meta.extract(OPTIONAL_ARGUMENTS_TAG)) {
-				addParams(entry, parent.abstractType, true);
-			} */
+			//Don't inherit optional parameters, but do leave space for them to
+			//to help the compiler parse the super call.
+			if(i == 0) {
+				for(entry in parent.abstractType.meta.extract(OPTIONAL_ARGUMENTS_TAG)) {
+					if(entry.params != null) {
+						for(_ in entry.params) {
+							superArguments.push(macro null);
+						}
+					}
+					
+					//addParams(entry, parent.abstractType, true);
+				}
+			}
 		}
 		
 		//Modifications

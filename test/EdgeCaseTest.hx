@@ -381,6 +381,19 @@ class EdgeCaseTest extends Test {
 		Assert.equals(1, list1.length);
 	}
 	
+	private function testTemplateInheritance():Void {
+		final entity:RequiredArgumentEntity = new RequiredArgumentEntity("abc");
+		Assert.equals("abc", entity.string);
+		
+		final entity:OptionalRequiredArgumentEntity = new OptionalRequiredArgumentEntity("abc", "xyz");
+		Assert.equals("xyz", entity.string);
+		Assert.equals("abc", entity.stringTypedef);
+		
+		final entity:InheritingEntity = new InheritingEntity("string");
+		Assert.equals("string", entity.string);
+		Assert.equals("default", entity.stringTypedef);
+	}
+	
 	private function testTypeParsing():Void {
 		final entity:Entity = new Entity();
 		final infos:PosInfos = ((?infos:PosInfos) -> infos)();
@@ -472,4 +485,20 @@ class RemoveStringSystem extends System implements IMethodCounter {
 			entity.remove(String);
 		}
 	}
+}
+
+@:build(echoes.Entity.build()) @:arguments(String)
+abstract RequiredArgumentEntity(Entity) {
+	public var string:String;
+}
+
+typedef StringTypedef = String;
+
+@:build(echoes.Entity.build()) @:optionalArguments(StringTypedef)
+abstract OptionalRequiredArgumentEntity(RequiredArgumentEntity) {
+	public var stringTypedef:StringTypedef = "default";
+}
+
+@:build(echoes.Entity.build())
+abstract InheritingEntity(OptionalRequiredArgumentEntity) {
 }
