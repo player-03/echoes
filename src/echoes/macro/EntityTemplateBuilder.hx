@@ -113,7 +113,13 @@ class EntityTemplateBuilder {
 		 * Adds the given value to `parameters` and `arguments` unless it's
 		 * redundant. Also adds it to `superArguments` if the flag is set.
 		 */
-		inline function addParams(params:Array<Expr>, parentType:Null<AbstractType>, optional:Bool):Void {
+		inline function addParams(entry:MetadataEntry, parentType:Null<AbstractType>, optional:Bool):Void {
+			var params:Array<Expr> = entry.params;
+			if(params == null || params.length == 0) {
+				Context.warning("Expected one or more types.", entry.pos);
+				params = [];
+			}
+			
 			for(param in params) {
 				var name:String = null;
 				var paramType:ComplexType = null;
@@ -183,21 +189,21 @@ class EntityTemplateBuilder {
 		
 		//Add parameters from this type.
 		for(entry in type.meta.extract(ARGUMENTS_TAG)) {
-			addParams(entry.params, null, false);
+			addParams(entry, null, false);
 		}
 		for(entry in type.meta.extract(OPTIONAL_ARGUMENTS_TAG)) {
-			addParams(entry.params, null, true);
+			addParams(entry, null, true);
 		}
 		
 		//Add inherited parameters.
 		for(parent in parents) {
 			for(entry in parent.abstractType.meta.extract(ARGUMENTS_TAG)) {
-				addParams(entry.params, parent.abstractType, false);
+				addParams(entry, parent.abstractType, false);
 			}
 			
 			//Currently, don't inherit optional parameters.
 			/* for(entry in parent.abstractType.meta.extract(OPTIONAL_ARGUMENTS_TAG)) {
-				addParams(entry.params, parent.abstractType, true);
+				addParams(entry, parent.abstractType, true);
 			} */
 		}
 		
