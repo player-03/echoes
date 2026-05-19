@@ -284,7 +284,12 @@ class EntityTemplateBuilder {
 							new Printer().printComplexType(componentType);
 					},
 					type: componentType,
-					value: macro @:pos(expr.pos) ($expr:$componentType)
+					value: switch(expr) {
+						case macro null:
+							null;
+						default:
+							macro @:pos(expr.pos) ($expr:$componentType);
+					}
 				});
 				
 				//Check for incompatabilities with the metadata. (We could also
@@ -391,7 +396,9 @@ class EntityTemplateBuilder {
 			applyToSelfExprs.push(macro this.addIfMissing($i{ parameter.name }));
 		}
 		for(component in knownComponents) {
-			applyToSelfExprs.push(macro this.addIfMissing(${ component.value }));
+			if(component.value != null) {
+				applyToSelfExprs.push(macro this.addIfMissing(${ component.value }));
+			}
 		}
 		if(parents.length > 1) {
 			applyToSelfExprs.push(macro @:privateAccess this.applyTemplateToSelf($a{ superArguments }));
