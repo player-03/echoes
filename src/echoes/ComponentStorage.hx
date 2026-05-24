@@ -333,7 +333,9 @@ class ComponentStorage<T> {
 		#if (echoes_storage == "Map")
 		if(component == null) {
 			storage.remove(entity.id);
-		} else
+		} else {
+			storage[entity.id] = component;
+		}
 		#else
 		storage[entity.id] = component;
 		#end
