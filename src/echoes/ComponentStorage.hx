@@ -124,35 +124,13 @@ class ComponentStorage<T> {
 		
 		storage[entity.id] = component;
 		
-		var components:EntityComponents = EntityComponents.components[entity.id];
-		if(components == null) {
-			EntityComponents.components[entity.id] = components = new EntityComponents();
-		}
-		components.addComponentStorage(this);
+		EntityComponents.forEntity(entity).addComponentStorage(this);
 		
-		if(entity.active) {
-			var exception:Exception = null;
-			for(view in relatedViews) {
-				try {
-					view.add(entity);
-				} catch(e:Exception) {
-					if(onError.length > 0) {
-						onError.dispatch(new Exception('Error while adding $componentType to entity ${ entity.id }.', e));
-					} else if(exception == null) {
-						exception = e;
-					}
-				}
-				
-				//Stop dispatching events if a listener removed it.
-				if(!exists(entity)) {
-					break;
-				}
-			}
+		final exception:Null<Exception> = dispatchAddEvent(entity);
 			
-			if(exception != null) {
-				//If you get an error here, see `onError`.
-				throw exception;
-			}
+		if(exception != null) {
+			//If you get an error here, see `onError`.
+			throw exception;
 		}
 	}
 	
@@ -191,6 +169,57 @@ class ComponentStorage<T> {
 		#end
 		
 		ongoingRemovals.resize(0);
+	}
+	
+	private inline function dispatchAddEvent(entity:Entity):Null<Exception> {
+		if(entity.active) {
+			var exception:Exception = null;
+			for(view in relatedViews) {
+				try {
+					view.add(entity);
+				} catch(e:Exception) {
+					if(onError.length > 0) {
+						onError.dispatch(new Exception('Error while adding $componentType to entity ${ entity.id }.', e));
+					} else if(exception == null) {
+						exception = e;
+					}
+				}
+				
+				//Stop dispatching events if a listener removed it.
+				if(!exists(entity)) {
+					break;
+				}
+			}
+			
+			return exception;
+		} else {
+			return null;
+		}
+	}
+	
+	private inline function dispatchRemoveEvent(entity:Entity, removedComponent:T):Null<Exception> {
+		if(entity.active) {
+			ongoingRemovals.push(entity.id);
+			
+			var exception:Exception = null;
+			for(view in relatedViews) {
+				try {
+					view.remove(entity, this, removedComponent);
+				} catch(e:Exception) {
+					if(onError.length > 0) {
+						onError.dispatch(new Exception('Error while removing $componentType from entity ${ entity.id }.', e));
+					} else if(exception == null) {
+						exception = e;
+					}
+				}
+			}
+			
+			ongoingRemovals.remove(entity.id);
+			
+			return exception;
+		} else {
+			return null;
+		}
 	}
 	
 	public inline function exists(entity:Entity):Bool {
@@ -253,28 +282,11 @@ class ComponentStorage<T> {
 		if(removedComponent != null) {
 			EntityComponents.components[entity.id].removeComponentStorage(this);
 			
-			if(entity.active) {
-				ongoingRemovals.push(entity.id);
-				
-				var exception:Exception = null;
-				for(view in relatedViews) {
-					try {
-						view.remove(entity, this, removedComponent);
-					} catch(e:Exception) {
-						if(onError.length > 0) {
-							onError.dispatch(new Exception('Error while removing $componentType from entity ${ entity.id }.', e));
-						} else if(exception == null) {
-							exception = e;
-						}
-					}
-				}
-				
-				ongoingRemovals.remove(entity.id);
-				
-				if(exception != null) {
-					//If you get an error here, see `onError`.
-					throw exception;
-				}
+			final exception:Null<Exception> = dispatchRemoveEvent(entity, removedComponent);
+			
+			if(exception != null) {
+				//If you get an error here, see `onError`.
+				throw exception;
 			}
 		}
 	}
@@ -302,32 +314,48 @@ class ComponentStorage<T> {
 	 * You can circumvent `@:echoes_replace` using `ComponentStorage.add()`. For
 	 * instance, `Echoes.getComponentStorage(MyType).add(entity, new MyType())`
 	 * will not dispatch a `@:remove` event.
+	 * 
+	 * The component will be updated before either event is dispatched, meaning
+	 * you can check `entity.get(T)` during the `@:remove` listener to see what
+	 * it's being replaced with.
 	 */
 	public function replace(entity:Entity, component:Null<T>):Void {
-		if(get(entity) != component) {
-			var exception:Exception = null;
-			try {
-				remove(entity);
-			} catch(e:Exception) {
-				if(exception == null) {
-					exception = e;
-				}
+		if(get(entity) == component) {
+			return;
+		}
+		
+		if(ongoingRemovals.contains(entity.id)) {
+			throw 'Attempted to replace $componentType on entity ${ entity.id } during a @:remove listener for that component.';
+		}
+		
+		final replacedComponent:Null<T> = get(entity);
+		
+		#if (echoes_storage == "Map")
+		if(component == null) {
+			storage.remove(entity.id);
+		} else
+		#else
+		storage[entity.id] = component;
+		#end
+		
+		EntityComponents.forEntity(entity).addOrRemoveComponentStorage(this, component != null);
+		
+		var exception:Null<Exception> = null;
+		
+		if(replacedComponent != null) {
+			exception = dispatchRemoveEvent(entity, replacedComponent);
+		}
+		
+		if(component != null) {
+			final exception2:Null<Exception> = dispatchAddEvent(entity);
+			if(exception == null) {
+				exception = exception2;
 			}
+		}
 			
-			try {
-				add(entity, component);
-			} catch(e:Exception) {
-				if(onError.length > 0) {
-					onError.dispatch(new Exception('Error while replacing $componentType on entity ${ entity.id }.', e));
-				} else if(exception == null) {
-					exception = e;
-				}
-			}
-			
-			if(exception != null) {
-				//If you get an error here, see `onError`.
-				throw exception;
-			}
+		if(exception != null) {
+			//If you get an error here, see `onError`.
+			throw exception;
 		}
 	}
 	
@@ -411,6 +439,14 @@ abstract EntityComponents(ComponentTypes) from ComponentTypes {
 	
 	private inline function addComponentStorage(storage:DynamicComponentStorage):Void {
 		this.addComponentStorage(storage);
+	}
+	
+	private inline function addOrRemoveComponentStorage(storage:DynamicComponentStorage, add:Bool):Void {
+		if(add) {
+			this.addComponentStorage(storage);
+		} else {
+			this.removeComponentStorage(storage);
+		}
 	}
 	
 	/**

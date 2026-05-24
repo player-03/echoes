@@ -46,7 +46,11 @@ class HighPrioritySystem extends System {
 class NameSystem extends System implements IMethodCounter {
 	@:add private function nameAdded(name:Name):Void {}
 	@:update private function nameUpdated(name:Name):Void {}
-	@:remove private function nameRemoved(name:Name):Void {}
+	@:remove private function nameRemoved(name:Name, entity:Entity):Void {
+		if(entity.exists(Name) && name != entity.get(Name)) {
+			MethodCounter.count("NameSystem.nameReplaced");
+		}
+	}
 }
 
 class OptionalComponentSystem extends System implements IMethodCounter {

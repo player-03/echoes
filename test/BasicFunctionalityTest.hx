@@ -196,11 +196,13 @@ class BasicFunctionalityTest extends Test {
 		nameSystem.activate();
 		assertTimesCalled(2, "NameSystem.nameAdded");
 		assertTimesCalled(0, "NameSystem.nameRemoved");
+		assertTimesCalled(0, "NameSystem.nameReplaced");
 		
 		//Overwrite some components.
 		redLine.add(("darkRedLine":Name));
 		assertTimesCalled(3, "NameSystem.nameAdded");
 		assertTimesCalled(1, "NameSystem.nameRemoved");
+		assertTimesCalled(1, "NameSystem.nameReplaced");
 		
 		assertTimesCalled(2, "AppearanceSystem.shapeAdded");
 		assertTimesCalled(0, "AppearanceSystem.shapeRemoved");
@@ -221,6 +223,7 @@ class BasicFunctionalityTest extends Test {
 		
 		redLine.removeAll();
 		assertTimesCalled(2, "NameSystem.nameRemoved");
+		assertTimesCalled(1, "NameSystem.nameReplaced");
 		
 		//Deactivate a system.
 		nameSystem.deactivate();
