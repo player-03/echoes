@@ -79,8 +79,6 @@ class EntityTools {
 	
 	/**
 	 * Removes one or more components from the entity.
-	 * @param types The type(s) of the components to remove. _Not_ the
-	 * components themselves!
 	 * @return The entity.
 	 */
 	public static function remove(self:Expr, types:Array<ComplexType>):ExprOf<echoes.Entity> {
@@ -99,7 +97,7 @@ class EntityTools {
 	/**
 	 * Gets this entity's component of the given type, if this entity has a
 	 * component of the given type.
-	 * @param type The type of the component to get.
+	 * @param complexType The type of the component to get.
 	 * @return The component, or `null` if the entity doesn't have it.
 	 */
 	public static function get<T>(self:Expr, complexType:ComplexType):ExprOf<T> {
@@ -109,7 +107,7 @@ class EntityTools {
 	
 	/**
 	 * Returns whether the entity has a component of the given type.
-	 * @param type The type to check for.
+	 * @param complexType The type to check for.
 	 */
 	public static function exists(self:Expr, complexType:ComplexType):ExprOf<Bool> {
 		final storage:Expr = complexType.getComponentStorage();
