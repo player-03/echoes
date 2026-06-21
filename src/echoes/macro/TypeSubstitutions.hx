@@ -345,19 +345,19 @@ class TypeSubstitutions {
 	}
 	
 	public function substituteTypePath(typePath:TypePath):TypePath {
-		final substitute:Bool = switch(typePath) {
+		final nameToSubstitute:String = switch(typePath) {
 			case { pack: [], name: name, sub: null }:
-				true;
+				name;
 			case { pack: [module], name: name, sub: null },
 				{ pack: [], name: module, sub: name }
 				if(module == className):
-				true;
+				name;
 			default:
-				false;
+				null;
 		};
 		
-		if(substitute) {
-			switch(substitutions[typePath.name]) {
+		if(nameToSubstitute != null) {
+			switch(substitutions[nameToSubstitute]) {
 				case TPath(p):
 					var params:Null<Array<TypeParam>> = p.params;
 					if(typePath.params != null
