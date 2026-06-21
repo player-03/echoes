@@ -127,6 +127,13 @@ class EntityTemplateBuilder {
 					case EParenthesis({ expr:ECheckType(_.expr => EConst(CIdent(n)), t) }):
 						name = n;
 						paramType = t.followComplexType();
+						
+						//Since the documentation encourages using `_`, the user
+						//might include it multiple times, making it unsafe to
+						//use as the parameter name.
+						if(name == "_") {
+							name = paramType.toIdentifier(false);
+						}
 					default:
 						final fieldChain:Null<String> = param.printFieldChain();
 						if(fieldChain == null) {
@@ -427,6 +434,7 @@ class EntityTemplateBuilder {
 		
 		final removeFromSelfExprs:Array<Expr> = [];
 		for(component in knownComponents) {
+			//TODO: communicate that `remove` is reserved.
 			final type:ComplexType = component.type;
 			removeFromSelfExprs.push(macro this.remove((_:$type)));
 		}
