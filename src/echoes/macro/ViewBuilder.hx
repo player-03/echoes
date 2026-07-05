@@ -151,9 +151,26 @@ class ViewBuilder {
 		removedCallbackArgs.unshift(macro entity);
 		
 		final def:TypeDefinition = macro class $viewClassName extends echoes.View.ViewBase {
+			/**
+			 * The view's singleton instance.
+			 */
 			public static final instance:$viewComplexType = new $viewTypePath();
 			
+			/**
+			 * Dispatched when an entity is added to this view, meaning the
+			 * entity now has all of the view's required components. Also
+			 * dispatched when an entity was already in the view, but one of the
+			 * required components was re-added.
+			 */
 			public final onAdded = new echoes.utils.Signal<$callbackType>();
+			
+			/**
+			 * Dispatched when an entity is removed from this view. This means
+			 * the entity used to have all of the view's components, but one was
+			 * just removed. The component will be passed to the function, but
+			 * will have already been removed from the entity, so `entity.get()`
+			 * returns null.
+			 */
 			public final onRemoved = new echoes.utils.Signal<$callbackType>();
 			
 			private function new() {
@@ -199,6 +216,9 @@ class ViewBuilder {
 				onRemoved.clear();
 			}
 			
+			/**
+			 * Calls `callback` on all entities in this view.
+			 */
 			public function iter(callback:$callbackType):Void {
 				${ {
 					final args = [for(i => component in components)

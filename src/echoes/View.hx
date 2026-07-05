@@ -9,7 +9,34 @@ import haxe.Exception;
 #if !macro
 @:genericBuild(echoes.macro.ViewBuilder.build())
 #end
-class View<Rest> extends ViewBase { }
+class View<Rest> extends ViewBase {
+	//The following fields are added by `ViewBuilder`:
+	
+	/**
+	 * The view's singleton instance.
+	 */
+	//public static final instance:View<Rest>;
+	
+	/**
+	 * Dispatched when an entity is added to this view, meaning the entity now
+	 * has all of the view's required components. Also dispatched when an entity
+	 * was already in the view, but one of the required components was re-added.
+	 */
+	//public final onAdded:Signal<(Entity, Rest) -> Void>;
+	
+	/**
+	 * Dispatched when an entity is removed from this view. This means the
+	 * entity used to have all of the view's components, but one was just
+	 * removed. The component will be passed to the function, but will have
+	 * already been removed from the entity, so `entity.get()` returns null.
+	 */
+	//public final onRemoved:Signal<(Entity, Rest) -> Void>;
+	
+	/**
+	 * Calls `callback` on all entities in this view.
+	 */
+	//public function iter(callback:(Entity, Rest) -> Void):Void;
+}
 
 class ViewBase {
 	private var activations:Int = 0;
@@ -96,6 +123,10 @@ class ViewBase {
 		}
 	}
 	
+	/**
+	 * Clears all entities and listeners from this view, without dispatching any
+	 * remove events.
+	 */
 	@:allow(echoes.Echoes) private function reset():Void {
 		activations = 0;
 		Echoes._activeViews.remove(this);
