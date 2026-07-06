@@ -53,31 +53,29 @@ using Lambda;
 @:allow(echoes.Echoes)
 abstract Entity(Int) {
 	/**
-	 * The next entity ID that will be allocated, if `idPool` is empty.
-	 */
-	private static var nextId:Int = 0;
-	
-	/**
-	 * A destroyed entity's ID will go in this pool, and will then be reassigned
-	 * to the next entity to be created.
-	 */
-	private static final idPool:Array<Int> = [];
-	
-	/**
-	 * Whether this entity is active. If false, it may also be destroyed.
+	 * Whether this entity is active. If it is, events will be dispatched
+	 * whenever a component is added or removed. If not, those events will be
+	 * postponed until it becomes active again.
 	 */
 	public var active(get, never):Bool;
 	private inline function get_active():Bool {
-		return Echoes.activeEntityIndices[this] != null;
+		return Echoes.entityStates[this] >= BEING_DESTROYED;
 	}
 	
 	/**
-	 * Whether this entity has been destroyed.
+	 * Whether this entity is in the process of being destroyed.
+	 */
+	public var beingDestroyed(get, never):Bool;
+	private inline function get_beingDestroyed():Bool {
+		return Echoes.entityStates[this] == BEING_DESTROYED;
+	}
+	
+	/**
+	 * Whether this entity has been destroyed, and should no longer be used.
 	 */
 	public var destroyed(get, never):Bool;
 	private inline function get_destroyed():Bool {
-		//In most cases it's faster to check `active` than `idPool`.
-		return !active && idPool.contains(this);
+		return Echoes.entityStates[this] == DESTROYED;
 	}
 	
 	/**
@@ -95,11 +93,13 @@ abstract Entity(Int) {
 	public inline function new(?active:Bool = true) {
 		final id:Null<Int> = idPool.pop();
 		
-		this = id != null ? id : nextId++;
+		this = id != null ? id : Echoes.entityStates.length;
 		
 		if(active) {
-			Echoes.activeEntityIndices[this] = Echoes._activeEntities.length;
+			Echoes.entityStates[this] = Echoes._activeEntities.length;
 			Echoes._activeEntities.push(cast this);
+		} else {
+			Echoes.entityStates[this] = INACTIVE;
 		}
 	}
 	
@@ -108,7 +108,7 @@ abstract Entity(Int) {
 	 */
 	public function activate():Void {
 		if(!active) {
-			Echoes.activeEntityIndices[this] = Echoes._activeEntities.length;
+			Echoes.entityStates[this] = Echoes._activeEntities.length;
 			Echoes._activeEntities.push(cast this);
 			
 			for(storage in getComponents()) {
@@ -154,30 +154,11 @@ abstract Entity(Int) {
 	 * components, even though the components aren't removed.
 	 */
 	public function deactivate():Void {
-		if(active) {
-			final index:Int = Echoes.activeEntityIndices[this];
-			if(index >= 0) {
-				Echoes.activeEntityIndices[this] = null;
-				
-				#if echoes_stable_order
-				//Do the equivalent of `_activeEntities.remove(this)`, but also
-				//save each entity's new index.
-				for(i in index...(Echoes.activeEntities.length - 1)) {
-					final entity:Entity = Echoes.activeEntities[i + 1];
-					Echoes.activeEntityIndices[entity.id] = i;
-					Echoes._activeEntities[i] = entity;
-				}
-				Echoes._activeEntities.pop();
-				#else
-				//Instead of removing this from the middle of the array in O(n),
-				//move the final entity to `index` in O(1).
-				final lastEntity:Entity = Echoes._activeEntities.pop();
-				if(lastEntity.id != this) {
-					Echoes.activeEntityIndices[lastEntity.id] = index;
-					Echoes._activeEntities[index] = lastEntity;
-				}
-				#end
-			}
+		final index:Int = Echoes.entityStates[this];
+		//Testing `>= 0` ensures the entity is active and not being destroyed.
+		if(index >= 0) {
+			Echoes.entityStates[this] = INACTIVE;
+			Echoes.removeActiveEntityAt(index);
 			
 			for(storage in getComponents()) {
 				final component:Dynamic = storage.get(cast this);
@@ -193,9 +174,17 @@ abstract Entity(Int) {
 	 * for reuse. Don't save any references to this entity afterwards.
 	 */
 	public function destroy():Void {
-		if(!destroyed) {
+		if(!destroyed && !beingDestroyed) {
+			final index:Int = Echoes.entityStates[this];
+			
+			Echoes.entityStates[this] = BEING_DESTROYED;
 			removeAll();
-			deactivate();
+			
+			if(index >= 0) {
+				Echoes.removeActiveEntityAt(index);
+			}
+			
+			Echoes.entityStates[this] = DESTROYED;
 			idPool.push(this);
 		}
 	}
@@ -245,6 +234,39 @@ abstract Entity(Int) {
 	public inline function removeAll():Void {
 		EntityComponents.removeAll(cast this);
 	}
+	
+	//Internal
+	//========
+	
+	/**
+	 * Indicates an entity that is in the process of being destroyed. Any value
+	 * greater than or equal to this indicates an active entity.
+	 */
+	private static var BEING_DESTROYED(get, never):Int;
+	private static inline function get_BEING_DESTROYED():Int {
+		return -1;
+	}
+	
+	/**
+	 * Indicates an entity that has been destroyed.
+	 */
+	private static var DESTROYED(get, never):Int;
+	private static inline function get_DESTROYED():Int {
+		return -3;
+	}
+	
+	/**
+	 * Indicates an entity that isn't active, but still exists.
+	 */
+	private static var INACTIVE(get, never):Int;
+	private static inline function get_INACTIVE():Int {
+		return -2;
+	}
+	
+	/**
+	 * IDs of destroyed entities, to be reused when new entities are created.
+	 */
+	private static final idPool:Array<Int> = [];
 }
 
 /**

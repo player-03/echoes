@@ -84,6 +84,7 @@ class EdgeCaseTest extends Test {
 		assertTimesCalled(2, "ComponentsExistSystem.nameRemoved");
 	}
 	
+	@:access(echoes.Echoes.entityStates)
 	@:access(echoes.Entity)
 	private function testEntityIDSerialization():Void {
 		final entity0:Entity = new Entity();
@@ -91,7 +92,7 @@ class EdgeCaseTest extends Test {
 		final entity2:Entity = new Entity();
 		
 		entity1.destroy();
-		Assert.equals(3, Entity.nextId);
+		Assert.same([0, Entity.DESTROYED, 1], Echoes.entityStates);
 		Assert.same([1], Entity.idPool);
 		Assert.same([0, 2], Echoes.activeEntities);
 		
@@ -102,7 +103,7 @@ class EdgeCaseTest extends Test {
 		Assert.same([2], Echoes.activeEntities);
 		
 		Echoes.unserialize(savedData);
-		Assert.equals(3, Entity.nextId);
+		Assert.same([0, Entity.DESTROYED, 1], Echoes.entityStates);
 		Assert.same([1], Entity.idPool);
 		Assert.same([0, 2], Echoes.activeEntities);
 	}
@@ -239,6 +240,8 @@ class EdgeCaseTest extends Test {
 		assertTimesCalled(1, "NameSystem.nameRemoved");
 	}
 	
+	//TODO: New edge case: if a remove listener for `A` removes `B`, remove
+	//listeners that listen for both will be called with one of them being null.
 	private function testRecursiveEvents():Void {
 		final entity:Entity = new Entity();
 		

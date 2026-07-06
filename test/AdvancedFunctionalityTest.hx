@@ -320,6 +320,8 @@ class AdvancedFunctionalityTest extends Test {
 		Assert.equals("update, update2, pre_update, post_update", updateOrder.join(", "));
 	}
 	
+	@:access(echoes.Echoes)
+	@:access(echoes.Entity)
 	private function testSerialization():Void {
 		var addNameCount:Int = 0;
 		final named:View<Name> = Echoes.getView(Name);
@@ -341,15 +343,15 @@ class AdvancedFunctionalityTest extends Test {
 		
 		Assert.equals(3, addNameCount);
 		Assert.equals(3, named.entities.length);
-		Assert.same([0, 1, 2], @:privateAccess Echoes.activeEntities);
+		Assert.same([entity0, entity1, entity2], Echoes.activeEntities);
 		
 		entity0.deactivate();
 		#if echoes_stable_order
 		entity1.deactivate();
 		entity1.activate();
 		#end
-		Assert.same([2, 1], @:privateAccess Echoes.activeEntities);
-		Assert.same([null, 1, 0], @:privateAccess Echoes.activeEntityIndices);
+		Assert.same([entity2, entity1], Echoes.activeEntities);
+		Assert.same([Entity.INACTIVE, 1, 0], Echoes.entityStates);
 		
 		//Bulk serialization
 		
@@ -362,8 +364,8 @@ class AdvancedFunctionalityTest extends Test {
 		
 		Echoes.unserialize(data);
 		
-		Assert.same([2, 1], @:privateAccess Echoes.activeEntities);
-		Assert.same([null, 1, 0], @:privateAccess Echoes.activeEntityIndices);
+		Assert.same([entity2, entity1], Echoes.activeEntities);
+		Assert.same([Entity.INACTIVE, 1, 0], Echoes.entityStates);
 		Assert.isFalse(entity0.active);
 		Assert.isTrue(entity1.active && entity2.active);
 		

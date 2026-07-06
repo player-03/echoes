@@ -41,13 +41,6 @@ class Echoes {
 	public static var activeEntities(get, never):ReadOnlyArray<Entity>;
 	private static inline function get_activeEntities():ReadOnlyArray<Entity> return _activeEntities;
 	
-	/**
-	 * The index of each entity in `activeEntities`. For any active entity,
-	 * `entity == activeEntities[activeEntityIndices[entity.id]]`.
-	 */
-	@:allow(echoes.Entity)
-	private static final activeEntityIndices:Array<Null<Int>> = [];
-	
 	@:allow(echoes.ViewBase)
 	private static final _activeViews:Array<ViewBase> = [];
 	/**
@@ -86,6 +79,19 @@ class Echoes {
 	private static inline function get_clock():Clock {
 		return activeSystems.clock;
 	}
+	
+	/**
+	 * Information about each entity's state. This includes all entities that
+	 * were ever allocated, and its length is the next unassigned ID.
+	 * 
+	 * Values greater than or equal to 0 indicate that the entity is active, and
+	 * the value is the entity's index in `activeEntities`.
+	 * 
+	 * Negative values indicate that the entity is not active. Possible negative
+	 * values include `Entity.INACTIVE` and `Entity.DESTROYED`.
+	 */
+	@:allow(echoes.Entity)
+	private static final entityStates:Array<Int> = [];
 	
 	#if echoes_profiling
 	private static var lastUpdateLength:Int = 0;
@@ -147,7 +153,7 @@ class Echoes {
 	 * automatic updates started during `init()`.
 	 */
 	public static function reset():Void {
-		activeEntityIndices.resize(0);
+		entityStates.resize(0);
 		_activeEntities.resize(0);
 		activeSystems.removeAll();
 		
@@ -163,7 +169,6 @@ class Echoes {
 		EntityComponents.components.resize(0);
 		
 		Entity.idPool.resize(0);
-		Entity.nextId = 0;
 		
 		init(0);
 	}
@@ -224,14 +229,41 @@ class Echoes {
 		};
 	}
 	
+	/**
+	 * Removes the given index from `activeEntities`, respecting
+	 * `echoes_stable_order` if defined. The caller is responsible for setting
+	 * the removed entity's new state, and for verifying `index >= 0`.
+	 */
+	@:allow(echoes.Entity)
+	private static function removeActiveEntityAt(index:Int):Void {
+		#if echoes_stable_order
+		//Do the equivalent of `_activeEntities.remove(this)`, but also save
+		//each entity's new index.
+		for(i in index...(activeEntities.length - 1)) {
+			final entity:Entity = activeEntities[i + 1];
+			entityStates[entity.id] = i;
+			_activeEntities[i] = entity;
+		}
+		_activeEntities.pop();
+		#else
+		//Instead of removing from the middle of the array in O(n), move the
+		//final entity to `index` in O(1).
+		final lastEntity:Entity = _activeEntities.pop();
+		
+		//Unless, of course, it already was the final entity.
+		if(index != activeEntities.length) {
+			entityStates[lastEntity.id] = index;
+			_activeEntities[index] = lastEntity;
+		}
+		#end
+	}
+	
 	//Serialization
 	//=============
 	
 	public static function serialize():String {
 		final data:Dynamic = {
-			"echoes.Echoes.activeEntities": activeEntities,
-			"echoes.Entity.idPool": Entity.idPool,
-			"echoes.Entity.nextId": Entity.nextId
+			"echoes.Echoes.entityStates": entityStates
 		};
 		
 		for(storage in componentStorage) {
@@ -261,19 +293,20 @@ class Echoes {
 			storage.removeAll();
 		}
 		
-		activeEntityIndices.resize(0);
+		entityStates.resize(0);
 		_activeEntities.resize(0);
+		Entity.idPool.resize(0);
 		
 		final data:Dynamic = Unserializer.run(data);
-		for(entity in (Reflect.field(data, "echoes.Echoes.activeEntities"):Array<Entity>)) {
-			activeEntityIndices[entity.id] = _activeEntities.length;
-			_activeEntities.push(entity);
-		}
-		
-		Entity.nextId = Reflect.field(data, "echoes.Entity.nextId");
-		Entity.idPool.resize(0);
-		for(id in (Reflect.field(data, "echoes.Entity.idPool"):Array<Int>)) {
-			Entity.idPool.push(id);
+		for(entity => state in (Reflect.field(data, "echoes.Echoes.entityStates"):Array<Int>)) {
+			entityStates.push(state);
+			if(state >= 0) {
+				_activeEntities[state] = cast entity;
+			} else if(state == Entity.DESTROYED) {
+				Entity.idPool.push(entity);
+			} else {
+				entityStates[entity] = Entity.INACTIVE;
+			}
 		}
 		
 		for(storage in componentStorage) {

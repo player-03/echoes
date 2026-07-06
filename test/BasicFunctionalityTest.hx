@@ -232,7 +232,13 @@ class BasicFunctionalityTest extends Test {
 		//Destroy the remaining entity.
 		assertTimesCalled(1, "AppearanceSystem.shapeRemoved");
 		
+		Echoes.getView(Name).onRemoved.add((entity:Entity, name:Name)
+			-> Assert.isTrue(entity.beingDestroyed));
+		
+		Assert.isTrue(circle.exists(Shape));
+		Assert.isTrue(appearanceSystem.active);
 		circle.destroy();
+		Assert.isFalse(circle.exists(Shape));
 		assertTimesCalled(2, "NameSystem.nameRemoved");
 		assertTimesCalled(2, "AppearanceSystem.shapeRemoved");
 	}
