@@ -643,7 +643,7 @@ Miscellaneous:
 Finally, several classes and variables were renamed. Use these find-and-replace operations to update your code.
 
 Find | Replace with | Notes
------|--------------|------
+---- | ------------ | -----
 `echoes.core` | `echoes`
 `Workflow` | `Echoes`
 `Echoes.entities` | `Echoes.activeEntities`
