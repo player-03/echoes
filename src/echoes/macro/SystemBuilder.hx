@@ -144,6 +144,11 @@ class SystemBuilder {
 			}
 		}
 		
+		//Only run generic builds once.
+		if(classType.meta.has(":genericBuildDone")) {
+			return fields;
+		}
+		
 		//Type substitutions
 		//==================
 		
@@ -417,7 +422,7 @@ class SystemBuilder {
 			name: name,
 			meta: [{
 				//In case the `@:autoBuild` macro runs on the output.
-				name: ":skipBuildMacro",
+				name: ":genericBuildDone",
 				pos: Context.currentPos()
 			}]
 		}], importsAndUsings.imports, importsAndUsings.usings);
