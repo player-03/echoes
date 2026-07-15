@@ -69,7 +69,7 @@ class EntityTemplateBuilder {
 		}
 		
 		//Check for important fields.
-		var onTemplateApplied:Null<Field> = null;
+		var onTemplateApplied:Bool = false;
 		for(field in fields) {
 			switch(field.name) {
 				case "new", "_new":
@@ -77,7 +77,7 @@ class EntityTemplateBuilder {
 				case "applyTemplateTo", "applyTemplateToSelf":
 					return Context.fatalError('${ field.name } is reserved. Instead, declare an onTemplateApplied() function.', field.pos);
 				case "onTemplateApplied" if(field.kind.match(FFun(_.args => []))):
-					onTemplateApplied = field;
+					onTemplateApplied = true;
 				default:
 			}
 		}
@@ -93,11 +93,6 @@ class EntityTemplateBuilder {
 		 * `ComponentStorage` for this type.
 		 */
 		final parameters:Array<FunctionArg & { storage:String }> = [];
-		
-		/**
-		 * Arguments to pass to `applyTemplateToSelf()`.
-		 */
-		final arguments:Array<Expr> = [];
 		
 		/**
 		 * Arguments to pass to the super type's `applyTemplateToSelf()`.
@@ -180,8 +175,6 @@ class EntityTemplateBuilder {
 				if(existingName == null) {
 					existingName = name;
 					parameters.push({ name: name, type: paramType, storage: storage, opt: optional });
-					
-					arguments.push(macro $i{ existingName });
 					
 					if(optional) {
 						optionalValuesRemaining[storage] = paramType;
@@ -390,6 +383,7 @@ class EntityTemplateBuilder {
 		
 		//Add the constructor and `applyTemplateTo()`.
 		final templateType:ComplexType = TPath({ pack: [], name: type.name });
+		final arguments:Array<Expr> = [for(p in parameters) macro $i{ p.name }];
 		addFunctions(macro class Constructor {
 			public static inline function applyTemplateTo(entity:echoes.Entity):$templateType {
 				(cast entity:$templateType).applyTemplateToSelf($a{ arguments });
@@ -419,8 +413,8 @@ class EntityTemplateBuilder {
 		if(parents.length > 1) {
 			applyToSelfExprs.push(macro @:privateAccess this.applyTemplateToSelf($a{ superArguments }));
 		}
-		if(onTemplateApplied != null) {
-			applyToSelfExprs.push(macro $i{ onTemplateApplied.name }());
+		if(onTemplateApplied) {
+			applyToSelfExprs.push(macro onTemplateApplied());
 		}
 		
 		//Add `applyTemplateToSelf()`; it must not be static because
