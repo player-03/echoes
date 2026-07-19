@@ -34,7 +34,7 @@ class EchoesExample {
 		Echoes.init();
 		
 		//Create and activate an instance of our system.
-		new RenderSystem().activate(); //Details below.
+		new RenderSystem(createScene()).activate(); //Details below.
 		
 		//Create an entity with the components our system will use. Entities are
 		//activated automatically unless `false` is passed.
@@ -44,8 +44,12 @@ class EchoesExample {
 		//...
 	}
 	
+	private static function createScene():Scene {
+		//Details omitted for brevity.
+	}
+	
 	private static function loadImage(path:String):DisplayObject {
-		//[Details omitted for brevity.]
+		//Details omitted for brevity.
 	}
 }
 
