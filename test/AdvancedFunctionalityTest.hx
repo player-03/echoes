@@ -138,55 +138,6 @@ class AdvancedFunctionalityTest extends Test {
 	
 	#end
 	
-	private function testEntityTemplates():Void {
-		new NameSystem().activate();
-		new AppearanceSystem().activate();
-		
-		final entity:Entity = new Entity();
-		entity.add(("John":Name));
-		
-		final namedEntity:NamedEntity = NamedEntity.applyTemplateTo(entity);
-		Assert.equals(entity, namedEntity);
-		Assert.equals("John", namedEntity.name);
-		assertTimesCalled(1, "NameSystem.nameAdded");
-		assertTimesCalled(0, "NameSystem.nameRemoved");
-		
-		namedEntity.name = null;
-		Assert.equals(null, namedEntity.name);
-		assertTimesCalled(1, "NameSystem.nameAdded");
-		assertTimesCalled(1, "NameSystem.nameRemoved");
-		
-		final visualEntity:VisualEntity = VisualEntity.applyTemplateTo(namedEntity);
-		Assert.equals(VisualEntity.DEFAULT_COLOR, visualEntity.color);
-		assertTimesCalled(1, "AppearanceSystem.colorAdded");
-		assertTimesCalled(0, "AppearanceSystem.colorRemoved");
-		
-		Assert.equals(VisualEntity.DEFAULT_SHAPE, (visualEntity:Entity).get(Shape));
-		
-		Assert.equals(NamedEntity.DEFAULT_NAME, new NamedEntity().name);
-		Assert.notEquals(NamedEntity.DEFAULT_NAME, new NamedEntity("not default").name);
-		assertTimesCalled(3, "NameSystem.nameAdded");
-		assertTimesCalled(1, "NameSystem.nameRemoved");
-		
-		NameStringEntity.applyTemplateTo(visualEntity);
-		Assert.equals(NameStringEntity.DEFAULT_NAME, namedEntity.name);
-		assertTimesCalled(4, "NameSystem.nameAdded");
-		assertTimesCalled(1, "NameSystem.nameRemoved");
-		
-		NamedEntity.removeTemplateFrom(namedEntity);
-		Assert.isNull(namedEntity.name);
-		Assert.notNull(namedEntity.get(String));
-		assertTimesCalled(2, "NameSystem.nameRemoved");
-		
-		final nullEntity:Null<NamedEntity> = null;
-		Assert.isNull(nullEntity);
-		#if cpp
-		Assert.notNull((nullEntity:Null<Entity>), "C++ code generation has improved, and a warning can be removed from EntityTemplateBuilder.");
-		#else
-		Assert.isNull((nullEntity:Null<Entity>));
-		#end
-	}
-	
 	private function testFindSystem():Void {
 		final parent:SystemList = new SystemList();
 		final child:SystemList = new SystemList();

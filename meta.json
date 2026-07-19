@@ -55,20 +55,6 @@
 		"links": ["./README.md#priority"]
 	},
 	{
-		"metadata": ":arguments",
-		"doc": "One or more component types to be taken as arguments in the entity template's constructor. Requires @:build(echoes.Entity.build()).",
-		"params": ["Type or type check"],
-		"targets": ["TAbstract"],
-		"links": ["./README.md#entity-templates", "./README.md#type-check-syntax"]
-	},
-	{
-		"metadata": ":optionalArguments",
-		"doc": "One or more component types to be taken as optional arguments in the entity template's constructor. Requires @:build(echoes.Entity.build()).",
-		"params": ["Type or type check"],
-		"targets": ["TAbstract"],
-		"links": ["./README.md#entity-templates", "./README.md#type-check-syntax"]
-	},
-	{
 		"metadata": ":echoes_storage",
 		"doc": "Sets the ComponentStorage instance used to store components of this type.",
 		"params": ["Constructor call or singleton instance"],

@@ -308,8 +308,7 @@ class ComponentStorage<T> {
 	 * 
 	 * Tag a component with `@:echoes_replace` to enable this behavior for that
 	 * component. Then, any time that component is added via `Entity.add()`, it
-	 * will dispatch a `@:remove` event for the old value (if any). This also
-	 * applies to entity templates, which call `Entity.add()` under the hood.
+	 * will dispatch a `@:remove` event for the old value (if any).
 	 * 
 	 * You can circumvent `@:echoes_replace` using `ComponentStorage.add()`. For
 	 * instance, `Echoes.getComponentStorage(MyType).add(entity, new MyType())`

@@ -272,7 +272,7 @@ class BasicFunctionalityTest extends Test {
 		
 		//Give one entity both a color and shape.
 		star.add((0xFFFFFF:Color));
-
+		
 		//Simulate time passing without actually waiting for it.
 		Echoes.lastUpdate -= 0.001;
 		

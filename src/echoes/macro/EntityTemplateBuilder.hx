@@ -29,6 +29,8 @@ class EntityTemplateBuilder {
 	
 	@:allow(echoes)
 	private static function build():Array<Field> {
+		Context.warning("echoes.Entity.build() is deprecated. Please install the echoes-templates Haxelib, and use echoes.Template.build() instead.", Context.currentPos());
+		
 		var fields:Array<Field> = Context.getBuildFields();
 		
 		//Information gathering

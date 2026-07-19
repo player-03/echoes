@@ -469,115 +469,6 @@ If one second is too long, or if you want a fixed timestep, all you need to do i
 
 In order to ["free the physics,"](https://www.gafferongames.com/post/fix_your_timestep/#free-the-physics) you may want to run physics-related systems at a different rate than everything else. Fortunately, each [`SystemList`](src/echoes/SystemList.hx) ([described above](#systemlist)) has its own [`Clock`](src/echoes/utils/Clock.hx). If you have a `SystemList` for physics systems, you can call `physicsSystemList.clock.setFixedTimestep()` without affecting any of the other systems.
 
-### Entity templates
-
-Sometimes, a combination of components comes up frequently enough that you want to be able to add them as a batch. For this, you can define an entity template, which is an abstract wrapping `Entity`.
-
-```haxe
-@:build(echoes.Entity.build())
-abstract Fighter(Entity) {
-	public var attack:Attack = 1;
-	public var health:Health = 10;
-}
-```
-
-In this example, the `Fighter` template represents an entity with `Attack` and `Health` components. In other words, it's an entity that can both deal and receive damage.
-
-The build macro (`echoes.Entity.build()`) generates a constructor, as well as getters and setters for each component. This gives you a couple ways to interact with the fighter.
-
-```haxe
-var fighter:Fighter = new Fighter();
-
-//You can treat components like variables.
-trace(fighter.attack); //1
-trace(fighter.health); //10
-trace(fighter.hitbox); //"Square with width 1"
-
-fighter.attack = 2;
-trace(fighter.attack); //2
-
-//Or you can treat `fighter` like a normal entity.
-fighter.add((8:Health));
-trace(fighter.get(Health)); //8
-
-fighter.add(new TemporaryPowerup(7.5));
-trace(fighter.get(TemporaryPowerup).timeLeft); //7.5
-```
-
-It's possible to apply multiple templates to a single entity.
-
-```haxe
-@:build(echoes.Entity.build())
-abstract Fighter(Entity) {
-	public var attack:Attack = 1;
-	public var health:Health = 10;
-}
-
-@:build(echoes.Entity.build())
-abstract Scout(Entity) {
-	public var health:Health = 5;
-	public var stealth:Stealth = 12;
-}
-
-class Main {
-	public static function main():Void {
-		var scout:Scout = new Scout();
-		
-		trace(scout.get(Attack)); //null
-		
-		//Each template provides an `applyTemplateTo()` function, which adds the
-		//template's components to an entity.
-		var scoutFighter:Fighter = Fighter.applyTemplateTo(scout);
-		
-		//It's still the same entity afterwards, just with more components.
-		trace(scout == scoutFighter); //true
-		
-		trace(scout.get(Attack)); //1
-		trace(scoutFighter.attack); //1
-		
-		trace(scout.stealth); //12
-		trace(scoutFighter.get(Stealth)); //12
-		
-		//If a component already exists, `applyTemplateTo()` won't overwrite it.
-		//In this case, `Scout` had already set `Health`.
-		trace(scoutFighter.health); //5
-	}
-}
-```
-
-You can also take components as arguments using the `@:arguments` tag, or `@:optionalArguments` for components with values.
-
-```haxe
-@:build(echoes.Entity.build()) @:arguments(Sprite)
-abstract Fighter(Entity) {
-	public var attack:Attack = 1;
-	public var health:Health = 10;
-	public var sprite:Sprite;
-}
-
-class Main {
-	public static function main():Void {
-		//To construct a `Fighter`, you must pass a `Sprite`.
-		var fighter:Fighter = new Fighter(new Sprite("meleeFighter.png"));
-		
-		//This also applies when calling `applyTemplateTo()`.
-		var entity:Entity = new Entity();
-		Fighter.applyTemplateTo(entity, new Sprite("rangedFighter.png"));
-		
-		//Note: if the entity already has a `Sprite`, the old one will be kept.
-		Fighter.applyTemplateTo(entity, new Sprite("meleeFighter.png"));
-		trace(entity.get(Sprite).path); //"rangedFighter.png"
-	}
-}
-```
-
-Additional notes:
-
-- Like any other abstract, you can write instance functions. However, keep in mind that templates are meant to be optional, so these functions should be for convenience only. Important logic belongs in a system instead.
-- A template can wrap another template, which behaves just like a subclass. All components and functions are inherited, unless re-declared.
-- If a component lacks an initial value and isn't listed in `@:arguments`, it will default to null.
-- You may not declare a constructor, but if you declare an `onApplyTemplate()` function, it will run when the template is constructed or applied.
-
 ### Compiler flags
 Echoes offers a few ways to customize compilation.
 
@@ -590,6 +481,7 @@ Echoes offers a few ways to customize compilation.
 ### Since v1.0.0
 
 - Creating a view with two of the same component is now an error.
+- The built-in entity templates are deprecated. Instead, please use the separate [Echoes templates](https://github.com/player-03/echoes-templates) library.
 
 ### Since v1.0.0-rc.5
 
