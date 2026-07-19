@@ -473,6 +473,55 @@ If one second is too long, or if you want a fixed timestep, all you need to do i
 
 In order to ["free the physics,"](https://www.gafferongames.com/post/fix_your_timestep/#free-the-physics) you may want to run physics-related systems at a different rate than everything else. Fortunately, each [`SystemList`](src/echoes/SystemList.hx) ([described above](#systemlist)) has its own [`Clock`](src/echoes/utils/Clock.hx). If you have a `SystemList` for physics systems, you can call `physicsSystemList.clock.setFixedTimestep()` without affecting any of the other systems.
 
+### Replacing components
+
+Normally, calling `Entity.add()` will always dispatch an `@:add` listener. If there was an old value of that type, it will be replaced, but no `@:remove` event will be dispatched for it.
+
+```haxe
+final entity:Entity = new Entity();
+entity.add(new DisplayObject("One.jpg")); //Dispatches `@:add`
+entity.add(new DisplayObject("Two.jpg")); //Dispatches `@:add`
+```
+
+If cleanup is necessary (for instance, image data might need to be freed), this would normally happen in a `@:remove` listener. To force Echoes to dispatch this event, tag the component type `@:echoes_replace`.
+
+```haxe
+@:echoes_replace
+class DisplayObject {
+	public function new(filePath:String) {
+		//...
+	}
+	
+	public function free():Void {
+		//...
+	}
+}
+```
+
+This tag changes the behavior of `Entity.add()`. Normally, it would call `ComponentStorage.add()`, but for components tagged `@:echoes_replace`, it calls `ComponentStorage.replace()` instead. This will cause it to dispatch a `@:remove` event followed by an `@:add` event.
+
+Importantly, `ComponentStorage.replace()` sets the new value before dispatching either event. This means that the `@:remove` listener has access to both the old value and the new value, and can tell that a replacement is happening.
+
+```haxe
+class ImageSystem extends System {
+	@:remove private function freeDisplayObject(object:DisplayObject, entity:Entity):Void {
+		//The old value is passed to the function as the `object` argument. It's
+		//been removed, and should be freed.
+		object.free();
+		
+		//`entity` will have the new value, if any.
+		if(entity.exists(DisplayObject)) {
+			final newDisplayObject:DisplayObject = entity.get(DisplayObject);
+			//`newDisplayObject` is the new value, and can be used here. Also,
+			//`ComponentStorage.replace()` will dispatch an `@:add` event for it
+			//before returning, which may be a better time to handle it.
+		} else {
+			//There's no replacement; perform additional cleanup as appropriate.
+		}
+	}
+}
+```
+
 ### Compiler flags
 Echoes offers a few ways to customize compilation.
 
