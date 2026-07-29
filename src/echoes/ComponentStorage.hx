@@ -198,7 +198,7 @@ class ComponentStorage<T> {
 	}
 	
 	private inline function dispatchRemoveEvent(entity:Entity, removedComponent:T):Null<Exception> {
-		if(entity.active) {
+		if(entity.dispatchesRemoveEvents) {
 			ongoingRemovals.push(entity.id);
 			
 			var exception:Exception = null;
@@ -428,7 +428,7 @@ abstract DynamicComponentStorage(ComponentStorage<Dynamic>) {
  * up an individual component, but it helps with batch operations such as
  * `deactivate()` and `destroy()`.
  */
-@:forward(contains, containsComponentStorage, iterator, length) @:forward.new
+@:forward(contains, containsComponentStorage, copy, iterator, length) @:forward.new
 @:allow(echoes.ComponentStorage)
 abstract EntityComponents(ComponentTypes) from ComponentTypes {
 	/**

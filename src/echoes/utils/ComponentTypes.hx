@@ -66,6 +66,10 @@ abstract ComponentTypes(Array<DynamicComponentStorage>) from Array<DynamicCompon
 		return this.contains(storage);
 	}
 	
+	public inline function copy():ComponentTypes {
+		return this.copy();
+	}
+	
 	@:noCompletion public inline function iterator():ArrayIterator<DynamicComponentStorage> {
 		return this.iterator();
 	}

@@ -531,6 +531,10 @@ Echoes offers a few ways to customize compilation.
 
 ## Breaking changes
 
+### Since v1.1.0
+
+- `@:add` events are no longer dispatched while an entity is being deactivated. This would only happen if a `@:remove` listener added a component, and if one does, the event can wait until the entity is reactivated.
+
 ### Since v1.0.0
 
 - Creating a view with two of the same component is now an error.

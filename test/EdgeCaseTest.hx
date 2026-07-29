@@ -322,6 +322,33 @@ class EdgeCaseTest extends Test {
 		ComponentStorage.onError.clear();
 	}
 	
+	private function testRemoveDuringDeactivate():Void {
+		new RecursiveEventSystem().activate();
+		
+		final entity:Entity = new Entity();
+		entity.add((1:A));
+		entity.add((2:B));
+		entity.add((3:C));
+		entity.remove(A);
+		Assert.isNull(entity.get(A));
+		Assert.isNull(entity.get(B));
+		Assert.isNull(entity.get(C));
+		assertTimesCalled(1, "RecursiveEventSystem.aRemovesBC");
+		assertTimesCalled(1, "RecursiveEventSystem.bRemovesCA");
+		assertTimesCalled(1, "RecursiveEventSystem.cRemovesAB");
+		
+		entity.add((1:A));
+		entity.add((2:B));
+		entity.add((3:C));
+		entity.deactivate();
+		Assert.isNull(entity.get(A));
+		Assert.isNull(entity.get(B));
+		Assert.isNull(entity.get(C));
+		assertTimesCalled(2, "RecursiveEventSystem.aRemovesBC");
+		assertTimesCalled(2, "RecursiveEventSystem.bRemovesCA");
+		assertTimesCalled(2, "RecursiveEventSystem.cRemovesAB");
+	}
+	
 	private function testRemoveDuringUpdate():Void {
 		final system:RemoveStringSystem = new RemoveStringSystem();
 		system.activate();
@@ -415,6 +442,10 @@ typedef Three = Int;
 typedef Brief = Float;
 typedef Permanent = Float;
 
+typedef A = Int;
+typedef B = Int;
+typedef C = Int;
+
 class ComponentsExistSystem extends System implements IMethodCounter {
 	@:add private function nameAdded(name:Name, entity:Entity):Void {
 		Assert.notNull(entity.get(Name));
@@ -479,6 +510,21 @@ class RecursiveEventSystem extends System implements IMethodCounter {
 		//This is not allowed, and should throw an error. If it was allowed, it
 		//would keep the component around permanently, hence the name.
 		entity.add(permanent);
+	}
+	
+	@:remove private function aRemovesBC(a:A, entity:Entity):Void {
+		entity.remove(B);
+		entity.remove(C);
+	}
+	
+	@:remove private function bRemovesCA(b:B, entity:Entity):Void {
+		entity.remove(C);
+		entity.remove(A);
+	}
+	
+	@:remove private function cRemovesAB(c:C, entity:Entity):Void {
+		entity.remove(A);
+		entity.remove(B);
 	}
 }
 

@@ -56,14 +56,21 @@ abstract Entity(Int) {
 	 * Whether this entity is active. If it is, events will be dispatched
 	 * whenever a component is added or removed. If not, those events will be
 	 * postponed until it becomes active again.
+	 * 
+	 * Special case: if the entity is being destroyed or deactivated (see
+	 * `beingDestroyed`), `@:remove` events will also be dispatched.
 	 */
 	public var active(get, never):Bool;
 	private inline function get_active():Bool {
-		return Echoes.entityStates[this] >= BEING_DESTROYED;
+		return Echoes.entityStates[this] >= 0;
 	}
 	
 	/**
-	 * Whether this entity is in the process of being destroyed.
+	 * Whether this entity is in the process of being deactivated or destroyed.
+	 * 
+	 * If it's only being deactivated, it may come back later, but it could also
+	 * be destroyed without dispatching any further events. Either way, this
+	 * should be treated as the final chance to clean up.
 	 */
 	public var beingDestroyed(get, never):Bool;
 	private inline function get_beingDestroyed():Bool {
@@ -76,6 +83,15 @@ abstract Entity(Int) {
 	public var destroyed(get, never):Bool;
 	private inline function get_destroyed():Bool {
 		return Echoes.entityStates[this] == DESTROYED;
+	}
+	
+	/**
+	 * Whether to dispatch `@:remove` events for this entity. This is equivalent
+	 * to `active || beingDestroyed`.
+	 */
+	@:noCompletion public var dispatchesRemoveEvents(get, never):Bool;
+	private inline function get_dispatchesRemoveEvents():Bool {
+		return Echoes.entityStates[this] >= BEING_DESTROYED;
 	}
 	
 	/**
@@ -155,17 +171,21 @@ abstract Entity(Int) {
 	 */
 	public function deactivate():Void {
 		final index:Int = Echoes.entityStates[this];
-		//Testing `>= 0` ensures the entity is active and not being destroyed.
-		if(index >= 0) {
-			Echoes.entityStates[this] = INACTIVE;
+		if(active) {
+			Echoes.entityStates[this] = BEING_DESTROYED;
 			Echoes.removeActiveEntityAt(index);
 			
-			for(storage in getComponents()) {
+			for(storage in getComponents().copy()) {
 				final component:Dynamic = storage.get(cast this);
+				if(component == null) {
+					continue;
+				}
 				for(view in storage.relatedViews) {
 					view.remove(cast this, storage, component);
 				}
 			}
+			
+			Echoes.entityStates[this] = INACTIVE;
 		}
 	}
 	
@@ -242,8 +262,9 @@ abstract Entity(Int) {
 	//========
 	
 	/**
-	 * Indicates an entity that is in the process of being destroyed. Any value
-	 * greater than or equal to this indicates an active entity.
+	 * Indicates an entity that is in the process of being deactivated and
+	 * possibly destroyed. Any value greater than or equal to this indicates
+	 * that `@:remove` events should be dispatched for this entity.
 	 */
 	private static var BEING_DESTROYED(get, never):Int;
 	private static inline function get_BEING_DESTROYED():Int {
