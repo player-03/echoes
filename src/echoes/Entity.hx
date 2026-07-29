@@ -177,7 +177,10 @@ abstract Entity(Int) {
 		if(!destroyed && !beingDestroyed) {
 			final index:Int = Echoes.entityStates[this];
 			
-			Echoes.entityStates[this] = BEING_DESTROYED;
+			if(active) {
+				Echoes.entityStates[this] = BEING_DESTROYED;
+			}
+			
 			removeAll();
 			
 			if(index >= 0) {
