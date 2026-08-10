@@ -301,7 +301,7 @@ class EdgeCaseTest extends Test {
 		//`RecursiveEventSystem` will attempt to undo `remove(Permanent)`, which
 		//should throw an error. Afterwards, `Permanent` should remain gone, and
 		//all listeners should have been called.
-		Assert.raises(() -> entity.remove(Permanent));
+		Assert.exception(() -> entity.remove(Permanent));
 		Assert.isFalse(entity.exists(Permanent));
 		Assert.equals(1 | 2, permanentRemoveFlags);
 		
