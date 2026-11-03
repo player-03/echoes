@@ -8,6 +8,7 @@ import utest.Runner;
 /**
  * Helper functions for [utest](https://github.com/haxe-utest/utest).
  */
+@:deprecated
 class UTest {
 	//Called from test cases
 	//======================
@@ -16,10 +17,9 @@ class UTest {
 	 * Runs `Echoes.activeSystems` for `deltaTime` seconds, `count` times. The
 	 * total duration is therefore `deltaTime * count`.
 	 */
-	public static function update(?deltaTime:Float = 1, ?count:Int = 1):Void {
-		for(_ in 0...count) {
-			Echoes.activeSystems.__update__(deltaTime);
-		}
+	@:deprecated("Instead, call `echoes.test.Utils.update()`.")
+	public static inline function update(?deltaTime:Float = 1, ?count:Int = 1):Void {
+		echoes.test.Utils.update(deltaTime, count);
 	}
 	
 	//Called from main
@@ -28,6 +28,7 @@ class UTest {
 	/**
 	 * Makes `runner` call `Echoes.reset()` in between tests.
 	 */
+	@:deprecated("Instead, create a base class with a `teardown()` function.")
 	public static inline function resetBetweenTests(runner:Runner):Void {
 		runner.onTestComplete.add(_ -> Echoes.reset());
 	}
@@ -36,6 +37,7 @@ class UTest {
 	 * Runs the given tests, calling `Echoes.reset()` after each one.
 	 * @see `utest.UTest.run()`
 	 */
+	@:deprecated("Instead, create a base class with a `teardown()` function, and call `utest.UTest.run()`.")
 	public static function run<T:ITest>(cases:Array<T>, ?callback:() -> Void):Void {
 		final runner = new Runner();
 		

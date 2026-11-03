@@ -13,7 +13,6 @@ import haxe.PosInfos;
 import MethodCounter.assertTimesCalled;
 import Systems;
 import utest.Assert;
-import utest.Test;
 
 @:depends(BasicFunctionalityTest)
 class AdvancedFunctionalityTest extends Test {
@@ -21,11 +20,6 @@ class AdvancedFunctionalityTest extends Test {
 	
 	private function listener1():Void {
 		count1++;
-	}
-	
-	private function teardown():Void {
-		//Echoes.reset() is called by echoes.test.UTest.
-		MethodCounter.reset();
 	}
 	
 	//Tests may be run in any order, but not in parallel.

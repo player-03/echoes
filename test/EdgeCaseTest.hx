@@ -13,15 +13,9 @@ import MethodCounter.assertTimesCalled;
 import MethodCounter.IMethodCounter;
 import Systems;
 import utest.Assert;
-import utest.Test;
 
 @:depends(BasicFunctionalityTest)
 class EdgeCaseTest extends Test {
-	private function teardown():Void {
-		//Echoes.reset() is called by echoes.test.UTest.
-		MethodCounter.reset();
-	}
-	
 	//Tests may be run in any order, but not in parallel.
 	
 	private function testAllArgumentsOptional():Void {

@@ -1,6 +1,6 @@
 package;
 
-import echoes.test.UTest;
+import utest.UTest;
 
 class Main {
 	public static function main():Void {

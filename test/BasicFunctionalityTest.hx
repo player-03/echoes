@@ -8,14 +8,8 @@ import echoes.utils.Clock;
 import MethodCounter.assertTimesCalled;
 import Systems;
 import utest.Assert;
-import utest.Test;
 
 class BasicFunctionalityTest extends Test {
-	private function teardown():Void {
-		//Echoes.reset() is called by echoes.test.UTest.
-		MethodCounter.reset();
-	}
-	
 	//Tests may be run in any order, but not in parallel.
 	
 	#if (echoes_storage != "Map")

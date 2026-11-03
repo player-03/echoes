@@ -89,7 +89,7 @@ class SystemList extends System {
 		__update__(deltaTime);
 	}
 	
-	@:allow(echoes.test.UTest)
+	@:allow(echoes.test.Utils)
 	private override function __update__(deltaTime:Float):Void {
 		#if echoes_profiling
 		final startTime:Float = haxe.Timer.stamp();
