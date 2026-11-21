@@ -5,7 +5,7 @@ This framework was [designed and implemented by deepcake](https://github.com/dee
 
 ## Overview
 
-- A component is an individual piece of data. It can be a string, a class, an abstract, or any other type.
+- A component is an individual piece of data. It can be a number, a string, a class, an abstract, or nearly any other type.
 - An [entity](src/echoes/Entity.hx) is a collection of components. It fills a similar role to object instances in object-oriented programming, but functions differently. Its components aren't pre-defined the way an object's variables are; in fact, you can mix and match them at runtime.
   - Usage: Create an entity with `entity = new echoes.Entity()`. Next, call `entity.add(new Component())` for each component you want to add.
 - A [system](src/echoes/System.hx) updates and modifies entities. Whereas in object-oriented programming, objects usually have instance methods to update themselves, here that job is reserved for systems.

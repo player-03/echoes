@@ -59,8 +59,6 @@ class EntityTools {
 	 * Any side-effects of creating a component will only occur if that
 	 * component is added. For instance, `entity.addIfMissing(array.pop())` will
 	 * only pop an item from `array` if that component was missing.
-	 * @param components Components of `Any` type.
-	 * @return The entity.
 	 */
 	public static function addIfMissing(self:Expr, components:Array<Expr>):ExprOf<echoes.Entity> {
 		return macro @:pos(Context.currentPos()) {
