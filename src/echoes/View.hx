@@ -68,7 +68,15 @@ class ViewBase {
 				add(e);
 			}
 			for(storage in componentStorage) {
-				storage._relatedViews.push(this);
+				//Insert this after a view with the same or fewer components.
+				//This way, views with fewer components will run first.
+				var index:Int = storage.relatedViews.length;
+				while(--index >= 0) {
+					if(storage.relatedViews[index].componentStorage.length <= componentStorage.length) {
+						break;
+					}
+				}
+				storage._relatedViews.insert(index + 1, this);
 			}
 		}
 	}
